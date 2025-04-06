@@ -1,6 +1,7 @@
 local M = {}
 
 local INPUT_PLACEHOLDER = 'Ask anything...'
+local config = require("goose.config").get()
 
 function M.close_windows(windows)
   pcall(vim.api.nvim_win_close, windows.input_win, true)
@@ -9,7 +10,7 @@ function M.close_windows(windows)
   pcall(vim.api.nvim_buf_delete, windows.output_buf, { force = true })
 end
 
-function M.set_options(windows)
+function M.setup_options(windows)
   -- Input window/buffer options
   vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:Normal,FloatBorder:Normal')
   vim.api.nvim_win_set_option(windows.input_win, 'signcolumn', 'yes')
@@ -21,7 +22,7 @@ function M.set_options(windows)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
 end
 
-function M.set_placeholder(windows)
+function M.setup_placeholder(windows)
   local ns_id = vim.api.nvim_create_namespace('input-placeholder')
   vim.api.nvim_buf_set_extmark(windows.input_buf, ns_id, 0, 0, {
     virt_text = { { INPUT_PLACEHOLDER, 'Comment' } },
@@ -30,7 +31,7 @@ function M.set_placeholder(windows)
   vim.api.nvim_win_set_option(windows.input_win, 'cursorline', false)
 end
 
-function M.set_autocmds(windows)
+function M.setup_autocmds(windows)
   local group = vim.api.nvim_create_augroup('MermaidWindows', { clear = true })
 
   -- Output window autocmds
@@ -75,6 +76,38 @@ function M.set_autocmds(windows)
         end)
       end
     end
+  })
+end
+
+function M.setup_resize_handler(windows)
+  local function update_windows()
+    local total_width = vim.api.nvim_get_option('columns')
+    local total_height = vim.api.nvim_get_option('lines')
+    local width = math.floor(total_width * config.ui.window_width)
+
+    local total_usable_height = total_height - 4
+    local input_height = math.floor(total_usable_height * config.ui.input_height)
+
+    vim.api.nvim_win_set_config(windows.output_win, {
+      relative = 'editor',
+      width = width,
+      height = total_usable_height - input_height - 3,
+      col = total_width - width,
+      row = 0
+    })
+
+    vim.api.nvim_win_set_config(windows.input_win, {
+      relative = 'editor',
+      width = width,
+      height = input_height,
+      col = total_width - width,
+      row = total_usable_height - input_height - 1
+    })
+  end
+
+  vim.api.nvim_create_autocmd('VimResized', {
+    group = vim.api.nvim_create_augroup('MermaidResize', { clear = true }),
+    callback = update_windows
   })
 end
 

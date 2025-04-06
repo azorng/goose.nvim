@@ -1,6 +1,7 @@
 local M = {}
 
-local window_config = require("goose.ui.window_config")
+local window_configurator = require("goose.ui.window_config")
+local config = require("goose.config").get()
 
 function M.run(cmd)
   M.create_windows()
@@ -26,9 +27,9 @@ function M.create_windows()
   -- Calculate window dimensions
   local total_width = vim.api.nvim_get_option('columns')
   local total_height = vim.api.nvim_get_option('lines')
-  local width = math.floor(total_width * 0.3)
+  local width = math.floor(total_width * config.ui.window_width)
   local total_usable_height = total_height - 4
-  local input_height = math.floor(total_usable_height * 0.2)
+  local input_height = math.floor(total_usable_height * config.ui.input_height)
 
   -- Create output window
   local output_win = open_win(output_buf, {
@@ -53,9 +54,10 @@ function M.create_windows()
     output_win = output_win
   }
 
-  window_config.set_options(windows)
-  window_config.set_placeholder(windows)
-  window_config.set_autocmds(windows)
+  window_configurator.setup_options(windows)
+  window_configurator.setup_placeholder(windows)
+  window_configurator.setup_autocmds(windows)
+  window_configurator.setup_resize_handler(windows)
 end
 
 return M

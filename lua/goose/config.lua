@@ -8,7 +8,10 @@ M.defaults = {
     prompt = '<leader>gp',
     prompt_new_session = '<leader>gP',
   },
-  ui_width = 40, -- Width percentage of terminal window
+  ui = {
+    window_width = 0.3,
+    input_height = 0.2
+  }
 }
 
 -- Active configuration
