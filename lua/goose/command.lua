@@ -3,7 +3,7 @@
 
 local context = require("goose.context")
 local session = require("goose.session")
-local ui = require("goose.ui")
+local ui = require("goose.ui.ui")
 
 local M = {}
 

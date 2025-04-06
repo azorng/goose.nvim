@@ -36,9 +36,7 @@ function M.format_message(prompt)
     template_vars.selection = M.get_current_selection()
   end
 
-  local msg = template.render_template(template_vars)
-  vim.notify(msg)
-  return msg
+  return template.render_template(template_vars)
 end
 
 return M
