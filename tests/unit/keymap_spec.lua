@@ -2,7 +2,7 @@
 -- Tests for the keymap module
 
 local keymap = require("goose.keymap")
-local command = require("goose.command")
+local ui = require("goose.ui.ui")
 
 describe("goose.keymap", function()
   -- Keep track of set keymaps to verify
@@ -34,7 +34,8 @@ describe("goose.keymap", function()
   describe("setup", function()
     it("sets up keymap with the configured keys", function()
       local test_keymap = {
-        prompt = "<leader>test",
+        focus_input = "<leader>test",
+        focus_input_new_session = "<leader>testNew"
       }
 
       keymap.setup(test_keymap)
@@ -47,27 +48,43 @@ describe("goose.keymap", function()
       assert.is_table(set_keymaps[1].opts)
     end)
 
-    it("sets up the correct callback function that calls execute_command", function()
-      -- Spy on command.execute_command
-      local original_execute = command.execute_command
-      local execute_called = false
+    it("sets up the correct callback function that calls focus_input", function()
+      -- Spy on ui.focus_input
+      local original_focus_input = ui.focus_input
+      local focus_input_called = false
+      local focus_input_opts = nil
 
-      command.execute_command = function(opts)
-        execute_called = true
-        return "test_result"
+      ui.focus_input = function(opts)
+        focus_input_called = true
+        focus_input_opts = opts
       end
 
       -- Setup the keymap
-      keymap.setup({ prompt = "<leader>test" })
+      keymap.setup({ 
+        focus_input = "<leader>test",
+        focus_input_new_session = "<leader>testNew"
+      })
 
-      -- Call the callback that was passed to vim.keymap.set
-      local result = set_keymaps[1].callback()
+      -- Call the first callback (continue session)
+      set_keymaps[1].callback()
+      
+      -- Verify the callback called focus_input with correct opts
+      assert.is_true(focus_input_called)
+      assert.same({ new_session = false }, focus_input_opts)
+      
+      -- Reset and test the second callback (new session)
+      focus_input_called = false
+      focus_input_opts = nil
+      
+      -- Call the second callback
+      set_keymaps[2].callback()
+      
+      -- Verify the callback called focus_input with correct opts
+      assert.is_true(focus_input_called)
+      assert.same({ new_session = true }, focus_input_opts)
 
       -- Restore original
-      command.execute_command = original_execute
-
-      -- Verify the callback called execute_command
-      assert.is_true(execute_called)
+      ui.focus_input = original_focus_input
     end)
   end)
 end)

@@ -48,8 +48,9 @@ If you're new to Goose CLI:
 
 ## ⌨️ Default Keymaps
 
-- `<leader>gp` (normal/visual mode): Run Goose command continuing previous session
-- `<leader>gP` (normal/visual mode): Run Goose command starting a new session
+- `<leader>gi` (normal/visual mode): Open Goose input window continuing previous session
+- `<leader>gI` (normal/visual mode): Open Goose input window starting a new session
+- `<CR>` (in input window): Submit prompt to Goose
 
 ## 🚀 Installation & Configuration
 
@@ -62,10 +63,14 @@ If you're new to Goose CLI:
     require('goose').setup({
       -- Optional custom configuration
       keymap = {
-        prompt = '<leader>gp',           -- Continue session
-        prompt_new_session = '<leader>gP', -- New session
+        focus_input = '<leader>gi',           -- Focus input window (continue session)
+        focus_input_new_session = '<leader>gI', -- Focus input window (new session)
+        submit = '<CR>'                        -- Submit prompt
       },
-      ui_width = 40,                     -- Width percentage of terminal window
+      ui = {
+        window_width = 0.3,                   -- Width of the UI windows as decimal (0.3 = 30%)
+        input_height = 0.2                    -- Height of the input window as decimal (0.2 = 20%)
+      }
     })
   end
 }
