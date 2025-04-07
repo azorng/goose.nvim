@@ -2,6 +2,7 @@
 -- Gathers editor context (file paths, selections) for Goose prompts
 
 local template = require("goose.template")
+local state = require("goose.state")
 
 local M = {}
 
@@ -11,6 +12,10 @@ end
 
 -- Get the current visual selection
 function M.get_current_selection()
+  if not vim.fn.mode():match("[vV\022]") then
+    return nil
+  end
+
   vim.cmd('normal! "xy')
   local text = vim.fn.getreg('x')
 
@@ -22,7 +27,7 @@ function M.get_current_selection()
 end
 
 function M.format_message(prompt)
-  local current_file = M.get_current_file()
+  local current_file = state.current_file
 
   -- Create template variables
   local template_vars = {
@@ -31,10 +36,7 @@ function M.format_message(prompt)
     selection = nil
   }
 
-  -- Add selection if in visual mode
-  if vim.fn.mode():match("[vV\022]") then
-    template_vars.selection = M.get_current_selection()
-  end
+  template_vars.selection = state.selection
 
   return template.render_template(template_vars)
 end

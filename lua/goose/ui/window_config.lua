@@ -2,12 +2,16 @@ local M = {}
 
 local INPUT_PLACEHOLDER = 'Ask anything...'
 local config = require("goose.config").get()
+local command = require("goose.command")
+local state = require("goose.state")
+local output = require("goose.ui.output")
 
 function M.close_windows(windows)
   pcall(vim.api.nvim_win_close, windows.input_win, true)
   pcall(vim.api.nvim_win_close, windows.output_win, true)
   pcall(vim.api.nvim_buf_delete, windows.input_buf, { force = true })
   pcall(vim.api.nvim_buf_delete, windows.output_buf, { force = true })
+  state.windows = nil
 end
 
 function M.setup_options(windows)
@@ -54,7 +58,7 @@ function M.setup_autocmds(windows)
     callback = function()
       local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
       if #lines == 1 and lines[1] == "" then
-        M.set_placeholder(windows)
+        M.setup_placeholder(windows)
       else
         vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
         vim.api.nvim_win_set_option(windows.input_win, 'cursorline', true)
@@ -109,6 +113,34 @@ function M.setup_resize_handler(windows)
     group = vim.api.nvim_create_augroup('MermaidResize', { clear = true }),
     callback = update_windows
   })
+end
+
+local function handle_submit(windows)
+  local input_content = table.concat(vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false), '\n')
+  vim.api.nvim_buf_set_lines(windows.input_buf, 0, -1, false, {})
+  vim.api.nvim_exec_autocmds('TextChanged', {
+    buffer = windows.input_buf,
+    modeline = false
+  })
+
+  vim.api.nvim_set_current_win(windows.output_win)
+
+  command.execute({ prompt = input_content }, function(res)
+    output.render(windows)
+  end)
+end
+
+function M.setup_keymaps(windows)
+  vim.keymap.set({ 'n', 'i' }, config.keymap.submit, function()
+    handle_submit(windows)
+  end, { buffer = windows.input_buf, silent = false })
+
+  vim.keymap.set('n', '<esc>', function()
+    M.close_windows(windows)
+  end, { buffer = windows.input_buf, silent = true })
+  vim.keymap.set('n', '<esc>', function()
+    M.close_windows(windows)
+  end, { buffer = windows.output_buf, silent = true })
 end
 
 return M

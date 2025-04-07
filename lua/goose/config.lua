@@ -5,8 +5,9 @@ local M = {}
 -- Default configuration
 M.defaults = {
   keymap = {
-    prompt = '<leader>gp',
-    prompt_new_session = '<leader>gP',
+    focus_input = '<leader>gi',
+    focus_input_new_session = '<leader>gI',
+    submit = '<CR>'
   },
   ui = {
     window_width = 0.3,

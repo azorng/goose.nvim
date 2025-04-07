@@ -1,30 +1,13 @@
 local M = {}
+local goose = require('goose.goose')
 
-function M.get_last_session(working_dir)
-  local handle = io.popen('goose session list --format json')
-  if not handle then return nil end
-  
-  local result = handle:read("*a")
-  handle:close()
+function M.get_last_workspace_session()
+  local current_dir = vim.fn.getcwd()
+  return goose.get_last_workspace_session(current_dir)
+end
 
-  local sessions = vim.fn.json_decode(result)
-  if not sessions then return nil end
-
-  -- Find sessions matching the working directory
-  local matches = {}
-  for _, session in ipairs(sessions) do
-    if session.metadata and session.metadata.working_dir == working_dir then
-      table.insert(matches, session)
-    end
-  end
-
-  -- Sort by modification time (newest last)
-  table.sort(matches, function(a, b)
-    return a.modified < b.modified
-  end)
-
-  -- Return most recent session if available
-  return matches[#matches] 
+function M.get_by_name(name)
+  return goose.get_session_by_name(name)
 end
 
 return M

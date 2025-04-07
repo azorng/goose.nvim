@@ -21,7 +21,7 @@ local function read_template(template_path)
   return content
 end
 
--- Simple Jinja-like template rendering
+
 function M.render_template(template_vars)
   local plugin_root = get_plugin_root()
   local template_path = plugin_root .. "/template/prompt.jinja"
@@ -34,15 +34,33 @@ function M.render_template(template_vars)
     return template_vars[var] or ""
   end)
 
-  -- Process if blocks (simple implementation)
-  result = result:gsub("{%%(%s*)if(%s+)([%w_]+)(%s*)%%}(.-){%%(%s*)endif(%s*)%%}",
-    function(s1, s2, var, s3, content, s4, s5)
-      if template_vars[var] and template_vars[var] ~= "" then
-        return content
-      else
-        return ""
+  -- Process if blocks with support for logical operators
+  result = result:gsub("{%%(%s*)if(.-)%%}(.-){%%(%s*)endif(%s*)%%}", function(s1, condition, content, s2, s3)
+    -- Evaluate the condition
+    local should_render = false
+
+    -- Parse 'or' condition
+    if condition:match("or") then
+      local var_names = {}
+      for var in condition:gmatch("([%w_]+)") do
+        table.insert(var_names, var)
       end
-    end)
+
+      -- Check if any variable is truthy
+      for _, var in ipairs(var_names) do
+        if template_vars[var] and template_vars[var] ~= "" then
+          should_render = true
+          break
+        end
+      end
+    else
+      -- Single variable check
+      local var = condition:match("%s*([%w_]+)%s*")
+      should_render = template_vars[var] and template_vars[var] ~= ""
+    end
+
+    return should_render and content or ""
+  end)
 
   -- Clean up any empty lines caused by conditional blocks
   result = result:gsub("\n\n\n+", "\n\n")
