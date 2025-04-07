@@ -39,12 +39,12 @@ If you're new to Goose CLI:
    - It offers powerful AI assistance through a command-line interface
 
 2. **Installation:**
-   - Visit [Goose's official repository](https://github.com/goose-ai/goose) for installation instructions
+   - Visit [Goose's official repository](https://github.com/block/goose) for installation instructions
    - Ensure the `goose` command is available in your PATH after installation
 
 3. **Basic Configuration:**
-   - Run `goose auth login` to authenticate
-   - For more configuration options, refer to the [Goose CLI documentation](https://github.com/goose-ai/goose)
+   - Run `goose configure` to set up your provider and other configurations
+   - For more configuration options, refer to the [Goose Website](https://block.github.io/goose/)
 
 ## ⌨️ Default Keymaps
 
