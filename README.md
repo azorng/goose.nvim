@@ -51,7 +51,7 @@ If you're new to Goose CLI:
 ```lua
 {
     'azorng/goose.nvim',
-    branch = 'feature/custom_ui',
+    branch = 'main',
     config = function()
         require('goose').setup({
             -- Optional custom configuration
