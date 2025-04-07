@@ -5,10 +5,14 @@ local M = {}
 -- Default configuration
 M.defaults = {
   keymap = {
-    prompt = '<leader>gp',
-    prompt_new_session = '<leader>gP',
+    focus_input = '<leader>gi',
+    focus_input_new_session = '<leader>gI',
+    submit = '<CR>'
   },
-  ui_width = 40, -- Width percentage of terminal window
+  ui = {
+    window_width = 0.3,
+    input_height = 0.2
+  }
 }
 
 -- Active configuration

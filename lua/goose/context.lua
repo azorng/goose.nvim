@@ -1,6 +1,9 @@
 -- goose.nvim/lua/goose/context.lua
 -- Gathers editor context (file paths, selections) for Goose prompts
 
+local template = require("goose.template")
+local state = require("goose.state")
+
 local M = {}
 
 function M.get_current_file()
@@ -9,6 +12,10 @@ end
 
 -- Get the current visual selection
 function M.get_current_selection()
+  if not vim.fn.mode():match("[vV\022]") then
+    return nil
+  end
+
   vim.cmd('normal! "xy')
   local text = vim.fn.getreg('x')
 
@@ -20,25 +27,18 @@ function M.get_current_selection()
 end
 
 function M.format_message(prompt)
-  local current_file = M.get_current_file()
-  local message_parts = {}
+  local current_file = state.current_file
 
-  if current_file ~= "" then
-    table.insert(message_parts, string.format("File: %s", current_file))
-    table.insert(message_parts, "")
-  end
+  -- Create template variables
+  local template_vars = {
+    file_path = current_file ~= "" and current_file or nil,
+    prompt = prompt,
+    selection = nil
+  }
 
-  table.insert(message_parts, prompt)
+  template_vars.selection = state.selection
 
-  -- Add selection if in visual mode
-  if vim.fn.mode():match("[vV\022]") then
-    local selection = M.get_current_selection()
-    table.insert(message_parts, "")
-    table.insert(message_parts, "Selected text:")
-    table.insert(message_parts, selection)
-  end
-
-  return table.concat(message_parts, "\n")
+  return template.render_template(template_vars)
 end
 
 return M

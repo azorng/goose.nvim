@@ -6,4 +6,8 @@ function M.template(str, vars)
   end))
 end
 
+function M.uid()
+  return tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999))
+end
+
 return M
