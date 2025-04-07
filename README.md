@@ -18,14 +18,6 @@
 
 This Neovim plugin provides a simple bridge between Neovim and the Goose AI agent CLI. It runs Goose commands with appropriate context from the editor, bringing AI assistant capabilities directly into Neovim similar to what tools like Cursor AI offer. Work with a powerful AI agent without leaving your editor.
 
-## 🗺️ Roadmap
-
-The following features are planned for future releases:
-
-- **Custom UI**: A more intuitive and visually appealing interface
-- **Session management and history**: Better handling of conversation sessions and historical interactions
-- **Enhanced context provision**: Easier methods to provide file context and code references
-
 ## 📋 Requirements
 
 - Goose CLI installed and available in your PATH
@@ -58,20 +50,31 @@ If you're new to Goose CLI:
 
 ```lua
 {
-  'azorng/goose.nvim',
-  config = function()
-    require('goose').setup({
-      -- Optional custom configuration
-      keymap = {
-        focus_input = '<leader>gi',           -- Focus input window (continue session)
-        focus_input_new_session = '<leader>gI', -- Focus input window (new session)
-        submit = '<CR>'                        -- Submit prompt
-      },
-      ui = {
-        window_width = 0.3,                   -- Width of the UI windows as decimal (0.3 = 30%)
-        input_height = 0.2                    -- Height of the input window as decimal (0.2 = 20%)
-      }
-    })
-  end
+    'azorng/goose.nvim',
+    branch = 'feature/custom_ui',
+    config = function()
+        require('goose').setup({
+            -- Optional custom configuration
+            keymap = {
+                focus_input = '<leader>gi',        -- Focus input window (continue session)
+                focus_input_new_session = '<leader>gI', -- Focus input window (new session)
+                submit = '<CR>'                    -- Submit prompt
+            },
+            ui = {
+                window_width = 0.3, -- Width of the UI windows as decimal (0.3 = 30%)
+                input_height = 0.2 -- Height of the input window as decimal (0.2 = 20%)
+            }
+        })
+    end,
+    dependencies = {
+        "nvim-lua/plenary.nvim",
+        {
+            "MeanderingProgrammer/render-markdown.nvim",
+            opts = {
+                render_modes = true,
+                anti_conceal = { enabled = true },
+            },
+        }
+    },
 }
 ```
