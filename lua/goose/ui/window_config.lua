@@ -2,26 +2,15 @@ local M = {}
 
 local INPUT_PLACEHOLDER = 'Ask anything...'
 local config = require("goose.config").get()
-local command = require("goose.command")
-local state = require("goose.state")
-local output = require("goose.ui.output")
-
-function M.close_windows(windows)
-  pcall(vim.api.nvim_win_close, windows.input_win, true)
-  pcall(vim.api.nvim_win_close, windows.output_win, true)
-  pcall(vim.api.nvim_buf_delete, windows.input_buf, { force = true })
-  pcall(vim.api.nvim_buf_delete, windows.output_buf, { force = true })
-  state.windows = nil
-end
 
 function M.setup_options(windows)
   -- Input window/buffer options
-  vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:Normal,FloatBorder:Normal')
+  vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
   vim.api.nvim_win_set_option(windows.input_win, 'signcolumn', 'yes')
   vim.b[windows.input_buf].completion = false
 
   -- Output window/buffer options
-  vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', 'Normal:Normal,FloatBorder:Normal')
+  vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
   vim.api.nvim_buf_set_option(windows.output_buf, 'filetype', 'markdown')
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
 end
@@ -36,7 +25,7 @@ function M.setup_placeholder(windows)
 end
 
 function M.setup_autocmds(windows)
-  local group = vim.api.nvim_create_augroup('MermaidWindows', { clear = true })
+  local group = vim.api.nvim_create_augroup('GooseWindows', { clear = true })
 
   -- Output window autocmds
   vim.api.nvim_create_autocmd({ 'WinEnter', 'BufEnter' }, {
@@ -52,7 +41,6 @@ function M.setup_autocmds(windows)
     callback = function() vim.cmd('startinsert') end
   })
 
-  -- Placeholder handling
   vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
     buffer = windows.input_buf,
     callback = function()
@@ -66,7 +54,6 @@ function M.setup_autocmds(windows)
     end
   })
 
-  -- Window close handling
   vim.api.nvim_create_autocmd('WinClosed', {
     group = group,
     pattern = tostring(windows.input_win) .. ',' .. tostring(windows.output_win),
@@ -76,7 +63,7 @@ function M.setup_autocmds(windows)
       -- If either window is closed, close both
       if closed_win == windows.input_win or closed_win == windows.output_win then
         vim.schedule(function()
-          M.close_windows(windows)
+          require('goose.ui.ui').close_windows(windows)
         end)
       end
     end
@@ -110,7 +97,7 @@ function M.setup_resize_handler(windows)
   end
 
   vim.api.nvim_create_autocmd('VimResized', {
-    group = vim.api.nvim_create_augroup('MermaidResize', { clear = true }),
+    group = vim.api.nvim_create_augroup('GooseResize', { clear = true }),
     callback = update_windows
   })
 end
@@ -123,23 +110,27 @@ local function handle_submit(windows)
     modeline = false
   })
 
+  -- Switch to the output window
   vim.api.nvim_set_current_win(windows.output_win)
 
-  command.execute({ prompt = input_content }, function(res)
-    output.render(windows)
-  end)
+  -- Always scroll to the bottom when submitting a new prompt
+  local line_count = vim.api.nvim_buf_line_count(windows.output_buf)
+  vim.api.nvim_win_set_cursor(windows.output_win, { line_count, 0 })
+
+  -- Run the command with the input content
+  require("goose.core").run(input_content)
 end
 
 function M.setup_keymaps(windows)
-  vim.keymap.set({ 'n', 'i' }, config.keymap.submit, function()
+  vim.keymap.set({ 'n', 'i' }, config.keymap.submit_prompt, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
   vim.keymap.set('n', '<esc>', function()
-    M.close_windows(windows)
+    require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.input_buf, silent = true })
   vim.keymap.set('n', '<esc>', function()
-    M.close_windows(windows)
+    require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.output_buf, silent = true })
 end
 

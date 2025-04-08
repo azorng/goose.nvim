@@ -2,7 +2,7 @@
 -- Tests for the keymap module
 
 local keymap = require("goose.keymap")
-local ui = require("goose.ui.ui")
+local core = require("goose.core")
 
 describe("goose.keymap", function()
   -- Keep track of set keymaps to verify
@@ -34,57 +34,57 @@ describe("goose.keymap", function()
   describe("setup", function()
     it("sets up keymap with the configured keys", function()
       local test_keymap = {
-        focus_input = "<leader>test",
-        focus_input_new_session = "<leader>testNew"
+        prompt = "<leader>test",
+        prompt_new_session = "<leader>testNew"
       }
 
       keymap.setup(test_keymap)
 
       -- Verify the keymap was set up
-      assert.equal(2, #set_keymaps)
+      assert.equal(3, #set_keymaps)
       assert.same({ "n", "v" }, set_keymaps[1].modes)
       assert.equal("<leader>test", set_keymaps[1].key)
       assert.is_function(set_keymaps[1].callback)
       assert.is_table(set_keymaps[1].opts)
     end)
 
-    it("sets up the correct callback function that calls focus_input", function()
-      -- Spy on ui.focus_input
-      local original_focus_input = ui.focus_input
-      local focus_input_called = false
-      local focus_input_opts = nil
+    it("sets up the correct callback function that calls prompt", function()
+      -- Spy on ui.prompt
+      local original_prompt = core.prompt
+      local prompt_called = false
+      local prompt_opts = nil
 
-      ui.focus_input = function(opts)
-        focus_input_called = true
-        focus_input_opts = opts
+      core.prompt = function(opts)
+        prompt_called = true
+        prompt_opts = opts
       end
 
       -- Setup the keymap
-      keymap.setup({ 
-        focus_input = "<leader>test",
-        focus_input_new_session = "<leader>testNew"
+      keymap.setup({
+        prompt = "<leader>test",
+        prompt_new_session = "<leader>testNew"
       })
 
       -- Call the first callback (continue session)
       set_keymaps[1].callback()
-      
-      -- Verify the callback called focus_input with correct opts
-      assert.is_true(focus_input_called)
-      assert.same({ new_session = false }, focus_input_opts)
-      
+
+      -- Verify the callback called prompt with correct opts
+      assert.is_true(prompt_called)
+      assert.same({ new_session = false }, prompt_opts)
+
       -- Reset and test the second callback (new session)
-      focus_input_called = false
-      focus_input_opts = nil
-      
+      prompt_called = false
+      prompt_opts = nil
+
       -- Call the second callback
       set_keymaps[2].callback()
-      
-      -- Verify the callback called focus_input with correct opts
-      assert.is_true(focus_input_called)
-      assert.same({ new_session = true }, focus_input_opts)
+
+      -- Verify the callback called prompt with correct opts
+      assert.is_true(prompt_called)
+      assert.same({ new_session = true }, prompt_opts)
 
       -- Restore original
-      ui.focus_input = original_focus_input
+      core.prompt = original_prompt
     end)
   end)
 end)

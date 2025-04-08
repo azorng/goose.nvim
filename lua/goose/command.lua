@@ -8,17 +8,8 @@ local util = require("util")
 
 local M = {}
 
-function M.build_args(options)
-  options = options or {}
-
-  local prompt = options.prompt
-  if not prompt then
-    prompt = vim.fn.input('Prompt: ')
-    if prompt == "" then
-      return nil -- User canceled
-    end
-  end
-
+function M.build_args(prompt)
+  if not prompt then return nil end
   local message = context.format_message(prompt)
   local args = { "run", "--text", message }
 
@@ -36,16 +27,16 @@ function M.build_args(options)
   return args
 end
 
-function M.execute(opts, handle_output)
-  opts = opts or {}
-  local args = M.build_args(opts)
-  if not args then
+function M.execute(prompt, handle_output)
+  if not prompt then
     return nil
   end
 
-  if state.goose_run_job then
-    state.goose_run_job:shutdown()
-  end
+  local args = M.build_args(prompt)
+
+  print(vim.inspect(args))
+
+  M.stop()
 
   state.goose_run_job = Job:new({
     command = 'goose',
@@ -65,6 +56,17 @@ function M.execute(opts, handle_output)
   })
 
   state.goose_run_job:start()
+end
+
+function M.stop()
+  if state.goose_run_job then
+    state.goose_run_job:shutdown()
+    local _handle = io.popen("kill " .. state.goose_run_job.pid)
+    if _handle ~= nil then
+      _handle:close()
+    end
+    state.goose_run_job = nil
+  end
 end
 
 return M

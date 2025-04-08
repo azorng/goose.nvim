@@ -7,7 +7,11 @@ local state = require("goose.state")
 local M = {}
 
 function M.get_current_file()
-  return vim.fn.expand('%:p')
+  local file = vim.fn.expand('%:p')
+  if not file or file == "" or vim.fn.filereadable(file) ~= 1 then
+    return nil
+  end
+  return file
 end
 
 -- Get the current visual selection
@@ -27,16 +31,12 @@ function M.get_current_selection()
 end
 
 function M.format_message(prompt)
-  local current_file = state.current_file
-
   -- Create template variables
   local template_vars = {
-    file_path = current_file ~= "" and current_file or nil,
+    file_path = state.current_file,
     prompt = prompt,
-    selection = nil
+    selection = state.selection
   }
-
-  template_vars.selection = state.selection
 
   return template.render_template(template_vars)
 end

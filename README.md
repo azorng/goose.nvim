@@ -22,6 +22,11 @@ This Neovim plugin provides a simple bridge between Neovim and the Goose AI agen
 
 - Goose CLI installed and available in your PATH
 
+## ⚡ Compatibility
+
+This plugin is compatible with Goose CLI version 1.0.17. 
+Future versions may work but are not guaranteed. If you encounter issues with newer Goose CLI versions, please report them in the issues section.
+
 ## 🔧 Setting Up Goose CLI
 
 If you're new to Goose CLI:
@@ -56,13 +61,16 @@ If you're new to Goose CLI:
         require('goose').setup({
             -- Optional custom configuration
             keymap = {
-                focus_input = '<leader>gi',        -- Focus input window (continue session)
-                focus_input_new_session = '<leader>gI', -- Focus input window (new session)
-                submit = '<CR>'                    -- Submit prompt
+                prompt = '<leader>gi',
+                prompt_new_session = '<leader>gI',
+                focus_output = '<leader>go',
+                submit_prompt = '<cr>',
+                close = '<leader>gc',
+                stop = '<leader>gs'
             },
             ui = {
-                window_width = 0.3, -- Width of the UI windows as decimal (0.3 = 30%)
-                input_height = 0.2 -- Height of the input window as decimal (0.2 = 20%)
+                window_width = 0.35, -- Width of the UI windows as decimal (0.3 = 30%)
+                input_height = 0.15 -- Height of the input window as decimal (0.2 = 20%)
             }
         })
     end,
@@ -71,8 +79,7 @@ If you're new to Goose CLI:
         {
             "MeanderingProgrammer/render-markdown.nvim",
             opts = {
-                render_modes = true,
-                anti_conceal = { enabled = true },
+                anti_conceal = { enabled = false },
             },
         }
     },
