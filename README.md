@@ -22,32 +22,6 @@ This Neovim plugin provides a simple bridge between Neovim and the Goose AI agen
 
 - Goose CLI installed and available in your PATH
 
-## ⚡ Compatibility
-
-This plugin is compatible with Goose CLI version 1.0.17. 
-Future versions may work but are not guaranteed. If you encounter issues with newer Goose CLI versions, please report them in the issues section.
-
-## 🔧 Setting Up Goose CLI
-
-If you're new to Goose CLI:
-
-1. **What is Goose CLI?** 
-   - Goose is an AI agent developed by Block (the company behind Square, Cash App, and Tidal)
-   - It offers powerful AI assistance through a command-line interface
-
-2. **Installation:**
-   - Visit [Goose's official repository](https://github.com/block/goose) for installation instructions
-   - Ensure the `goose` command is available in your PATH after installation
-
-3. **Basic Configuration:**
-   - Run `goose configure` to set up your provider and other configurations
-   - For more configuration options, refer to the [Goose Website](https://block.github.io/goose/)
-
-## ⌨️ Default Keymaps
-
-- `<leader>gi` (normal/visual mode): Open Goose input window continuing previous session
-- `<leader>gI` (normal/visual mode): Open Goose input window starting a new session
-- `<CR>` (in input window): Submit prompt to Goose
 
 ## 🚀 Installation & Configuration
 
@@ -85,3 +59,24 @@ If you're new to Goose CLI:
     },
 }
 ```
+
+## ⚡ Compatibility
+
+This plugin is compatible with Goose CLI version 1.0.17. 
+Future versions may work but are not guaranteed. If you encounter issues with newer Goose CLI versions, please report them in the issues section.
+
+## 🔧 Setting Up Goose CLI
+
+If you're new to Goose CLI:
+
+1. **What is Goose CLI?** 
+   - Goose is an AI agent developed by Block (the company behind Square, Cash App, and Tidal)
+   - It offers powerful AI assistance through a command-line interface
+
+2. **Installation:**
+   - Visit [Goose's official repository](https://github.com/block/goose) for installation instructions
+   - Ensure the `goose` command is available in your PATH after installation
+
+3. **Basic Configuration:**
+   - Run `goose configure` to set up your provider and other configurations
+   - For more configuration options, refer to the [Goose Website](https://block.github.io/goose/)
