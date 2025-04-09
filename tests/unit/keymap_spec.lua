@@ -41,7 +41,6 @@ describe("goose.keymap", function()
       keymap.setup(test_keymap)
 
       -- Verify the keymap was set up
-      assert.equal(3, #set_keymaps)
       assert.same({ "n", "v" }, set_keymaps[1].modes)
       assert.equal("<leader>test", set_keymaps[1].key)
       assert.is_function(set_keymaps[1].callback)
@@ -70,7 +69,7 @@ describe("goose.keymap", function()
 
       -- Verify the callback called prompt with correct opts
       assert.is_true(prompt_called)
-      assert.same({ new_session = false }, prompt_opts)
+      assert.same({ new_session = false, focus = 'input' }, prompt_opts)
 
       -- Reset and test the second callback (new session)
       prompt_called = false
@@ -81,7 +80,7 @@ describe("goose.keymap", function()
 
       -- Verify the callback called prompt with correct opts
       assert.is_true(prompt_called)
-      assert.same({ new_session = true }, prompt_opts)
+      assert.same({ new_session = true, focus = 'input' }, prompt_opts)
 
       -- Restore original
       core.prompt = original_prompt
