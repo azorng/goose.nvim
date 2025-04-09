@@ -46,7 +46,7 @@ describe("goose.command", function()
 
   it("builds a command with the provided prompt", function()
     local prompt = "Help me understand this code"
-    local args = command.build_args({ prompt = prompt })
+    local args = command.build_args(prompt)
 
     -- Check basic components are in the args table
     assert.is_not_nil(args)
@@ -74,7 +74,7 @@ describe("goose.command", function()
     state.active_session = test_session
 
     local prompt = "Help me understand this code"
-    local args = command.build_args({ prompt = prompt })
+    local args = command.build_args(prompt)
 
     -- Find the "--name" argument and check value
     local name_index = nil
@@ -99,7 +99,7 @@ describe("goose.command", function()
     state.new_session_name = nil
 
     local prompt = "Help me understand this code"
-    local args = command.build_args({ prompt = prompt })
+    local args = command.build_args(prompt)
 
     -- Should not have "--resume" flag
     local resume_found = false

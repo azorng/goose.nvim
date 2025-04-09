@@ -1,11 +1,7 @@
 local M = {}
 
-local window_configurator = require("goose.ui.window_config")
 local config = require("goose.config").get()
 local state = require("goose.state")
-local output = require("goose.ui.output")
-local session = require("goose.session")
-local context = require("goose.context")
 
 local function open_win(buf, opts)
   local base_opts = {
@@ -19,10 +15,39 @@ local function open_win(buf, opts)
   return vim.api.nvim_open_win(buf, false, opts)
 end
 
+function M.close_windows(windows)
+  if not windows then return end
+
+  -- Stop any running animation timers
+  local renderer = require('goose.ui.output_renderer')
+  if renderer._animation and renderer._animation.timer then
+    pcall(vim.fn.timer_stop, renderer._animation.timer)
+    renderer._animation.timer = nil
+  end
+  if renderer._refresh_timer then
+    pcall(vim.fn.timer_stop, renderer._refresh_timer)
+    renderer._refresh_timer = nil
+  end
+
+  -- Clear autocmd groups
+  pcall(vim.api.nvim_del_augroup_by_name, 'GooseResize')
+  pcall(vim.api.nvim_del_augroup_by_name, 'GooseWindows')
+
+  -- Close windows and delete buffers
+  pcall(vim.api.nvim_win_close, windows.input_win, true)
+  pcall(vim.api.nvim_win_close, windows.output_win, true)
+  pcall(vim.api.nvim_buf_delete, windows.input_buf, { force = true })
+  pcall(vim.api.nvim_buf_delete, windows.output_buf, { force = true })
+  state.windows = nil
+end
+
 function M.create_windows()
   -- Create new buffers
   local input_buf = vim.api.nvim_create_buf(false, true)
   local output_buf = vim.api.nvim_create_buf(false, true)
+
+  -- Make sure highlights are set up
+  require('goose.ui.highlight').setup()
 
   -- Calculate window dimensions
   local total_width = vim.api.nvim_get_option('columns')
@@ -54,36 +79,66 @@ function M.create_windows()
     output_win = output_win
   }
 
-  window_configurator.setup_options(windows)
-  window_configurator.setup_placeholder(windows)
-  window_configurator.setup_autocmds(windows)
-  window_configurator.setup_resize_handler(windows)
-  window_configurator.setup_keymaps(windows)
-  state.windows = windows
+  local configurator = require("goose.ui.window_config")
+  configurator.setup_options(windows)
+  configurator.setup_placeholder(windows)
+  configurator.setup_autocmds(windows)
+  configurator.setup_resize_handler(windows)
+  configurator.setup_keymaps(windows)
 
   return windows
 end
 
-function M.focus_input(opts)
+function M.focus_input()
+  local windows = state.windows
+  vim.api.nvim_set_current_win(windows.input_win)
+  vim.cmd(':RenderMarkdown')
+  vim.cmd('startinsert')
+end
+
+function M.focus_output()
+  local windows = state.windows
+  vim.api.nvim_set_current_win(windows.output_win)
+  vim.cmd(':RenderMarkdown')
+end
+
+function M.clear_output()
   local windows = state.windows
 
-  if windows == nil then
-    windows = M.create_windows()
+  -- Clear any extmarks/namespaces first
+  local ns_id = vim.api.nvim_create_namespace('loading_animation')
+  vim.api.nvim_buf_clear_namespace(windows.output_buf, ns_id, 0, -1)
+
+  -- Stop any running timers in the output module
+  local renderer = require('goose.ui.output_renderer')
+  if renderer._animation.timer then
+    pcall(vim.fn.timer_stop, renderer._animation.timer)
+    renderer._animation.timer = nil
+  end
+  if renderer._refresh_timer then
+    pcall(vim.fn.timer_stop, renderer._refresh_timer)
+    renderer._refresh_timer = nil
   end
 
-  if opts.new_session then
-    state.active_session = nil
-    vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', true)
-    vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, {})
-    vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
-  else
-    state.active_session = session.get_last_workspace_session()
-    output.render(windows)
-  end
+  -- Reset animation state
+  renderer._animation.loading_line = nil
 
-  state.current_file = context.get_current_file()
-  state.selection = context.get_current_selection()
-  vim.api.nvim_set_current_win(windows.input_win)
+  -- Clear cache to force refresh on next render
+  renderer._cache = {
+    last_modified = 0,
+    output_lines = nil,
+    session_path = nil,
+    check_counter = 0
+  }
+
+  -- Clear all buffer content
+  vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', true)
+  vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, {})
+  vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
+end
+
+function M.render_output()
+  require('goose.ui.output_renderer').render(state.windows)
 end
 
 return M

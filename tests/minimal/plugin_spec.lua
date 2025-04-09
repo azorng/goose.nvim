@@ -24,12 +24,12 @@ describe("goose.nvim plugin", function()
     -- Setup with custom config matching new structure
     goose.setup({
       keymap = {
-        focus_input = "<leader>test"
+        prompt = "<leader>test"
       }
     })
 
     -- Check that config was set correctly
     local config = require("goose.config")
-    assert.equal("<leader>test", config.get("keymap").focus_input)
+    assert.equal("<leader>test", config.get("keymap").prompt)
   end)
 end)
