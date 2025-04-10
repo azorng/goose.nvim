@@ -1,6 +1,6 @@
 # 🪿 goose.nvim
 
-> seamless neovim integration with goose CLI - work with a powerful AI agent without leaving your editor
+> seamless neovim integration with goose - work with a powerful AI agent without leaving your editor
 
 <div align="center">
 
@@ -12,7 +12,7 @@
 
 ## ✨ Description
 
-This Neovim plugin provides a simple bridge between Neovim and the Goose AI agent CLI. It runs Goose commands with appropriate context from the editor, bringing AI assistant capabilities directly into Neovim similar to what tools like Cursor AI offer. Work with a powerful AI agent without leaving your editor.
+This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing editor context (current file, selections) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer. 
 
 ## ⚠️ Early Development Stage
 
