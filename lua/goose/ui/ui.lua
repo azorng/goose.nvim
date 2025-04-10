@@ -127,8 +127,12 @@ function M.clear_output()
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
 end
 
-function M.render_output(force_refresh)
-  renderer.render(state.windows, force_refresh or false)
+function M.render_output()
+  renderer.render(state.windows, false)
+end
+
+function M.stop_render_output()
+  renderer.stop()
 end
 
 return M

@@ -105,6 +105,7 @@ M._refresh_timer = nil
 function M._start_content_refresh_timer(windows)
   if M._refresh_timer then
     pcall(vim.fn.timer_stop, M._refresh_timer)
+    M._refresh_timer = nil
   end
 
   M._refresh_timer = vim.fn.timer_start(300, function()
@@ -134,6 +135,7 @@ function M._animate_loading(windows)
   local function start_animation_timer()
     if M._animation.timer then
       pcall(vim.fn.timer_stop, M._animation.timer)
+      M._animation.timer = nil
     end
 
     M._animation.timer = vim.fn.timer_start(math.floor(1000 / M._animation.fps), function()
@@ -151,43 +153,41 @@ function M._animate_loading(windows)
     end)
   end
 
-  if not M._refresh_timer and state.goose_run_job then
-    M._start_content_refresh_timer(windows)
-  end
+  M._start_content_refresh_timer(windows)
 
   start_animation_timer()
 end
 
 function M.render(windows, force_refresh)
-  if not state.active_session and not state.new_session_name then
-    return
-  end
-
-  if not force_refresh and state.goose_run_job and M._animation.loading_line then
-    if M._update_loading_animation(windows) then
+  local function render()
+    if not state.active_session and not state.new_session_name then
       return
     end
-  end
 
-  local output_lines = M._read_session(force_refresh)
-  local is_new_session = state.new_session_name ~= nil
+    if not force_refresh and state.goose_run_job and M._animation.loading_line then
+      return
+    end
 
-  if not output_lines then
-    if is_new_session then
-      output_lines = formatter.session_title(LABELS.NEW_SESSION_TITLE)
+    local output_lines = M._read_session(force_refresh)
+    local is_new_session = state.new_session_name ~= nil
+
+    if not output_lines then
+      if is_new_session then
+        output_lines = formatter.session_title(LABELS.NEW_SESSION_TITLE)
+      else
+        return
+      end
     else
-      return
+      state.new_session_name = nil
     end
-  else
-    state.new_session_name = nil
+
+    M.handle_loading(windows, output_lines)
+
+    M.write_output(windows, output_lines)
+
+    M.handle_auto_scroll(windows)
   end
-
-  M.handle_loading(windows, output_lines)
-
-  M.write_output(windows, output_lines)
-
-  M.handle_auto_scroll(windows)
-
+  render()
   M.render_markdown()
 end
 
@@ -196,6 +196,7 @@ function M.stop()
     pcall(vim.fn.timer_stop, M._animation.timer)
     M._animation.timer = nil
   end
+
   if M._refresh_timer then
     pcall(vim.fn.timer_stop, M._refresh_timer)
     M._refresh_timer = nil
@@ -225,9 +226,9 @@ function M.handle_loading(windows, output_lines)
 
     M._animation.loading_line = #output_lines - 1
 
-    if not M._animation.timer and not M._refresh_timer then
-      M._animate_loading(windows)
-    end
+    -- Always ensure animation is running when there's an active job
+    -- This is the key fix - we always start animation for an active job
+    M._animate_loading(windows)
 
     vim.schedule(function()
       M._update_loading_animation(windows)
