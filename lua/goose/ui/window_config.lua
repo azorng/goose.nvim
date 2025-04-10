@@ -8,6 +8,7 @@ function M.setup_options(windows)
   -- Input window/buffer options
   vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
   vim.api.nvim_win_set_option(windows.input_win, 'signcolumn', 'yes')
+  vim.api.nvim_win_set_option(windows.input_win, 'cursorline', false)
   vim.api.nvim_buf_set_option(windows.input_buf, 'buftype', 'nofile')
   vim.api.nvim_buf_set_option(windows.input_buf, 'swapfile', false)
   vim.b[windows.input_buf].completion = false
@@ -26,7 +27,6 @@ function M.setup_placeholder(windows)
     virt_text = { { INPUT_PLACEHOLDER, 'Comment' } },
     virt_text_pos = 'overlay',
   })
-  vim.api.nvim_win_set_option(windows.input_win, 'cursorline', false)
 end
 
 function M.setup_autocmds(windows)
@@ -55,7 +55,6 @@ function M.setup_autocmds(windows)
         M.setup_placeholder(windows)
       else
         vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
-        vim.api.nvim_win_set_option(windows.input_win, 'cursorline', true)
       end
     end
   })
