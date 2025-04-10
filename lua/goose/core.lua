@@ -4,7 +4,7 @@ local context = require("goose.context")
 local session = require("goose.session")
 local ui = require("goose.ui.ui")
 
-function M.prompt(opts)
+function M.open(opts)
   if state.windows == nil then
     state.windows = ui.create_windows()
   end
@@ -29,9 +29,25 @@ function M.prompt(opts)
   end
 end
 
-function M.run(prompt)
-  require('goose.command').execute(prompt, function()
-    -- for new sessions, a session is created after the command execution - load it once
+function M.run(prompt, opts)
+  opts = opts or {}
+
+  -- Reset active session if specified
+  if opts.new_session then
+    state.active_session = nil
+  end
+
+  -- Create UI if needed
+  if state.windows == nil and opts.ensure_ui then
+    M.open({
+      new_session = opts.new_session,
+      focus = opts.focus or "output"
+    })
+  elseif opts.new_session and state.windows then
+    ui.clear_output()
+  end
+
+  require('goose.job').execute(prompt, function()
     if not state.active_session and state.new_session_name then
       state.active_session = session.get_by_name(state.new_session_name)
     end
@@ -43,7 +59,7 @@ function M.run(prompt)
 end
 
 function M.stop()
-  require('goose.command').stop()
+  require('goose.job').stop()
 end
 
 return M

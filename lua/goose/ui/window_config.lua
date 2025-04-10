@@ -1,18 +1,23 @@
 local M = {}
 
-local INPUT_PLACEHOLDER = 'Ask anything...'
+local INPUT_PLACEHOLDER = 'Plan, search, build anything'
 local config = require("goose.config").get()
+local state = require("goose.state")
 
 function M.setup_options(windows)
   -- Input window/buffer options
   vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
   vim.api.nvim_win_set_option(windows.input_win, 'signcolumn', 'yes')
+  vim.api.nvim_buf_set_option(windows.input_buf, 'buftype', 'nofile')
+  vim.api.nvim_buf_set_option(windows.input_buf, 'swapfile', false)
   vim.b[windows.input_buf].completion = false
 
   -- Output window/buffer options
   vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
   vim.api.nvim_buf_set_option(windows.output_buf, 'filetype', 'markdown')
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
+  vim.api.nvim_buf_set_option(windows.output_buf, 'buftype', 'nofile')
+  vim.api.nvim_buf_set_option(windows.output_buf, 'swapfile', false)
 end
 
 function M.setup_placeholder(windows)
@@ -45,6 +50,7 @@ function M.setup_autocmds(windows)
     buffer = windows.input_buf,
     callback = function()
       local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+      state.prompt = lines
       if #lines == 1 and lines[1] == "" then
         M.setup_placeholder(windows)
       else
@@ -102,6 +108,15 @@ function M.setup_resize_handler(windows)
   })
 end
 
+local function recover_input(windows)
+  local input_content = state.prompt
+  vim.api.nvim_buf_set_lines(windows.input_buf, 0, -1, false, input_content)
+end
+
+function M.setup_after_actions(windows)
+  recover_input(windows)
+end
+
 local function handle_submit(windows)
   local input_content = table.concat(vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false), '\n')
   vim.api.nvim_buf_set_lines(windows.input_buf, 0, -1, false, {})
@@ -126,10 +141,10 @@ function M.setup_keymaps(windows)
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
-  vim.keymap.set('n', '<esc>', function()
+  vim.keymap.set('n', config.keymap.close_when_focused, function()
     require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.input_buf, silent = true })
-  vim.keymap.set('n', '<esc>', function()
+  vim.keymap.set('n', config.keymap.close_when_focused, function()
     require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.output_buf, silent = true })
 end

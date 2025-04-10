@@ -23,6 +23,12 @@ M._animation = {
   fps = 10,
 }
 
+function M.render_markdown()
+  if vim.fn.exists(":RenderMarkdown") > 0 then
+    vim.cmd(':RenderMarkdown')
+  end
+end
+
 function M._should_refresh_content()
   if not state.active_session then return true end
 
@@ -41,8 +47,11 @@ function M._should_refresh_content()
   if state.goose_run_job then
     M._cache.check_counter = (M._cache.check_counter + 1) % 3
     if M._cache.check_counter == 0 then
-      M._cache.last_modified = stat.mtime.sec
-      return true
+      local has_file_changed = stat.mtime.sec > M._cache.last_modified
+      if has_file_changed then
+        M._cache.last_modified = stat.mtime.sec
+        return true
+      end
     end
   end
 
@@ -75,16 +84,13 @@ function M._update_loading_animation(windows)
     return false
   end
 
-  -- Use extmarks to update the loading indicator text without modifying the buffer
   local zero_index = M._animation.loading_line - 1
   local loading_text = LABELS.GENERATING_RESPONSE .. " " ..
       M._animation.frames[M._animation.current_frame]
 
-  -- Use a virtual text overlay that replaces the entire line
   local ns_id = vim.api.nvim_create_namespace('loading_animation')
   vim.api.nvim_buf_clear_namespace(windows.output_buf, ns_id, zero_index, zero_index + 1)
 
-  -- Update just the loading text using virtual text
   vim.api.nvim_buf_set_extmark(windows.output_buf, ns_id, zero_index, 0, {
     virt_text = { { loading_text, "Comment" } },
     virt_text_pos = "overlay",
@@ -94,7 +100,6 @@ function M._update_loading_animation(windows)
   return true
 end
 
--- Separate timers for animation and content refresh
 M._refresh_timer = nil
 
 function M._start_content_refresh_timer(windows)
@@ -102,21 +107,16 @@ function M._start_content_refresh_timer(windows)
     pcall(vim.fn.timer_stop, M._refresh_timer)
   end
 
-  -- Check for updates every 300ms - less frequently than animation
   M._refresh_timer = vim.fn.timer_start(300, function()
-    -- Check if we need to refresh content
     if state.goose_run_job then
       if M._should_refresh_content() then
-        -- If content has changed, do a full render but preserve the animation
         vim.schedule(function()
-          -- Force a refresh of the session content but don't re-render the animation
           local current_frame = M._animation.current_frame
           M.render(windows, true)
-          M._animation.current_frame = current_frame -- Keep the animation in sync
+          M._animation.current_frame = current_frame
         end)
       end
 
-      -- Continue checking
       if state.goose_run_job then
         M._start_content_refresh_timer(windows)
       end
@@ -131,22 +131,18 @@ function M._start_content_refresh_timer(windows)
 end
 
 function M._animate_loading(windows)
-  -- Simplify the animation approach to avoid issues with timers
   local function start_animation_timer()
     if M._animation.timer then
       pcall(vim.fn.timer_stop, M._animation.timer)
     end
 
     M._animation.timer = vim.fn.timer_start(math.floor(1000 / M._animation.fps), function()
-      -- Update the animation frame
       M._animation.current_frame = (M._animation.current_frame % #M._animation.frames) + 1
 
-      -- Schedule the UI update
       vim.schedule(function()
         M._update_loading_animation(windows)
       end)
 
-      -- If we're still running, continue the animation
       if state.goose_run_job then
         start_animation_timer()
       else
@@ -155,12 +151,10 @@ function M._animate_loading(windows)
     end)
   end
 
-  -- Start content refresh timer if needed
   if not M._refresh_timer and state.goose_run_job then
     M._start_content_refresh_timer(windows)
   end
 
-  -- Start the animation
   start_animation_timer()
 end
 
@@ -169,7 +163,6 @@ function M.render(windows, force_refresh)
     return
   end
 
-  -- If we're just updating the animation frame and not doing a full refresh, use the lightweight update
   if not force_refresh and state.goose_run_job and M._animation.loading_line then
     if M._update_loading_animation(windows) then
       return
@@ -189,6 +182,35 @@ function M.render(windows, force_refresh)
     state.new_session_name = nil
   end
 
+  M.handle_loading(windows, output_lines)
+
+  M.write_output(windows, output_lines)
+
+  M.handle_auto_scroll(windows)
+
+  M.render_markdown()
+end
+
+function M.stop()
+  if M._animation and M._animation.timer then
+    pcall(vim.fn.timer_stop, M._animation.timer)
+    M._animation.timer = nil
+  end
+  if M._refresh_timer then
+    pcall(vim.fn.timer_stop, M._refresh_timer)
+    M._refresh_timer = nil
+  end
+
+  M._animation.loading_line = nil
+  M._cache = {
+    last_modified = 0,
+    output_lines = nil,
+    session_path = nil,
+    check_counter = 0
+  }
+end
+
+function M.handle_loading(windows, output_lines)
   if state.goose_run_job then
     if #output_lines > 2 then
       for _, line in ipairs(formatter.separator) do
@@ -203,20 +225,16 @@ function M.render(windows, force_refresh)
 
     M._animation.loading_line = #output_lines - 1
 
-    -- Start animation with the separated timer approach
     if not M._animation.timer and not M._refresh_timer then
       M._animate_loading(windows)
     end
 
-    -- Trigger an immediate update of the loading animation
     vim.schedule(function()
       M._update_loading_animation(windows)
     end)
   else
-    -- Clean up both timers when job is done
     M._animation.loading_line = nil
 
-    -- Clear any loading animation extmarks
     local ns_id = vim.api.nvim_create_namespace('loading_animation')
     vim.api.nvim_buf_clear_namespace(windows.output_buf, ns_id, 0, -1)
 
@@ -230,30 +248,24 @@ function M.render(windows, force_refresh)
       M._refresh_timer = nil
     end
   end
+end
 
+function M.write_output(windows, output_lines)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, output_lines)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
-  vim.api.nvim_buf_set_option(windows.output_buf, 'buftype', 'nofile')
-  vim.api.nvim_buf_set_option(windows.output_buf, 'filetype', 'markdown')
-  vim.api.nvim_buf_set_option(windows.output_buf, 'swapfile', false)
+end
 
+function M.handle_auto_scroll(windows)
   local line_count = vim.api.nvim_buf_line_count(windows.output_buf)
-
-  -- Get the current topline (first visible line) and botline (last visible line)
-  local topline = vim.fn.line('w0', windows.output_win)
   local botline = vim.fn.line('w$', windows.output_win)
 
-  -- Store the previous total line count
   local prev_line_count = vim.b[windows.output_buf].prev_line_count or 0
   vim.b[windows.output_buf].prev_line_count = line_count
 
-  -- Check if user was already viewing the bottom
   local was_at_bottom = (botline >= prev_line_count) or prev_line_count == 0
 
-  -- Only auto-scroll if we were already at the bottom
   if was_at_bottom then
-    -- Scroll to bottom
     vim.api.nvim_win_set_cursor(windows.output_win, { line_count, 0 })
   end
 end

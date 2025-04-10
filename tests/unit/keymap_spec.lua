@@ -2,20 +2,25 @@
 -- Tests for the keymap module
 
 local keymap = require("goose.keymap")
-local core = require("goose.core")
 
 describe("goose.keymap", function()
   -- Keep track of set keymaps to verify
   local set_keymaps = {}
+  
+  -- Track vim.cmd calls
+  local cmd_calls = {}
 
-  -- Mock vim.keymap.set for testing
+  -- Mock vim.keymap.set and vim.cmd for testing
   local original_keymap_set
+  local original_vim_cmd
 
   before_each(function()
     set_keymaps = {}
+    cmd_calls = {}
     original_keymap_set = vim.keymap.set
+    original_vim_cmd = vim.cmd
 
-    -- Mock the function to capture calls
+    -- Mock the functions to capture calls
     vim.keymap.set = function(modes, key, callback, opts)
       table.insert(set_keymaps, {
         modes = modes,
@@ -24,18 +29,23 @@ describe("goose.keymap", function()
         opts = opts
       })
     end
+    
+    vim.cmd = function(command)
+      table.insert(cmd_calls, command)
+    end
   end)
 
   after_each(function()
-    -- Restore original function
+    -- Restore original functions
     vim.keymap.set = original_keymap_set
+    vim.cmd = original_vim_cmd
   end)
 
   describe("setup", function()
     it("sets up keymap with the configured keys", function()
       local test_keymap = {
-        prompt = "<leader>test",
-        prompt_new_session = "<leader>testNew"
+        open_input = "<leader>test",
+        open_input_new_session = "<leader>testNew"
       }
 
       keymap.setup(test_keymap)
@@ -47,43 +57,35 @@ describe("goose.keymap", function()
       assert.is_table(set_keymaps[1].opts)
     end)
 
-    it("sets up the correct callback function that calls prompt", function()
-      -- Spy on ui.prompt
-      local original_prompt = core.prompt
-      local prompt_called = false
-      local prompt_opts = nil
-
-      core.prompt = function(opts)
-        prompt_called = true
-        prompt_opts = opts
-      end
-
+    it("sets up callbacks that execute the correct commands", function()
       -- Setup the keymap
       keymap.setup({
-        prompt = "<leader>test",
-        prompt_new_session = "<leader>testNew"
+        open_input = "<leader>test",
+        open_input_new_session = "<leader>testNew",
+        open_output = "<leader>out",
+        close = "<leader>close",
+        stop = "<leader>stop"
       })
 
       -- Call the first callback (continue session)
       set_keymaps[1].callback()
+      assert.equal("GooseOpenInput", cmd_calls[1])
 
-      -- Verify the callback called prompt with correct opts
-      assert.is_true(prompt_called)
-      assert.same({ new_session = false, focus = 'input' }, prompt_opts)
-
-      -- Reset and test the second callback (new session)
-      prompt_called = false
-      prompt_opts = nil
-
-      -- Call the second callback
+      -- Call the second callback (new session)
       set_keymaps[2].callback()
-
-      -- Verify the callback called prompt with correct opts
-      assert.is_true(prompt_called)
-      assert.same({ new_session = true, focus = 'input' }, prompt_opts)
-
-      -- Restore original
-      core.prompt = original_prompt
+      assert.equal("GooseOpenInputNewSession", cmd_calls[2])
+      
+      -- Call the third callback (open output)
+      set_keymaps[3].callback()
+      assert.equal("GooseOpenOutput", cmd_calls[3])
+      
+      -- Call the fourth callback (close)
+      set_keymaps[4].callback()
+      assert.equal("GooseClose", cmd_calls[4])
+      
+      -- Call the fifth callback (stop)
+      set_keymaps[5].callback()
+      assert.equal("GooseStop", cmd_calls[5])
     end)
   end)
 end)

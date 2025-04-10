@@ -1,5 +1,5 @@
--- goose.nvim/lua/goose/command.lua
--- Contains core command execution logic
+-- goose.nvim/lua/goose/job.lua
+-- Contains goose job execution logic
 
 local context = require("goose.context")
 local state = require("goose.state")
