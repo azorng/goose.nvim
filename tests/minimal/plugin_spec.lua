@@ -11,11 +11,11 @@ describe("goose.nvim plugin", function()
     assert.is_function(goose.setup, "setup function should be available")
 
     -- We don't check for goose_command anymore as it's been removed
-    -- Instead test the new command module
-    local command = require("goose.command")
-    assert.truthy(command, "command module should be loaded")
-    assert.is_function(command.build_args, "build_args function should be available")
-    assert.is_function(command.execute, "execute function should be available")
+    -- Instead test the job module
+    local job = require("goose.job")
+    assert.truthy(job, "job module should be loaded")
+    assert.is_function(job.build_args, "build_args function should be available")
+    assert.is_function(job.execute, "execute function should be available")
   end)
 
   it("can be set up with custom config", function()

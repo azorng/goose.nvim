@@ -2,6 +2,7 @@ local M = {}
 
 local config = require("goose.config").get()
 local state = require("goose.state")
+local renderer = require('goose.ui.output_renderer')
 
 local function open_win(buf, opts)
   local base_opts = {
@@ -18,16 +19,7 @@ end
 function M.close_windows(windows)
   if not windows then return end
 
-  -- Stop any running animation timers
-  local renderer = require('goose.ui.output_renderer')
-  if renderer._animation and renderer._animation.timer then
-    pcall(vim.fn.timer_stop, renderer._animation.timer)
-    renderer._animation.timer = nil
-  end
-  if renderer._refresh_timer then
-    pcall(vim.fn.timer_stop, renderer._refresh_timer)
-    renderer._refresh_timer = nil
-  end
+  renderer.stop()
 
   -- Clear autocmd groups
   pcall(vim.api.nvim_del_augroup_by_name, 'GooseResize')
@@ -85,6 +77,7 @@ function M.create_windows()
   configurator.setup_autocmds(windows)
   configurator.setup_resize_handler(windows)
   configurator.setup_keymaps(windows)
+  configurator.setup_after_actions(windows)
 
   return windows
 end
@@ -92,14 +85,12 @@ end
 function M.focus_input()
   local windows = state.windows
   vim.api.nvim_set_current_win(windows.input_win)
-  vim.cmd(':RenderMarkdown')
   vim.cmd('startinsert')
 end
 
 function M.focus_output()
   local windows = state.windows
   vim.api.nvim_set_current_win(windows.output_win)
-  vim.cmd(':RenderMarkdown')
 end
 
 function M.clear_output()
@@ -110,7 +101,6 @@ function M.clear_output()
   vim.api.nvim_buf_clear_namespace(windows.output_buf, ns_id, 0, -1)
 
   -- Stop any running timers in the output module
-  local renderer = require('goose.ui.output_renderer')
   if renderer._animation.timer then
     pcall(vim.fn.timer_stop, renderer._animation.timer)
     renderer._animation.timer = nil
@@ -138,7 +128,11 @@ function M.clear_output()
 end
 
 function M.render_output()
-  require('goose.ui.output_renderer').render(state.windows)
+  renderer.render(state.windows, false)
+end
+
+function M.stop_render_output()
+  renderer.stop()
 end
 
 return M

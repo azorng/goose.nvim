@@ -5,11 +5,12 @@ local M = {}
 -- Default configuration
 M.defaults = {
   keymap = {
-    prompt = '<leader>gi',
-    prompt_new_session = '<leader>gI',
-    focus_output = '<leader>go',
+    open_input = '<leader>gi',
+    open_input_new_session = '<leader>gI',
+    open_output = '<leader>go',
     submit_prompt = '<cr>',
     close = '<leader>gc',
+    close_when_focused = '<esc>',
     stop = '<leader>gs'
   },
   ui = {

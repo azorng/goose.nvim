@@ -1,10 +1,10 @@
-local command = require("goose.command")
+local job = require("goose.job")
 local config = require("goose.config")
 local state = require("goose.state")
 local Job = require('plenary.job')
 local helpers = require("tests.helpers")
 
-describe("goose.command", function()
+describe("goose.job", function()
   local test_file, buf_id
   local original_config
   local original_state
@@ -46,7 +46,7 @@ describe("goose.command", function()
 
   it("builds a command with the provided prompt", function()
     local prompt = "Help me understand this code"
-    local args = command.build_args(prompt)
+    local args = job.build_args(prompt)
 
     -- Check basic components are in the args table
     assert.is_not_nil(args)
@@ -74,7 +74,7 @@ describe("goose.command", function()
     state.active_session = test_session
 
     local prompt = "Help me understand this code"
-    local args = command.build_args(prompt)
+    local args = job.build_args(prompt)
 
     -- Find the "--name" argument and check value
     local name_index = nil
@@ -99,7 +99,7 @@ describe("goose.command", function()
     state.new_session_name = nil
 
     local prompt = "Help me understand this code"
-    local args = command.build_args(prompt)
+    local args = job.build_args(prompt)
 
     -- Should not have "--resume" flag
     local resume_found = false

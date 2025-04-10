@@ -1,5 +1,5 @@
--- goose.nvim/lua/goose/command.lua
--- Contains core command execution logic
+-- goose.nvim/lua/goose/job.lua
+-- Contains goose job execution logic
 
 local context = require("goose.context")
 local state = require("goose.state")
@@ -33,10 +33,6 @@ function M.execute(prompt, handle_output)
   end
 
   local args = M.build_args(prompt)
-
-  print(vim.inspect(args))
-
-  M.stop()
 
   state.goose_run_job = Job:new({
     command = 'goose',
