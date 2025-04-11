@@ -112,7 +112,7 @@ end
 function M._format_context(lines, type, value)
   if not type or not value then return end
   table.insert(lines, '')
-  local formatted_action = '**' .. type .. '** ` ' .. value .. ' `'
+  local formatted_action = ' **' .. type .. '** ` ' .. value .. ' `'
   table.insert(lines, formatted_action)
 end
 
@@ -122,20 +122,20 @@ function M._format_tool(lines, part)
 
 
   if tool.name == 'developer__shell' then
-    M._format_context(lines, '⚡run', tool.arguments.command)
+    M._format_context(lines, '🚀 run', tool.arguments.command)
   elseif tool.name == 'developer__text_editor' then
     local path = tool.arguments.path
     local file_name = vim.fn.fnamemodify(path, ":t")
 
     if tool.arguments.command == 'str_replace' or tool.arguments.command == 'write' then
-      M._format_context(lines, '✏️write to', file_name)
+      M._format_context(lines, '✏️ write to', file_name)
     elseif tool.arguments.command == 'view' then
-      M._format_context(lines, '👁️view', file_name)
+      M._format_context(lines, '👀 view', file_name)
     else
-      M._format_context(lines, '✨command', tool.arguments.command)
+      M._format_context(lines, '✨ command', tool.arguments.command)
     end
   else
-    M._format_context(lines, '🔧tool', tool.name)
+    M._format_context(lines, '🔧 tool', tool.name)
   end
 end
 
