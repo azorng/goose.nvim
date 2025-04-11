@@ -27,7 +27,7 @@ function M.build_args(prompt)
   return args
 end
 
-function M.execute(prompt, handle_output)
+function M.execute(prompt, handle_output, handle_err)
   if not prompt then
     return nil
   end
@@ -37,10 +37,17 @@ function M.execute(prompt, handle_output)
   state.goose_run_job = Job:new({
     command = 'goose',
     args = args,
-    on_stdout = function(_, output)
-      if output then
+    on_stdout = function(_, out)
+      if out then
         vim.schedule(function()
-          handle_output(output)
+          handle_output(out)
+        end)
+      end
+    end,
+    on_stderr = function(_, out)
+      if out then
+        vim.schedule(function()
+          handle_err(out)
         end)
       end
     end,

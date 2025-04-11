@@ -6,6 +6,8 @@ local ui = require("goose.ui.ui")
 local job = require('goose.job')
 
 function M.open(opts)
+  if not M.goose_ok() then return end
+
   if state.windows == nil then
     state.windows = ui.create_windows()
   end
@@ -28,6 +30,8 @@ function M.open(opts)
 end
 
 function M.run(prompt, opts)
+  if not M.goose_ok() then return end
+
   M.stop()
 
   opts = opts or {}
@@ -38,12 +42,22 @@ function M.run(prompt, opts)
 
   -- Add small delay to ensure stop is complete
   vim.defer_fn(function()
-    job.execute(prompt, function()
-      -- for new sessions, session data can only be retrieved after running the command, retrieve once
-      if not state.active_session and state.new_session_name then
-        state.active_session = session.get_by_name(state.new_session_name)
+    job.execute(prompt,
+      function(out) -- stdout
+        -- for new sessions, session data can only be retrieved after running the command, retrieve once
+        if not state.active_session and state.new_session_name then
+          state.active_session = session.get_by_name(state.new_session_name)
+        end
+      end,
+      function(err) -- stderr
+        vim.notify(
+          err,
+          vim.log.levels.ERROR
+        )
+
+        ui.close_windows(state.windows)
       end
-    end)
+    )
 
     context.reset()
 
@@ -59,6 +73,17 @@ function M.stop()
     ui.stop_render_output()
     ui.render_output()
   end
+end
+
+function M.goose_ok()
+  if vim.fn.executable('goose') == 0 then
+    vim.notify(
+      "goose command not found - please install and configure goose before using this plugin",
+      vim.log.levels.ERROR
+    )
+    return false
+  end
+  return true
 end
 
 return M

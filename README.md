@@ -114,7 +114,7 @@ If you're new to Goose CLI:
    - It offers powerful AI assistance through a command-line interface
 
 2. **Installation:**
-   - Visit [Goose's official repository](https://github.com/block/goose) for installation instructions
+   - Visit [Install Goose](https://block.github.io/goose/docs/getting-started/installation/) for installation instructions
    - Ensure the `goose` command is available after installation
 
 3. **Configuration:**
