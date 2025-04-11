@@ -56,11 +56,11 @@ end
 
 function M.stop()
   if state.goose_run_job then
-    state.goose_run_job:shutdown()
-    local _handle = io.popen("kill " .. state.goose_run_job.pid)
-    if _handle ~= nil then
-      _handle:close()
-    end
+    pcall(function()
+      vim.uv.process_kill(state.goose_run_job.handle)
+      state.goose_run_job:shutdown()
+    end)
+
     state.goose_run_job = nil
   end
 end

@@ -4,6 +4,17 @@ local INPUT_PLACEHOLDER = 'Plan, search, build anything'
 local config = require("goose.config").get()
 local state = require("goose.state")
 
+M.base_window_opts = {
+  relative = 'editor',
+  style = 'minimal',
+  border = 'rounded',
+  zindex = 100,
+  width = 1,
+  height = 1,
+  col = 0,
+  row = 0
+}
+
 function M.setup_options(windows)
   -- Input window/buffer options
   vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
@@ -36,7 +47,10 @@ function M.setup_autocmds(windows)
   vim.api.nvim_create_autocmd({ 'WinEnter', 'BufEnter' }, {
     group = group,
     buffer = windows.output_buf,
-    callback = function() vim.cmd('stopinsert') end
+    callback = function()
+      M.setup_placeholder(windows)
+      vim.cmd('stopinsert')
+    end
   })
 
   -- Input window autocmds
@@ -75,35 +89,49 @@ function M.setup_autocmds(windows)
   })
 end
 
+function M.configure_window_dimentions(windows)
+  local total_width = vim.api.nvim_get_option('columns')
+  local total_height = vim.api.nvim_get_option('lines')
+
+  local is_fullscreen = config.ui.fullscreen
+
+  local width
+  if is_fullscreen then
+    width = total_width
+  else
+    width = math.floor(total_width * config.ui.window_width)
+  end
+
+  local total_usable_height = total_height - 3
+  local input_height = math.floor(total_usable_height * config.ui.input_height)
+
+  local col = is_fullscreen and 0 or (total_width - width)
+
+  vim.api.nvim_win_set_config(windows.output_win, {
+    relative = 'editor',
+    width = width,
+    height = total_usable_height - input_height - 2,
+    col = col,
+    row = 0
+  })
+
+  vim.api.nvim_win_set_config(windows.input_win, {
+    relative = 'editor',
+    width = width,
+    height = input_height,
+    col = col,
+    row = total_usable_height - input_height,
+  })
+end
+
 function M.setup_resize_handler(windows)
-  local function update_windows()
-    local total_width = vim.api.nvim_get_option('columns')
-    local total_height = vim.api.nvim_get_option('lines')
-    local width = math.floor(total_width * config.ui.window_width)
-
-    local total_usable_height = total_height - 4
-    local input_height = math.floor(total_usable_height * config.ui.input_height)
-
-    vim.api.nvim_win_set_config(windows.output_win, {
-      relative = 'editor',
-      width = width,
-      height = total_usable_height - input_height - 3,
-      col = total_width - width,
-      row = 0
-    })
-
-    vim.api.nvim_win_set_config(windows.input_win, {
-      relative = 'editor',
-      width = width,
-      height = input_height,
-      col = total_width - width,
-      row = total_usable_height - input_height - 1
-    })
+  local function cb()
+    M.configure_window_dimentions(windows)
   end
 
   vim.api.nvim_create_autocmd('VimResized', {
     group = vim.api.nvim_create_augroup('GooseResize', { clear = true }),
-    callback = update_windows
+    callback = cb
   })
 end
 
@@ -143,8 +171,17 @@ function M.setup_keymaps(windows)
   vim.keymap.set('n', config.keymap.close_when_focused, function()
     require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.input_buf, silent = true })
+
   vim.keymap.set('n', config.keymap.close_when_focused, function()
     require('goose.ui.ui').close_windows(windows)
+  end, { buffer = windows.output_buf, silent = true })
+
+  vim.keymap.set('n', config.keymap.next_message, function()
+    require('goose.ui.navigation').goto_next_message()
+  end, { buffer = windows.output_buf, silent = true })
+
+  vim.keymap.set('n', config.keymap.prev_message, function()
+    require('goose.ui.navigation').goto_prev_message()
   end, { buffer = windows.output_buf, silent = true })
 end
 

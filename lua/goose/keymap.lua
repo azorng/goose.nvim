@@ -24,6 +24,10 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, keymap.stop, function()
     vim.cmd(cmds.stop.name)
   end, { silent = false, desc = cmds.stop.desc })
+
+  vim.keymap.set({ 'n', 'v' }, keymap.toggle_fullscreen, function()
+    vim.cmd(cmds.toggle_fullscreen.name)
+  end, { silent = false, desc = cmds.toggle_fullscreen.desc })
 end
 
 return M

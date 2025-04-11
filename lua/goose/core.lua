@@ -18,10 +18,7 @@ function M.open(opts)
     ui.render_output()
   end
 
-  local file = context.get_current_file()
-  if file then state.current_file = file end
-
-  state.selection = context.get_current_selection()
+  context.load()
 
   if opts.focus == "input" then
     ui.focus_input()
@@ -47,6 +44,8 @@ function M.run(prompt, opts)
         state.active_session = session.get_by_name(state.new_session_name)
       end
     end)
+
+    context.reset()
 
     if state.windows then
       ui.render_output()

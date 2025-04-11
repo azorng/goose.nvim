@@ -1,20 +1,7 @@
 local M = {}
 
-local config = require("goose.config").get()
 local state = require("goose.state")
 local renderer = require('goose.ui.output_renderer')
-
-local function open_win(buf, opts)
-  local base_opts = {
-    relative = 'editor',
-    style = 'minimal',
-    border = 'rounded',
-  }
-
-  opts = vim.tbl_extend('force', base_opts, opts)
-
-  return vim.api.nvim_open_win(buf, false, opts)
-end
 
 function M.close_windows(windows)
   if not windows then return end
@@ -34,36 +21,14 @@ function M.close_windows(windows)
 end
 
 function M.create_windows()
-  -- Create new buffers
+  local configurator = require("goose.ui.window_config")
   local input_buf = vim.api.nvim_create_buf(false, true)
   local output_buf = vim.api.nvim_create_buf(false, true)
 
-  -- Make sure highlights are set up
   require('goose.ui.highlight').setup()
 
-  -- Calculate window dimensions
-  local total_width = vim.api.nvim_get_option('columns')
-  local total_height = vim.api.nvim_get_option('lines')
-  local width = math.floor(total_width * config.ui.window_width)
-  local total_usable_height = total_height - 4
-  local input_height = math.floor(total_usable_height * config.ui.input_height)
-
-  -- Create output window
-  local output_win = open_win(output_buf, {
-    width = width,
-    height = total_usable_height - input_height - 3,
-    col = total_width - width,
-    row = 0
-  })
-
-  -- Create input window
-  local input_win = open_win(input_buf, {
-    width = width,
-    height = input_height,
-    col = total_width - width,
-    row = total_usable_height - input_height - 1
-  })
-
+  local input_win = vim.api.nvim_open_win(input_buf, false, configurator.base_window_opts)
+  local output_win = vim.api.nvim_open_win(output_buf, false, configurator.base_window_opts)
   local windows = {
     input_buf = input_buf,
     output_buf = output_buf,
@@ -71,14 +36,13 @@ function M.create_windows()
     output_win = output_win
   }
 
-  local configurator = require("goose.ui.window_config")
   configurator.setup_options(windows)
   configurator.setup_placeholder(windows)
   configurator.setup_autocmds(windows)
   configurator.setup_resize_handler(windows)
   configurator.setup_keymaps(windows)
   configurator.setup_after_actions(windows)
-
+  configurator.configure_window_dimentions(windows)
   return windows
 end
 
@@ -133,6 +97,23 @@ end
 
 function M.stop_render_output()
   renderer.stop()
+end
+
+function M.toggle_fullscreen()
+  local windows = state.windows
+  if not windows then return end
+
+  local ui_config = require("goose.config").get("ui")
+  ui_config.fullscreen = not ui_config.fullscreen
+
+  require("goose.ui.window_config").configure_window_dimentions(windows)
+
+  local current_win = vim.api.nvim_get_current_win()
+  local is_goose_focused = current_win == windows.input_win or current_win == windows.output_win
+
+  if not is_goose_focused then
+    vim.api.nvim_set_current_win(windows.output_win)
+  end
 end
 
 return M

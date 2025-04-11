@@ -118,4 +118,56 @@ describe("goose.job", function()
     assert.truthy(state.new_session_name, "Should generate new session name")
     assert.equal(state.new_session_name, args[name_index + 1], "Generated session name should match arg")
   end)
+
+  it("properly stops a running job", function()
+    -- Create a mock job
+    local mock_job = {
+      handle = {},
+      pid = 12345,
+      shutdown = function() end,
+    }
+
+    -- Set up spies
+    local process_kill_called = false
+    local shutdown_called = false
+
+    -- Save original functions
+    local original_process_kill = vim.uv and vim.uv.process_kill or vim.loop.process_kill
+
+    -- Mock function for process_kill
+    if vim.uv then
+      vim.uv.process_kill = function(handle)
+        process_kill_called = true
+        assert.equal(mock_job.handle, handle, "Should use the correct handle")
+      end
+    else
+      vim.loop.process_kill = function(handle)
+        process_kill_called = true
+        assert.equal(mock_job.handle, handle, "Should use the correct handle")
+      end
+    end
+
+    -- Mock shutdown method
+    mock_job.shutdown = function()
+      shutdown_called = true
+    end
+
+    -- Set the mock job in the state
+    state.goose_run_job = mock_job
+
+    -- Call the function we're testing
+    job.stop()
+
+    -- Restore original function
+    if vim.uv then
+      vim.uv.process_kill = original_process_kill
+    else
+      vim.loop.process_kill = original_process_kill
+    end
+
+    -- Verify results
+    assert.is_true(process_kill_called, "process_kill should be called")
+    assert.is_true(shutdown_called, "job:shutdown should be called")
+    assert.is_nil(state.goose_run_job, "Job should be cleared from state")
+  end)
 end)
