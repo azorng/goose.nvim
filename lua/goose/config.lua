@@ -11,11 +11,15 @@ M.defaults = {
     submit_prompt = '<cr>',
     close = '<leader>gc',
     close_when_focused = '<esc>',
-    stop = '<leader>gs'
+    stop = '<leader>gs',
+    toggle_fullscreen = '<leader>gf',
+    next_message = ']]',
+    prev_message = '[['
   },
   ui = {
     window_width = 0.35,
     input_height = 0.15,
+    fullscreen = false,
   }
 }
 

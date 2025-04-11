@@ -48,6 +48,15 @@ function M.run_new_session(prompt)
   return true
 end
 
+function M.toggle_fullscreen()
+  if not state.windows then
+    core.open({ new_session = false, focus = "output" })
+  end
+
+  ui.toggle_fullscreen()
+  return true
+end
+
 -- Command definitions that call the API functions
 M.commands = {
   open_input = {
@@ -87,6 +96,14 @@ M.commands = {
     desc = "Stop a running job",
     fn = function()
       M.stop()
+    end
+  },
+
+  toggle_fullscreen = {
+    name = "GooseToggleFullscreen",
+    desc = "Toggle between normal and fullscreen mode",
+    fn = function()
+      M.toggle_fullscreen()
     end
   },
 

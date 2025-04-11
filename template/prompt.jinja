@@ -1,12 +1,12 @@
 {{ prompt }}
 
 {% if file_path or selection %}
-Goose context:
+{{ context_section }}
 {% endif %}
 {% if file_path %}
-File: {{ file_path }}
+{{ file_path_section }} {{ file_path }}
 {% endif %}
 {% if selection %}
-Selected text:
+{{ selection_section }}
 {{ selection }}
 {% endif %}
