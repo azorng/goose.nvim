@@ -67,10 +67,11 @@ describe("goose.job", function()
 
   it("builds a command with the provided resume opt", function()
     local test_session = {
-      id = "test-session-123",
+      name = "test-session-123",
       path = "/mock/session/path",
       modified = "2025-04-04"
     }
+    -- Set up the active session
     state.active_session = test_session
 
     local prompt = "Help me understand this code"
@@ -90,7 +91,7 @@ describe("goose.job", function()
 
     assert.truthy(name_index, "Should include --name argument")
     assert.truthy(resume_found, "Should include --resume argument")
-    assert.equal("test-session-123", args[name_index + 1], "Session ID should match active session")
+    assert.equal("test-session-123", args[name_index + 1], "Session ID should match active session name")
   end)
 
   it("handles new session creation correctly", function()
