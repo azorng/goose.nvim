@@ -5,6 +5,20 @@ local session = require("goose.session")
 local ui = require("goose.ui.ui")
 local job = require('goose.job')
 
+function M.select_session()
+  local all_sessions = session.get_all_workspace_sessions()
+  local filtered_sessions = vim.tbl_filter(function(s)
+    return s.description ~= '' and s ~= nil
+  end, all_sessions)
+
+  ui.select_session(filtered_sessions, function(selected_session)
+    state.active_session = selected_session
+    if state.windows then
+      ui.render_output()
+    end
+  end)
+end
+
 function M.open(opts)
   if not M.goose_ok() then return end
 
@@ -16,7 +30,9 @@ function M.open(opts)
     state.active_session = nil
     ui.clear_output()
   else
-    state.active_session = session.get_last_workspace_session()
+    if not state.active_session then
+      state.active_session = session.get_last_workspace_session()
+    end
     ui.render_output()
   end
 

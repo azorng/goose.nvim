@@ -119,4 +119,25 @@ function M.toggle_fullscreen()
   end
 end
 
+function M.select_session(sessions, cb)
+  local util = require("util")
+
+  vim.ui.select(sessions, {
+    prompt = "",
+    format_item = function(session)
+      if not session.modified then
+        return session.description
+      end
+
+      -- Format the timestamp to be more concise
+      local modified = util.time_ago(session.modified)
+
+      -- Use parentheses for visual distinction which works in all UI implementations
+      return session.description .. util.hl_to_ansi("Comment") .. " " .. modified
+    end
+  }, function(session_choice)
+    cb(session_choice)
+  end)
+end
+
 return M

@@ -57,11 +57,16 @@ function M.toggle_fullscreen()
   return true
 end
 
+function M.select_session()
+  core.select_session()
+  return true
+end
+
 -- Command definitions that call the API functions
 M.commands = {
   open_input = {
     name = "GooseOpenInput",
-    desc = "Open/focus on input (last session)",
+    desc = "Opens and focuses on input window. Loads current buffer context",
     fn = function()
       M.open_input()
     end
@@ -69,7 +74,7 @@ M.commands = {
 
   open_input_new_session = {
     name = "GooseOpenInputNewSession",
-    desc = "Open/focus on input (new session)",
+    desc = "Opens and focuses on input window. Loads current buffer context. Creates a new session",
     fn = function()
       M.open_input_new_session()
     end
@@ -77,7 +82,7 @@ M.commands = {
 
   open_output = {
     name = "GooseOpenOutput",
-    desc = "Open/focus on output (last session)",
+    desc = "Opens and focuses on input window. Loads current buffer context",
     fn = function()
       M.open_output()
     end
@@ -104,6 +109,14 @@ M.commands = {
     desc = "Toggle between normal and fullscreen mode",
     fn = function()
       M.toggle_fullscreen()
+    end
+  },
+
+  select_session = {
+    name = "GooseSelectSession",
+    desc = "Select and load a goose session",
+    fn = function()
+      M.select_session()
     end
   },
 
