@@ -82,7 +82,7 @@ M.commands = {
 
   open_output = {
     name = "GooseOpenOutput",
-    desc = "Opens and focuses on input window. Loads current buffer context",
+    desc = "Opens and focuses on output window. Loads current buffer context",
     fn = function()
       M.open_output()
     end
