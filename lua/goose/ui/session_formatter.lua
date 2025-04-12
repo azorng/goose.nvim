@@ -2,15 +2,6 @@ local M = {}
 
 local context_module = require('goose.context')
 
-function M.session_title(title)
-  local output_lines = {
-    '# ' .. title,
-    ""
-  }
-
-  return output_lines
-end
-
 M.separator = {
   "---",
   ""
@@ -22,10 +13,7 @@ function M.format_session(session_path)
   local session_lines = vim.fn.readfile(session_path)
   if #session_lines == 0 then return nil end
 
-  local success, metadata = pcall(vim.fn.json_decode, session_lines[1])
-  if not success then return nil end
-
-  local output_lines = M.session_title(metadata.description or "Goose Session")
+  local output_lines = { "" }
 
   local need_separator = false
 
