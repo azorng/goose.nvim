@@ -6,7 +6,7 @@
 
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 [![GitHub stars](https://img.shields.io/github/stars/azorng/goose.nvim?style=for-the-badge)](https://github.com/azorng/goose.nvim/stargazers)
-![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)
 
 </div>
 
