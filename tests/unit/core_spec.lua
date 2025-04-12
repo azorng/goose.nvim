@@ -11,11 +11,20 @@ describe("goose.core", function()
     original_state = vim.deepcopy(state)
 
     -- Mock required functions
-    ui.create_windows = function() return { mock = "windows" } end
+    ui.create_windows = function()
+      return {
+        mock = "windows",
+        input_buf = 1,
+        output_buf = 2,
+        input_win = 3,
+        output_win = 4
+      }
+    end
     ui.clear_output = function() end
     ui.render_output = function() end
     ui.focus_input = function() end
     ui.focus_output = function() end
+    ui.scroll_to_bottom = function() end
     session.get_last_workspace_session = function() return { id = "test-session" } end
     job.execute = function() end
   end)
@@ -34,7 +43,14 @@ describe("goose.core", function()
       core.open({ new_session = false, focus = "input" })
 
       assert.truthy(state.windows, "Windows should be created")
-      assert.same({ mock = "windows" }, state.windows)
+      -- Fix the expected output to match mocked window structure
+      assert.same({
+        mock = "windows",
+        input_buf = 1,
+        output_buf = 2,
+        input_win = 3,
+        output_win = 4
+      }, state.windows)
     end)
 
     it("handles new session properly", function()
@@ -101,8 +117,16 @@ describe("goose.core", function()
       local render_output_called = false
       ui.render_output = function() render_output_called = true end
 
+      local scroll_to_bottom_called = false
+      ui.scroll_to_bottom = function() scroll_to_bottom_called = true end
+
       -- Set up state for the test
-      state.windows = { mock = "windows" }
+      state.windows = {
+        input_buf = 1,
+        output_buf = 2,
+        input_win = 3,
+        output_win = 4
+      }
       state.active_session = nil
 
       -- Call the function being tested
@@ -119,6 +143,7 @@ describe("goose.core", function()
 
       -- Verify output is rendered
       assert.is_true(render_output_called, "Output should be rendered")
+      assert.is_true(scroll_to_bottom_called, "Windows should scroll to bottom")
     end)
 
     it("handles case where no windows exist", function()
@@ -139,6 +164,9 @@ describe("goose.core", function()
       local render_output_called = false
       ui.render_output = function() render_output_called = true end
 
+      local scroll_to_bottom_called = false
+      ui.scroll_to_bottom = function() scroll_to_bottom_called = true end
+
       -- Set up state for the test
       state.windows = nil
       state.active_session = nil
@@ -152,6 +180,7 @@ describe("goose.core", function()
 
       -- Verify output is not rendered
       assert.is_false(render_output_called, "Output should not be rendered without windows")
+      assert.is_false(scroll_to_bottom_called, "Should not scroll to bottom without windows")
     end)
   end)
 
