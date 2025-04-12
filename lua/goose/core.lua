@@ -15,6 +15,7 @@ function M.select_session()
     state.active_session = selected_session
     if state.windows then
       ui.render_output()
+      ui.scroll_to_bottom()
     end
   end)
 end

@@ -305,7 +305,7 @@ function M.handle_auto_scroll(windows)
   local was_at_bottom = (botline >= prev_line_count) or prev_line_count == 0
 
   if was_at_bottom then
-    vim.api.nvim_win_set_cursor(windows.output_win, { line_count, 0 })
+    require("goose.ui.ui").scroll_to_bottom()
   end
 end
 
