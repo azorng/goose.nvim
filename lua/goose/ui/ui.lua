@@ -129,11 +129,8 @@ function M.select_session(sessions, cb)
         return session.description
       end
 
-      -- Format the timestamp to be more concise
       local modified = util.time_ago(session.modified)
-
-      -- Use parentheses for visual distinction which works in all UI implementations
-      return session.description .. util.hl_to_ansi("Comment") .. " " .. modified
+      return session.description .. " ~ " .. modified
     end
   }, function(session_choice)
     cb(session_choice)
