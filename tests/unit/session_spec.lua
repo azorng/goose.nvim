@@ -57,7 +57,7 @@ describe("goose.session", function()
 
       -- Verify the result - should return "new-8" as it's the most recent
       assert.is_not_nil(result)
-      assert.equal("new-8", result.id)
+      assert.equal("new-8", result.name)
     end)
 
     it("returns nil when no sessions match the workspace", function()
@@ -140,7 +140,7 @@ describe("goose.session", function()
 
       -- Should return the most recent
       assert.is_not_nil(result)
-      assert.equal("custom2", result.id)
+      assert.equal("custom2", result.name)
     end)
 
     it("handles empty session list", function()
@@ -162,7 +162,7 @@ describe("goose.session", function()
 
       -- Verify the result
       assert.is_not_nil(result)
-      assert.equal("new-8", result.id)
+      assert.equal("new-8", result.name)
     end)
 
     it("returns nil when no session matches the ID", function()

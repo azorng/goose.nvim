@@ -15,7 +15,7 @@ function M.build_args(prompt)
 
   if state.active_session then
     table.insert(args, "--name")
-    table.insert(args, state.active_session.id)
+    table.insert(args, state.active_session.name)
     table.insert(args, "--resume")
   else
     local session_name = util.uid()

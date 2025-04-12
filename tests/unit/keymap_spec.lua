@@ -6,7 +6,7 @@ local keymap = require("goose.keymap")
 describe("goose.keymap", function()
   -- Keep track of set keymaps to verify
   local set_keymaps = {}
-  
+
   -- Track vim.cmd calls
   local cmd_calls = {}
 
@@ -29,7 +29,7 @@ describe("goose.keymap", function()
         opts = opts
       })
     end
-    
+
     vim.cmd = function(command)
       table.insert(cmd_calls, command)
     end
@@ -44,8 +44,14 @@ describe("goose.keymap", function()
   describe("setup", function()
     it("sets up keymap with the configured keys", function()
       local test_keymap = {
-        open_input = "<leader>test",
-        open_input_new_session = "<leader>testNew"
+        global = {
+          open_input = "<leader>test",
+          open_input_new_session = "<leader>testNew",
+          open_output = "<leader>out",
+          close = "<leader>close",
+          toggle_fullscreen = "<leader>full",
+          select_session = "<leader>select"
+        }
       }
 
       keymap.setup(test_keymap)
@@ -60,11 +66,14 @@ describe("goose.keymap", function()
     it("sets up callbacks that execute the correct commands", function()
       -- Setup the keymap
       keymap.setup({
-        open_input = "<leader>test",
-        open_input_new_session = "<leader>testNew",
-        open_output = "<leader>out",
-        close = "<leader>close",
-        stop = "<leader>stop"
+        global = {
+          open_input = "<leader>test",
+          open_input_new_session = "<leader>testNew",
+          open_output = "<leader>out",
+          close = "<leader>close",
+          toggle_fullscreen = "<leader>full",
+          select_session = "<leader>select"
+        }
       })
 
       -- Call the first callback (continue session)
@@ -74,18 +83,22 @@ describe("goose.keymap", function()
       -- Call the second callback (new session)
       set_keymaps[2].callback()
       assert.equal("GooseOpenInputNewSession", cmd_calls[2])
-      
+
       -- Call the third callback (open output)
       set_keymaps[3].callback()
       assert.equal("GooseOpenOutput", cmd_calls[3])
-      
+
       -- Call the fourth callback (close)
       set_keymaps[4].callback()
       assert.equal("GooseClose", cmd_calls[4])
-      
-      -- Call the fifth callback (stop)
+
+      -- Call the fifth callback (toggle fullscreen)
       set_keymaps[5].callback()
-      assert.equal("GooseStop", cmd_calls[5])
+      assert.equal("GooseToggleFullscreen", cmd_calls[5])
+
+      -- Call the sixth callback (select session)
+      set_keymaps[6].callback()
+      assert.equal("GooseSelectSession", cmd_calls[6])
     end)
   end)
 end)

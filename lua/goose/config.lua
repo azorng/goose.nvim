@@ -5,16 +5,21 @@ local M = {}
 -- Default configuration
 M.defaults = {
   keymap = {
-    open_input = '<leader>gi',
-    open_input_new_session = '<leader>gI',
-    open_output = '<leader>go',
-    submit_prompt = '<cr>',
-    close = '<leader>gc',
-    close_when_focused = '<esc>',
-    stop = '<leader>gs',
-    toggle_fullscreen = '<leader>gf',
-    next_message = ']]',
-    prev_message = '[['
+    global = {
+      open_input = '<leader>gi',
+      open_input_new_session = '<leader>gI',
+      open_output = '<leader>go',
+      close = '<leader>gq',
+      toggle_fullscreen = '<leader>gf',
+      select_session = '<leader>gs',
+    },
+    window = {
+      submit = '<cr>',
+      close = '<esc>',
+      stop = '<C-c>',
+      next_message = ']]',
+      prev_message = '[[',
+    }
   },
   ui = {
     window_width = 0.35,

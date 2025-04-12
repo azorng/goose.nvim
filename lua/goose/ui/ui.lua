@@ -3,6 +3,16 @@ local M = {}
 local state = require("goose.state")
 local renderer = require('goose.ui.output_renderer')
 
+function M.scroll_to_bottom()
+  vim.cmd("normal! zb")
+  local line_count = vim.api.nvim_buf_line_count(state.windows.output_buf)
+  vim.api.nvim_win_set_cursor(state.windows.output_win, { line_count, 0 })
+
+  vim.defer_fn(function()
+    renderer.render_markdown()
+  end, 200)
+end
+
 function M.close_windows(windows)
   if not windows then return end
 
@@ -117,6 +127,24 @@ function M.toggle_fullscreen()
   if not is_goose_focused then
     vim.api.nvim_set_current_win(windows.output_win)
   end
+end
+
+function M.select_session(sessions, cb)
+  local util = require("util")
+
+  vim.ui.select(sessions, {
+    prompt = "",
+    format_item = function(session)
+      if not session.modified then
+        return session.description
+      end
+
+      local modified = util.time_ago(session.modified)
+      return session.description .. " ~ " .. modified
+    end
+  }, function(session_choice)
+    cb(session_choice)
+  end)
 end
 
 return M

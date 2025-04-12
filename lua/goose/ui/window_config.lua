@@ -8,7 +8,7 @@ M.base_window_opts = {
   relative = 'editor',
   style = 'minimal',
   border = 'rounded',
-  zindex = 100,
+  zindex = 50,
   width = 1,
   height = 1,
   col = 0,
@@ -164,25 +164,35 @@ local function handle_submit(windows)
 end
 
 function M.setup_keymaps(windows)
-  vim.keymap.set({ 'n', 'i' }, config.keymap.submit_prompt, function()
+  local window_keymap = config.keymap.window
+
+  vim.keymap.set({ 'n', 'i' }, window_keymap.submit, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
-  vim.keymap.set('n', config.keymap.close_when_focused, function()
+  vim.keymap.set('n', window_keymap.close, function()
     require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.input_buf, silent = true })
 
-  vim.keymap.set('n', config.keymap.close_when_focused, function()
+  vim.keymap.set('n', window_keymap.close, function()
     require('goose.ui.ui').close_windows(windows)
   end, { buffer = windows.output_buf, silent = true })
 
-  vim.keymap.set('n', config.keymap.next_message, function()
+  vim.keymap.set('n', window_keymap.next_message, function()
     require('goose.ui.navigation').goto_next_message()
   end, { buffer = windows.output_buf, silent = true })
 
-  vim.keymap.set('n', config.keymap.prev_message, function()
+  vim.keymap.set('n', window_keymap.prev_message, function()
     require('goose.ui.navigation').goto_prev_message()
   end, { buffer = windows.output_buf, silent = true })
+
+  vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
+    require('goose.core').stop()
+  end, { buffer = windows.output_buf, silent = true })
+
+  vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
+    require('goose.core').stop()
+  end, { buffer = windows.input_buf, silent = true })
 end
 
 return M

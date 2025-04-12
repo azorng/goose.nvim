@@ -72,7 +72,6 @@ function M._read_session(force_refresh)
 
   local session_path = state.active_session.path
   local output_lines = formatter.format_session(session_path)
-  M.render_session_bar()
   M._cache.output_lines = output_lines
   return output_lines
 end
@@ -189,6 +188,7 @@ function M.render(windows, force_refresh)
     M.handle_auto_scroll(windows)
   end
   render()
+  M.render_session_bar()
   M.render_markdown()
 end
 
@@ -290,7 +290,7 @@ function M.render_session_bar()
 
   local _, metadata = pcall(vim.fn.json_decode, session_lines[1])
   local session_desc =
-      metadata.description and ('Session: ' .. metadata.description) or LABELS.NEW_SESSION_TITLE
+      metadata.description and (metadata.description) or LABELS.NEW_SESSION_TITLE
 
   update_winbar(session_desc)
 end
@@ -305,7 +305,7 @@ function M.handle_auto_scroll(windows)
   local was_at_bottom = (botline >= prev_line_count) or prev_line_count == 0
 
   if was_at_bottom then
-    vim.api.nvim_win_set_cursor(windows.output_win, { line_count, 0 })
+    require("goose.ui.ui").scroll_to_bottom()
   end
 end
 

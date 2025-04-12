@@ -11,11 +11,20 @@ describe("goose.core", function()
     original_state = vim.deepcopy(state)
 
     -- Mock required functions
-    ui.create_windows = function() return { mock = "windows" } end
+    ui.create_windows = function()
+      return {
+        mock = "windows",
+        input_buf = 1,
+        output_buf = 2,
+        input_win = 3,
+        output_win = 4
+      }
+    end
     ui.clear_output = function() end
     ui.render_output = function() end
     ui.focus_input = function() end
     ui.focus_output = function() end
+    ui.scroll_to_bottom = function() end
     session.get_last_workspace_session = function() return { id = "test-session" } end
     job.execute = function() end
   end)
@@ -34,7 +43,14 @@ describe("goose.core", function()
       core.open({ new_session = false, focus = "input" })
 
       assert.truthy(state.windows, "Windows should be created")
-      assert.same({ mock = "windows" }, state.windows)
+      -- Fix the expected output to match mocked window structure
+      assert.same({
+        mock = "windows",
+        input_buf = 1,
+        output_buf = 2,
+        input_win = 3,
+        output_win = 4
+      }, state.windows)
     end)
 
     it("handles new session properly", function()
@@ -70,6 +86,101 @@ describe("goose.core", function()
       core.open({ new_session = false, focus = "output" })
       assert.is_false(input_focused)
       assert.is_true(output_focused)
+    end)
+  end)
+
+  describe("select_session", function()
+    it("filters sessions and sets the active session based on user selection", function()
+      -- Mock sessions data
+      local mock_sessions = {
+        { name = "session1", description = "First session", modified = "2025-04-01" },
+        { name = "session2", description = "",              modified = "2025-04-02" }, -- This one should be filtered out
+        { name = "session3", description = "Third session", modified = "2025-04-03" }
+      }
+
+      -- Mock get_all_workspace_sessions to return our mock data
+      session.get_all_workspace_sessions = function() return mock_sessions end
+
+      -- Mock ui.select_session to simulate user selection
+      local filtered_sessions_passed
+      local callback_passed
+
+      ui.select_session = function(sessions, callback)
+        filtered_sessions_passed = sessions
+        callback_passed = callback
+
+        -- Simulate user selecting the third session
+        callback(sessions[2]) -- This should be session3 after filtering
+      end
+
+      -- Mock render_output to verify it's called
+      local render_output_called = false
+      ui.render_output = function() render_output_called = true end
+
+      local scroll_to_bottom_called = false
+      ui.scroll_to_bottom = function() scroll_to_bottom_called = true end
+
+      -- Set up state for the test
+      state.windows = {
+        input_buf = 1,
+        output_buf = 2,
+        input_win = 3,
+        output_win = 4
+      }
+      state.active_session = nil
+
+      -- Call the function being tested
+      core.select_session()
+
+      -- Verify results
+      assert.truthy(filtered_sessions_passed, "Sessions should be passed to UI select")
+      assert.equal(2, #filtered_sessions_passed, "Empty descriptions should be filtered out")
+      assert.equal("session3", filtered_sessions_passed[2].name, "Session should be in filtered list")
+
+      -- Verify active session was set
+      assert.truthy(state.active_session, "Active session should be set")
+      assert.equal("session3", state.active_session.name, "Active session should match selected session")
+
+      -- Verify output is rendered
+      assert.is_true(render_output_called, "Output should be rendered")
+      assert.is_true(scroll_to_bottom_called, "Windows should scroll to bottom")
+    end)
+
+    it("handles case where no windows exist", function()
+      -- Mock sessions data
+      local mock_sessions = {
+        { name = "session1", description = "First session", modified = "2025-04-01" }
+      }
+
+      -- Mock get_all_workspace_sessions to return our mock data
+      session.get_all_workspace_sessions = function() return mock_sessions end
+
+      -- Mock ui.select_session to simulate user selection
+      ui.select_session = function(sessions, callback)
+        callback(sessions[1])
+      end
+
+      -- Mock render_output to verify it's not called
+      local render_output_called = false
+      ui.render_output = function() render_output_called = true end
+
+      local scroll_to_bottom_called = false
+      ui.scroll_to_bottom = function() scroll_to_bottom_called = true end
+
+      -- Set up state for the test
+      state.windows = nil
+      state.active_session = nil
+
+      -- Call the function being tested
+      core.select_session()
+
+      -- Verify active session was set
+      assert.truthy(state.active_session, "Active session should be set")
+      assert.equal("session1", state.active_session.name, "Active session should match selected session")
+
+      -- Verify output is not rendered
+      assert.is_false(render_output_called, "Output should not be rendered without windows")
+      assert.is_false(scroll_to_bottom_called, "Should not scroll to bottom without windows")
     end)
   end)
 
