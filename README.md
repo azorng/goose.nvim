@@ -46,6 +46,9 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 {
   'azorng/goose.nvim',
   branch = 'main',
+  config = function()
+    require('goose').setup({})
+  end,
   dependencies = {
     "nvim-lua/plenary.nvim",
     {
@@ -55,9 +58,6 @@ Install the plugin with your favorite package manager. See the [Configuration](#
       },
     }
   },
-  config = function()
-    require('goose').setup()
-  end,
 }
 ```
 
