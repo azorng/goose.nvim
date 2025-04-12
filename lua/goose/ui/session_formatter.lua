@@ -86,7 +86,11 @@ function M._format_message(message)
         end
       end
     elseif part.type == 'toolRequest' then
+      if has_content then
+        table.insert(lines, "")
+      end
       M._format_tool(lines, part)
+      has_content = true
     end
   end
 
@@ -99,7 +103,6 @@ end
 
 function M._format_context(lines, type, value)
   if not type or not value then return end
-  table.insert(lines, '')
   local formatted_action = ' **' .. type .. '** ` ' .. value .. ' `'
   table.insert(lines, formatted_action)
 end

@@ -1,6 +1,5 @@
 local M = {}
 
--- Helper function to get all sessions as JSON
 function M.get_all_sessions()
   local handle = io.popen('goose session list --format json')
   if not handle then return nil end
@@ -8,9 +7,7 @@ function M.get_all_sessions()
   local result = handle:read("*a")
   handle:close()
 
-  -- Use pcall to safely decode JSON
   local success, sessions = pcall(vim.fn.json_decode, result)
-  -- vim.notify(vim.inspect(next(sessions)))
   if not success or not sessions or next(sessions) == nil then return nil end
 
   return vim.tbl_map(function(session)

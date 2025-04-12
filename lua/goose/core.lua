@@ -12,6 +12,7 @@ function M.select_session()
   end, all_sessions)
 
   ui.select_session(filtered_sessions, function(selected_session)
+    if not selected_session then return end
     state.active_session = selected_session
     if state.windows then
       ui.render_output()
