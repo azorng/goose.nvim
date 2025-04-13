@@ -130,7 +130,7 @@ function M.toggle_fullscreen()
 end
 
 function M.select_session(sessions, cb)
-  local util = require("util")
+  local util = require("goose.util")
 
   vim.ui.select(sessions, {
     prompt = "",

@@ -4,7 +4,7 @@
 local context = require("goose.context")
 local state = require("goose.state")
 local Job = require('plenary.job')
-local util = require("util")
+local util = require("goose.util")
 
 local M = {}
 
