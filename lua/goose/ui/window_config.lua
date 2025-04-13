@@ -73,42 +73,6 @@ function M.setup_autocmds(windows)
     end
   })
 
-  -- File picker when '@' is typed
-  vim.api.nvim_buf_set_keymap(windows.input_buf, 'i', '@', '', {
-    callback = function()
-      vim.api.nvim_feedkeys('@', 'in', true)
-
-      -- Get the cursor position after inserting '@'
-      local cursor_pos = vim.api.nvim_win_get_cursor(windows.input_win)
-      local row, col = cursor_pos[1], cursor_pos[2]
-
-      local picker = require('goose.ui.file_picker')
-
-      picker.open(function(selection)
-        print(vim.inspect(selection))
-        if selection then
-          -- Get current line content
-          local current_line = vim.api.nvim_buf_get_lines(windows.input_buf, row - 1, row, false)[1]
-
-          local new_line = current_line:sub(1, col) ..
-              '@' .. selection.file_name .. " " .. current_line:sub(col + 2)
-
-          vim.api.nvim_buf_set_lines(windows.input_buf, row - 1, row, false, { new_line })
-
-          require('goose.context').add_files({ selection.path })
-
-          vim.defer_fn(function()
-            vim.cmd('startinsert')
-            vim.api.nvim_set_current_win(windows.input_win)
-            vim.api.nvim_win_set_cursor(windows.input_win, { row, col + 1 + #selection.file_name + 1 })
-          end, 10)
-        end
-      end)
-    end,
-    noremap = true,
-    silent = true
-  })
-
   vim.api.nvim_create_autocmd('WinClosed', {
     group = group,
     pattern = tostring(windows.input_win) .. ',' .. tostring(windows.output_win),
@@ -228,6 +192,10 @@ function M.setup_keymaps(windows)
 
   vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
     require('goose.core').stop()
+  end, { buffer = windows.input_buf, silent = true })
+
+  vim.keymap.set('i', window_keymap.mention_file, function()
+    require('goose.core').add_file_to_context({ from_mention = true })
   end, { buffer = windows.input_buf, silent = true })
 end
 

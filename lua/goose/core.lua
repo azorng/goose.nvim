@@ -85,6 +85,16 @@ function M.run(prompt, opts)
   end, 10)
 end
 
+function M.add_file_to_context(opts)
+  if opts.from_mention == true then
+    require('goose.ui.file_mention').mention(function(file)
+      context.add_files({ file.path })
+    end)
+  elseif opts.path then
+    context.add_files(opts.path)
+  end
+end
+
 function M.stop()
   job.stop()
   if state.windows then

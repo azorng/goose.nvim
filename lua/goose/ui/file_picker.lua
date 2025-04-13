@@ -16,7 +16,7 @@ local function format_file(path)
   end
 
   return {
-    file_name = vim.fn.fnamemodify(path, ":t"),
+    name = vim.fn.fnamemodify(path, ":t"),
     path = path
   }
 end

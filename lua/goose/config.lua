@@ -19,6 +19,7 @@ M.defaults = {
       stop = '<C-c>',
       next_message = ']]',
       prev_message = '[[',
+      mention_file = '@'
     }
   },
   ui = {
