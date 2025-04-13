@@ -81,6 +81,7 @@ require('goose').setup({
       stop = '<C-c>',                      -- Stop a running job
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
+      mention_file = '@'                   -- Pick a file and add to context
     }
   },
   ui = {
@@ -105,9 +106,10 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
 | Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
 | Close UI windows | `<leader>gq` | `:GooseClose` | `require('goose.api').close()` |
-| Stop running job | `<C-c>` (in window) | `:GooseStop` | `require('goose.api').stop()` |
+| Stop running job | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
+| Pick a file and add to context | `@` (input window)| `:GooseAddFile [path]` | `require('goose.api').add_file_to_context({opts})` |
 | Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |

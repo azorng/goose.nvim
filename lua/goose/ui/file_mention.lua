@@ -28,11 +28,13 @@ function M.mention(on_file_mention)
 
   local picker = require('goose.ui.file_picker')
 
-  picker.open(function(file)
-    if file then
-      insert_mention(windows, row, col, file.name)
-      on_file_mention(file)
-    end
+  vim.schedule(function()
+    picker.open(function(file)
+      if file then
+        insert_mention(windows, row, col, file.name)
+        on_file_mention(file)
+      end
+    end)
   end)
 end
 

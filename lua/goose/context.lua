@@ -24,6 +24,7 @@ end
 
 function M.add_files(files)
   if not files or type(files) ~= "table" then
+    vim.notify("Expected a table of file paths", vim.log.levels.WARN)
     return
   end
 
@@ -34,6 +35,8 @@ function M.add_files(files)
   for _, file in ipairs(files) do
     if vim.fn.filereadable(file) == 1 then
       table.insert(state.additional_files, file)
+    else
+      vim.notify("Could not read file: ")
     end
   end
 end
