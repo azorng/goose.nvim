@@ -99,6 +99,7 @@ function M.setup_autocmds(windows)
 
           vim.defer_fn(function()
             vim.cmd('startinsert')
+            vim.api.nvim_set_current_win(windows.input_win)
             vim.api.nvim_win_set_cursor(windows.input_win, { row, col + 1 + #selection.file_name + 1 })
           end, 10)
         end

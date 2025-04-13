@@ -62,11 +62,16 @@ end
 
 local function mini_pick_ui(callback)
   local mini_pick = require("mini.pick")
-  local selected = mini_pick.builtin.files()
-
-  if selected and callback then
-    callback(selected[1])
-  end
+  local selected = mini_pick.builtin.files(nil, {
+    source = {
+      choose = function(selected)
+        if selected and callback then
+          callback(selected)
+        end
+        return false
+      end,
+    },
+  })
 end
 
 local function snacks_picker_ui(callback)
