@@ -91,7 +91,7 @@ describe("goose.context", function()
 
       -- Verify template was called with correct variables
       assert.truthy(called_with_vars)
-      assert.equal(test_file, called_with_vars.file_path)
+      assert.equal(test_file, called_with_vars.current_file)
       assert.equal(prompt, called_with_vars.prompt)
 
       -- Verify the message was returned
@@ -120,7 +120,7 @@ describe("goose.context", function()
 
       -- Verify template was called with correct variables
       assert.truthy(called_with_vars)
-      assert.equal(test_file, called_with_vars.file_path)
+      assert.equal(test_file, called_with_vars.current_file)
       assert.equal(prompt, called_with_vars.prompt)
       assert.equal("Selected text for testing", called_with_vars.selection)
 

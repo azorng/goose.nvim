@@ -29,8 +29,40 @@ function M.render_template(template_vars)
   local template = read_template(template_path)
   if not template then return nil end
 
+  -- Initialize result variable
+  local result = template
+
+  -- Process for loops for lists
+  result = result:gsub("{%%(%s*)for(%s+)([%w_]+)(%s+)in(%s+)([%w_]+)(%s*)%%}(.-){%%(%s*)endfor(%s*)%%}",
+    function(s1, s2, item_var, s3, s4, list_var, s5, content, s6, s7)
+      local list = template_vars[list_var]
+      if not list or type(list) ~= "table" then
+        return ""
+      end
+
+      local output = {}
+      for _, item in ipairs(list) do
+        -- Create a temporary context with the loop variable
+        local loop_context = vim.tbl_extend("force", {}, template_vars)
+        loop_context[item_var] = item
+
+        -- Process the content with the loop variable
+        local item_content = content:gsub("{{%s*([%w_]+)%s*}}", function(var)
+          if var == item_var then
+            return item or ""
+          else
+            return loop_context[var] or ""
+          end
+        end)
+
+        table.insert(output, item_content)
+      end
+
+      return table.concat(output, "")
+    end)
+
   -- Replace variables with values
-  local result = template:gsub("{{%s*([%w_]+)%s*}}", function(var)
+  result = result:gsub("{{%s*([%w_]+)%s*}}", function(var)
     return template_vars[var] or ""
   end)
 
@@ -63,7 +95,11 @@ function M.render_template(template_vars)
   end)
 
   -- Clean up any empty lines caused by conditional blocks
-  result = result:gsub("\n\n\n+", "\n\n")
+  -- Reduce any sequence of 2 or more newlines to just 2 newlines
+  result = result:gsub("\n\n+", "\n\n")
+
+  -- Trim leading/trailing whitespace
+  result = vim.trim(result)
 
   return result
 end

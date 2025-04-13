@@ -10,6 +10,7 @@ M.new_session_name = nil
 -- context
 M.current_file = nil
 M.selection = nil
+M.additional_files = nil
 M.prompt = {}
 
 -- job
