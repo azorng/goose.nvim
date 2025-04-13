@@ -165,17 +165,18 @@ end
 
 function M.setup_keymaps(windows)
   local window_keymap = config.keymap.window
+  local api = require('goose.api')
 
   vim.keymap.set({ 'n', 'i' }, window_keymap.submit, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
   vim.keymap.set('n', window_keymap.close, function()
-    require('goose.ui.ui').close_windows(windows)
+    api.close()
   end, { buffer = windows.input_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.close, function()
-    require('goose.ui.ui').close_windows(windows)
+    api.close()
   end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.next_message, function()
@@ -187,15 +188,15 @@ function M.setup_keymaps(windows)
   end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
-    require('goose.core').stop()
+    api.stop()
   end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
-    require('goose.core').stop()
+    api.stop()
   end, { buffer = windows.input_buf, silent = true })
 
   vim.keymap.set('i', window_keymap.mention_file, function()
-    require('goose.core').add_file_to_context({ from_mention = true })
+    require('goose.core').add_file_to_context()
   end, { buffer = windows.input_buf, silent = true })
 end
 

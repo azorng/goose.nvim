@@ -85,23 +85,12 @@ function M.run(prompt, opts)
   end, 10)
 end
 
-function M.add_file_to_context(opts)
-  if opts.from_mention == true then
-    if state.windows == nil then
-      M.open({ new_session = false, focus = "input" })
+function M.add_file_to_context()
+  require('goose.ui.file_mention').mention(function(file)
+    if file then
+      context.add_file(file.path)
     end
-
-    ui.focus_input()
-
-    require('goose.ui.file_mention').mention(function(file)
-      if file then
-        context.add_files({ file.path })
-      end
-    end)
-  elseif opts.path then
-    local paths = type(opts.path) == "table" and opts.path or { opts.path }
-    context.add_files(paths)
-  end
+  end)
 end
 
 function M.stop()

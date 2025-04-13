@@ -109,7 +109,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Stop running job | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
-| Pick a file and add to context | `@` (input window)| `:GooseAddFile [path]` | `require('goose.api').add_file_to_context({opts})` |
+| Pick a file and add to context | `@` |- | -|
 | Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |

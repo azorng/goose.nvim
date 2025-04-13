@@ -5,10 +5,6 @@ local state = require("goose.state")
 local M = {}
 
 -- Core API functions
-function M.add_file_to_context(opts)
-  core.add_file_to_context(opts)
-  return true
-end
 
 function M.open_input()
   core.open({ new_session = false, focus = "input" })
@@ -125,20 +121,6 @@ M.commands = {
     end
   },
 
-  add_file_to_context = {
-    name = "GooseAddFile",
-    desc = "Pick a file and add to context",
-    fn = function(opts)
-      if opts.args and #opts.args > 0 then
-        -- Split by spaces in case multiple files were provided
-        local paths = vim.split(opts.args, " ", { trimempty = true })
-        M.add_file_to_context({ path = paths })
-      else
-        M.add_file_to_context({ from_mention = true })
-      end
-    end
-  },
-
   run = {
     name = "GooseRun",
     desc = "Run Goose with a prompt (continue last session)",
@@ -159,7 +141,7 @@ M.commands = {
 function M.setup()
   -- Register commands without arguments
   for key, cmd in pairs(M.commands) do
-    if key ~= "run" and key ~= "run_new_session" and key ~= "add_file_to_context" then
+    if key ~= "run" and key ~= "run_new_session" then
       vim.api.nvim_create_user_command(cmd.name, cmd.fn, {
         desc = cmd.desc
       })
@@ -175,11 +157,6 @@ function M.setup()
   vim.api.nvim_create_user_command(M.commands.run_new_session.name, M.commands.run_new_session.fn, {
     desc = M.commands.run_new_session.desc,
     nargs = "+"
-  })
-
-  vim.api.nvim_create_user_command(M.commands.add_file_to_context.name, M.commands.add_file_to_context.fn, {
-    desc = M.commands.add_file_to_context.desc,
-    nargs = "?"
   })
 end
 

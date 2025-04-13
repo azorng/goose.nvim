@@ -45,7 +45,6 @@ local function fzf_ui(callback)
   local fzf_lua = require("fzf-lua")
 
   fzf_lua.files({
-    prompt = "Select file> ",
     actions = {
       ["default"] = function(selected)
         if not selected or #selected == 0 then return end
@@ -62,7 +61,7 @@ end
 
 local function mini_pick_ui(callback)
   local mini_pick = require("mini.pick")
-  local selected = mini_pick.builtin.files(nil, {
+  mini_pick.builtin.files(nil, {
     source = {
       choose = function(selected)
         if selected and callback then

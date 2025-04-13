@@ -22,22 +22,15 @@ function M.load()
   if selection then state.selection = selection end
 end
 
-function M.add_files(files)
-  if not files or type(files) ~= "table" then
-    vim.notify("Expected a table of file paths", vim.log.levels.WARN)
-    return
-  end
-
+function M.add_file(file)
   if not state.additional_files then
     state.additional_files = {}
   end
 
-  for _, file in ipairs(files) do
-    if vim.fn.filereadable(file) == 1 then
-      table.insert(state.additional_files, file)
-    else
-      vim.notify("Could not read file: ")
-    end
+  if vim.fn.filereadable(file) == 1 then
+    table.insert(state.additional_files, file)
+  else
+    vim.notify("Could not read file: ")
   end
 end
 
@@ -92,7 +85,8 @@ function M.extract_from_message(text)
   local result = {
     prompt = vim.trim(text),
     file_path = nil,
-    selection = nil
+    selection = nil,
+    additional_files = nil
   }
 
   if text:match(delimiter) then
@@ -107,9 +101,26 @@ function M.extract_from_message(text)
         result.file_path = vim.trim(file_match)
       end
 
-      local selection_match = context_part:match(M.message_sections.selection .. "%s*\n(.*)")
+      -- Use non-greedy pattern to match selection text until the next section
+      local selection_match = context_part:match(M.message_sections.selection ..
+        "%s*\n(.-)" .. M.message_sections.additional_files)
+      if not selection_match then
+        -- If no additional_files section, match until the end
+        selection_match = context_part:match(M.message_sections.selection .. "%s*\n(.*)")
+      end
+
       if selection_match then
         result.selection = util.indent_code_block(selection_match)
+      end
+
+      -- Extract additional files if present
+      local additional_files_match = context_part:match(M.message_sections.additional_files .. "(.*)")
+      if additional_files_match then
+        result.additional_files = {}
+        -- Parse the list format: "- file/path"
+        for file in additional_files_match:gmatch("%-([^\n]+)") do
+          table.insert(result.additional_files, vim.trim(file))
+        end
       end
     end
   end
