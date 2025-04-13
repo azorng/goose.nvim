@@ -12,6 +12,7 @@ M.defaults = {
       close = '<leader>gq',
       toggle_fullscreen = '<leader>gf',
       select_session = '<leader>gs',
+      resume_session = '<leader>gr',
     },
     window = {
       submit = '<cr>',

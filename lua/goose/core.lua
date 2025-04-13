@@ -5,11 +5,16 @@ local session = require("goose.session")
 local ui = require("goose.ui.ui")
 local job = require('goose.job')
 
-function M.select_session()
+function M.select_session(callback)
   local all_sessions = session.get_all_workspace_sessions()
   local filtered_sessions = vim.tbl_filter(function(s)
     return s.description ~= '' and s ~= nil
   end, all_sessions)
+
+  if not filtered_sessions or #filtered_sessions == 0 then
+    vim.notify("No named sessions found for this workspace.", vim.log.levels.INFO)
+    return
+  end
 
   ui.select_session(filtered_sessions, function(selected_session)
     if not selected_session then return end
@@ -18,6 +23,56 @@ function M.select_session()
       ui.render_output()
       ui.scroll_to_bottom()
     end
+    if callback then callback(selected_session) end
+  end)
+end
+
+function M.resume_session()
+  if not M.goose_ok() then return end
+
+  -- Get all workspace sessions
+  local all_sessions = session.get_all_workspace_sessions()
+  if not all_sessions or #all_sessions == 0 then
+    vim.notify("No sessions found for this workspace.", vim.log.levels.INFO)
+    return
+  end
+
+  -- Filter sessions to only keep those with descriptions (avoid empty sessions)
+  local filtered_sessions = vim.tbl_filter(function(s)
+    return s.description ~= '' and s ~= nil
+  end, all_sessions)
+
+  if #filtered_sessions == 0 then
+    vim.notify("No named sessions found for this workspace.", vim.log.levels.INFO)
+    return
+  end
+
+  -- Show a selection prompt with clear instructions
+  vim.ui.select(filtered_sessions, {
+    prompt = "Select a session to resume (by number):",
+    format_item = function(sess)
+      local modified = sess.modified and require("util").time_ago(sess.modified) or "unknown time"
+      return sess.description .. " ~ " .. modified .. " [" .. sess.name .. "]"
+    end
+  }, function(selected_session)
+    if not selected_session then return end
+
+    -- Set the selected session as active
+    state.active_session = selected_session
+
+    -- Open the UI windows if they're not already open
+    if state.windows == nil then
+      state.windows = ui.create_windows()
+    end
+
+    -- Force a complete refresh of the session content
+    ui.render_output(true) -- passing true to force a full refresh
+
+    -- Focus the input window to make it ready for the user
+    ui.focus_input()
+
+    -- Confirm to the user that the session was loaded
+    vim.notify("Resumed session: " .. selected_session.description, vim.log.levels.INFO)
   end)
 end
 

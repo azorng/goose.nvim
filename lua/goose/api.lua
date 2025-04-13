@@ -62,6 +62,11 @@ function M.select_session()
   return true
 end
 
+function M.resume_session()
+  core.resume_session()
+  return true
+end
+
 -- Command definitions that call the API functions
 M.commands = {
   open_input = {
@@ -117,6 +122,14 @@ M.commands = {
     desc = "Select and load a goose session",
     fn = function()
       M.select_session()
+    end
+  },
+
+  resume_session = {
+    name = "GooseResumeSession",
+    desc = "Resume a previous goose session with full history",
+    fn = function()
+      M.resume_session()
     end
   },
 

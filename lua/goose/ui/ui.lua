@@ -104,8 +104,8 @@ function M.clear_output()
   renderer.render_markdown()
 end
 
-function M.render_output()
-  renderer.render(state.windows, false)
+function M.render_output(force_refresh)
+  renderer.render(state.windows, force_refresh)
 end
 
 function M.stop_render_output()
@@ -133,14 +133,14 @@ function M.select_session(sessions, cb)
   local util = require("util")
 
   vim.ui.select(sessions, {
-    prompt = "",
+    prompt = "Select a session (by number):",
     format_item = function(session)
       if not session.modified then
         return session.description
       end
 
       local modified = util.time_ago(session.modified)
-      return session.description .. " ~ " .. modified
+      return session.description .. " ~ " .. modified .. " [" .. session.name .. "]"
     end
   }, function(session_choice)
     cb(session_choice)
