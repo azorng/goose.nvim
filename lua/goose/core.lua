@@ -88,7 +88,9 @@ end
 function M.add_file_to_context(opts)
   if opts.from_mention == true then
     require('goose.ui.file_mention').mention(function(file)
-      context.add_files({ file.path })
+      if file then
+        context.add_files({ file.path })
+      end
     end)
   elseif opts.path then
     context.add_files(opts.path)
