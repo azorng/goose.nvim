@@ -87,23 +87,20 @@ function M.setup_autocmds(windows)
       picker.open(function(selection)
         print(vim.inspect(selection))
         if selection then
-          vim.schedule(function()
-            -- Get current line content
-            local current_line = vim.api.nvim_buf_get_lines(windows.input_buf, row - 1, row, false)[1]
+          -- Get current line content
+          local current_line = vim.api.nvim_buf_get_lines(windows.input_buf, row - 1, row, false)[1]
 
-            -- Find the '@' we inserted
-            local at_pos = col
+          local new_line = current_line:sub(1, col) ..
+              '@' .. selection.file_name .. " " .. current_line:sub(col + 2)
 
-            local new_line = current_line:sub(1, at_pos) ..
-                '@' .. selection.file_name .. " " .. current_line:sub(at_pos + 2)
+          vim.api.nvim_buf_set_lines(windows.input_buf, row - 1, row, false, { new_line })
 
-            vim.api.nvim_buf_set_lines(windows.input_buf, row - 1, row, false, { new_line })
+          require('goose.context').add_files({ selection.path })
 
-            vim.defer_fn(function()
-              vim.cmd('startinsert')
-              vim.api.nvim_win_set_cursor(windows.input_win, { row, at_pos + 1 + #selection.file_name + 1 })
-            end, 10)
-          end)
+          vim.defer_fn(function()
+            vim.cmd('startinsert')
+            vim.api.nvim_win_set_cursor(windows.input_win, { row, col + 1 + #selection.file_name + 1 })
+          end, 10)
         end
       end)
     end,

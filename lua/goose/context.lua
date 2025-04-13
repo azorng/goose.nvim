@@ -9,8 +9,9 @@ local M = {}
 
 M.message_sections = {
   context = 'Goose context:',
-  file_path = 'File:',
+  current_file = 'Current file:',
   selection = 'Selected text:',
+  additional_files = 'Additional files:'
 }
 
 function M.load()
@@ -21,9 +22,26 @@ function M.load()
   if selection then state.selection = selection end
 end
 
+function M.add_files(files)
+  if not files or type(files) ~= "table" then
+    return
+  end
+
+  if not state.additional_files then
+    state.additional_files = {}
+  end
+
+  for _, file in ipairs(files) do
+    if vim.fn.filereadable(file) == 1 then
+      table.insert(state.additional_files, file)
+    end
+  end
+end
+
 function M.reset()
   state.current_file = nil
   state.selection = nil
+  state.additional_files = nil
 end
 
 function M.get_current_file()
@@ -53,12 +71,14 @@ end
 function M.format_message(prompt)
   -- Create template variables
   local template_vars = {
-    file_path = state.current_file,
+    current_file = state.current_file,
     prompt = prompt,
     selection = state.selection,
     context_section = M.message_sections.context,
-    file_path_section = M.message_sections.file_path,
-    selection_section = M.message_sections.selection
+    file_path_section = M.message_sections.current_file,
+    selection_section = M.message_sections.selection,
+    additional_files_section = M.message_sections.additional_files,
+    additional_files = state.additional_files
   }
 
   return template.render_template(template_vars)
@@ -79,7 +99,7 @@ function M.extract_from_message(text)
     if parts[2] then
       local context_part = parts[2]
 
-      local file_match = context_part:match(M.message_sections.file_path .. "%s*([^\n]+)")
+      local file_match = context_part:match(M.message_sections.current_file .. "%s*([^\n]+)")
       if file_match then
         result.file_path = vim.trim(file_match)
       end

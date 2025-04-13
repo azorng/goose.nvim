@@ -1,12 +1,16 @@
 {{ prompt }}
 
-{% if file_path or selection %}
+{% if current_file or selection or additional_files %}
 {{ context_section }}
 {% endif %}
-{% if file_path %}
-{{ file_path_section }} {{ file_path }}
+{% if current_file %}
+{{ file_path_section }} {{ current_file }}
 {% endif %}
 {% if selection %}
 {{ selection_section }}
 {{ selection }}
 {% endif %}
+{% if additional_files %}
+{{ additional_files_section }}
+{% for file in additional_files %}- {{ file }}
+{% endfor %}{% endif %}
