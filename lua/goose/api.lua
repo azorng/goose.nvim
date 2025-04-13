@@ -48,6 +48,47 @@ function M.run_new_session(prompt)
   return true
 end
 
+function M.toggle_code_ui()
+  local windows = state.windows
+  if not windows then
+    -- If Goose UI isn't open, open it
+    core.open({ new_session = false, focus = "output" })
+    return true
+  end
+
+  -- Get the current window ID
+  local current_win = vim.api.nvim_get_current_win()
+  
+  -- Check if we're in a Goose window
+  if current_win == windows.input_win or current_win == windows.output_win then
+    -- Remember the last buffer we were in before switching to Goose
+    if state.last_code_buffer and vim.api.nvim_buf_is_valid(state.last_code_buffer) then
+      local buf_windows = vim.fn.win_findbuf(state.last_code_buffer)
+      if #buf_windows > 0 then
+        vim.api.nvim_set_current_win(buf_windows[1])
+        return true
+      end
+    end
+    
+    -- If we can't return to the last buffer, find any non-goose window to switch to
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if win ~= windows.input_win and win ~= windows.output_win and vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_set_current_win(win)
+        return true
+      end
+    end
+    
+    -- If no other windows exist, we stay in the current Goose window
+  else
+    -- Save current buffer before switching to Goose
+    state.last_code_buffer = vim.api.nvim_get_current_buf()
+    -- Focus output window
+    vim.api.nvim_set_current_win(windows.output_win)
+  end
+  
+  return true
+end
+
 function M.toggle_fullscreen()
   if not state.windows then
     core.open({ new_session = false, focus = "output" })
@@ -130,6 +171,14 @@ M.commands = {
     desc = "Resume a previous goose session with full history",
     fn = function()
       M.resume_session()
+    end
+  },
+
+  toggle_code_ui = {
+    name = "GooseToggleCodeUI",
+    desc = "Toggle between code buffer and goose UI",
+    fn = function()
+      M.toggle_code_ui()
     end
   },
 

@@ -75,6 +75,7 @@ require('goose').setup({
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
       resume_session = '<leader>gr',         -- Resume a previous session with full conversation history
+      toggle_code_ui = '<leader>gt',         -- Toggle between code buffer and goose UI
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
@@ -82,6 +83,7 @@ require('goose').setup({
       stop = '<C-c>',                      -- Stop a running job
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
+      toggle_input_output = '<C-n>',       -- Toggle between input and output windows
     }
   },
   ui = {
@@ -110,10 +112,12 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
 | Resume session with history | `<leader>gr` | `:GooseResumeSession` | `require('goose.api').resume_session()` |
+| Toggle between code and goose UI | `<leader>gt` | `:GooseToggleCodeUI` | `require('goose.api').toggle_code_ui()` |
 | Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
+| Toggle between input and output windows | `<C-n>` | - | - |
 
 ## 🔧 Setting Up Goose CLI
 

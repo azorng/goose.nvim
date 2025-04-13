@@ -48,7 +48,14 @@ function M.setup_autocmds(windows)
     group = group,
     buffer = windows.output_buf,
     callback = function()
-      M.setup_placeholder(windows)
+      -- Only set placeholder if the input is empty
+      local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+      if #lines == 1 and lines[1] == "" then
+        M.setup_placeholder(windows)
+      else
+        -- Make sure there's no placeholder if there's text
+        vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+      end
       vim.cmd('stopinsert')
     end
   })
@@ -193,6 +200,14 @@ function M.setup_keymaps(windows)
   vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
     require('goose.core').stop()
   end, { buffer = windows.input_buf, silent = true })
+  
+  vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_input_output, function()
+    require('goose.ui.ui').toggle_input_output()
+  end, { buffer = windows.input_buf, silent = true })
+  
+  vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_input_output, function()
+    require('goose.ui.ui').toggle_input_output()
+  end, { buffer = windows.output_buf, silent = true })
 end
 
 return M

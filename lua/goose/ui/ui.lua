@@ -60,11 +60,45 @@ function M.focus_input()
   local windows = state.windows
   vim.api.nvim_set_current_win(windows.input_win)
   vim.cmd('startinsert')
+  
+  -- Only show placeholder if input is empty
+  local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+  if #lines == 1 and lines[1] == "" then
+    require('goose.ui.window_config').setup_placeholder(windows)
+  else
+    vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+  end
 end
 
 function M.focus_output()
   local windows = state.windows
   vim.api.nvim_set_current_win(windows.output_win)
+  
+  -- Always clear any placeholder when moving to output window
+  vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+end
+
+function M.toggle_input_output()
+  local windows = state.windows
+  local current_win = vim.api.nvim_get_current_win()
+  
+  if current_win == windows.input_win then
+    -- Always clear any placeholder when moving to output window
+    vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+    vim.api.nvim_set_current_win(windows.output_win)
+  elseif current_win == windows.output_win then
+    vim.api.nvim_set_current_win(windows.input_win)
+    vim.cmd('startinsert')
+    
+    -- Only show placeholder if input is empty
+    local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+    if #lines == 1 and lines[1] == "" then
+      require('goose.ui.window_config').setup_placeholder(windows)
+    else
+      -- Make sure there's no placeholder if there's text
+      vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+    end
+  end
 end
 
 function M.clear_output()

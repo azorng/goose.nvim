@@ -13,6 +13,7 @@ M.defaults = {
       toggle_fullscreen = '<leader>gf',
       select_session = '<leader>gs',
       resume_session = '<leader>gr',
+      toggle_code_ui = '<leader>gt',
     },
     window = {
       submit = '<cr>',
@@ -20,6 +21,7 @@ M.defaults = {
       stop = '<C-c>',
       next_message = ']]',
       prev_message = '[[',
+      toggle_input_output = '<C-n>',
     }
   },
   ui = {

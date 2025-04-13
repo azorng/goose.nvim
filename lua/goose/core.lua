@@ -159,4 +159,36 @@ function M.goose_ok()
   return true
 end
 
+function M.toggle_focus()
+  -- If Goose windows aren't open, nothing to toggle
+  if not state.windows then
+    vim.notify("Goose windows are not open", vim.log.levels.INFO)
+    return
+  end
+  
+  local current_win = vim.api.nvim_get_current_win()
+  
+  -- Check if we're in a Goose window
+  if current_win == state.windows.input_win or current_win == state.windows.output_win then
+    -- We're in a Goose window, switch to the previous buffer if it exists
+    if state.previous_window and vim.api.nvim_win_is_valid(state.previous_window) then
+      vim.api.nvim_set_current_win(state.previous_window)
+    else
+      -- Fallback: find a non-Goose window
+      local windows = vim.api.nvim_list_wins()
+      for _, win in ipairs(windows) do
+        if win ~= state.windows.input_win and win ~= state.windows.output_win then
+          vim.api.nvim_set_current_win(win)
+          break
+        end
+      end
+    end
+  else
+    -- We're in a non-Goose window, store it and switch to Goose
+    state.previous_window = current_win
+    -- Focus the output window by default
+    vim.api.nvim_set_current_win(state.windows.output_win)
+  end
+end
+
 return M

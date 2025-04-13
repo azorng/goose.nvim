@@ -33,6 +33,10 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, global.resume_session, function()
     vim.cmd(cmds.resume_session.name)
   end, { silent = false, desc = cmds.resume_session.desc })
+  
+  vim.keymap.set({ 'n', 'v' }, global.toggle_code_ui, function()
+    vim.cmd(cmds.toggle_code_ui.name)
+  end, { silent = false, desc = cmds.toggle_code_ui.desc })
 end
 
 return M
