@@ -3,7 +3,7 @@
 
 local template = require("goose.template")
 local state = require("goose.state")
-local util = require("util")
+local util = require("goose.util")
 
 local M = {}
 
