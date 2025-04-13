@@ -1,6 +1,7 @@
 local M = {}
 
 local context_module = require('goose.context')
+local state = require("goose.state")
 
 M.separator = {
   "---",
@@ -13,7 +14,22 @@ function M.format_session(session_path)
   local session_lines = vim.fn.readfile(session_path)
   if #session_lines == 0 then return nil end
 
-  local output_lines = { "" }
+  -- Always show session info if available
+  local output_lines = {}
+  if state.session_info then
+    table.insert(output_lines, "")
+    table.insert(output_lines, "session started | provider: " .. state.session_info.provider .. " model: " .. state.session_info.model)
+    table.insert(output_lines, "    working directory: " .. vim.fn.getcwd())
+    table.insert(output_lines, "    logging to " .. state.session_info.path)
+    table.insert(output_lines, "")
+    
+    -- Add a separator after the session info
+    for _, line in ipairs(M.separator) do
+      table.insert(output_lines, line)
+    end
+  else
+    table.insert(output_lines, "")
+  end
 
   local need_separator = false
 

@@ -19,6 +19,11 @@ function M.select_session(callback)
   ui.select_session(filtered_sessions, function(selected_session)
     if not selected_session then return end
     state.active_session = selected_session
+    
+    -- Set the session info for display
+    state.session_info = require('goose.job').get_session_info()
+    state.session_info.path = selected_session.path
+    
     if state.windows then
       ui.render_output()
       ui.scroll_to_bottom()
@@ -59,6 +64,10 @@ function M.resume_session()
 
     -- Set the selected session as active
     state.active_session = selected_session
+    
+    -- Set the session info for display
+    state.session_info = require('goose.job').get_session_info()
+    state.session_info.path = selected_session.path
 
     -- Open the UI windows if they're not already open
     if state.windows == nil then
