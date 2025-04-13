@@ -62,7 +62,7 @@ require('goose').setup({
 | Open input window (current session) | `<leader>gi` | `:GooseOpenInput` | `require('goose.api').open_input()` |
 | Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
 | Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
-| Close UI windows | `ESC` | `:GooseClose` | `require('goose.api').close()` |
+| Close UI windows | `<leader>gq` (global), `<ESC>` (in window) | `:GooseClose` | `require('goose.api').close()` |
 | Stop running job | `<C-c>` (in window) | `:GooseStop` | `require('goose.api').stop()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Resume session with history | `<leader>gr` | `:GooseResumeSession` | `require('goose.api').resume_session()` |
