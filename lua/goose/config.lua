@@ -22,6 +22,7 @@ M.defaults = {
       next_message = ']]',
       prev_message = '[[',
       toggle_input_output = '<C-n>',
+      mention_file = '@'
     }
   },
   ui = {

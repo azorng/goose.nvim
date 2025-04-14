@@ -7,27 +7,27 @@ function M.setup(keymap)
   local global = keymap.global
 
   vim.keymap.set({ 'n', 'v' }, global.open_input, function()
-    vim.cmd(cmds.open_input.name)
+    api.open_input()
   end, { silent = false, desc = cmds.open_input.desc })
 
   vim.keymap.set({ 'n', 'v' }, global.open_input_new_session, function()
-    vim.cmd(cmds.open_input_new_session.name)
+    api.open_input_new_session()
   end, { silent = false, desc = cmds.open_input_new_session.desc })
 
   vim.keymap.set({ 'n', 'v' }, global.open_output, function()
-    vim.cmd(cmds.open_output.name)
+    api.open_output()
   end, { silent = false, desc = cmds.open_output.desc })
 
   vim.keymap.set({ 'n', 'v' }, global.close, function()
-    vim.cmd(cmds.close.name)
+    api.close()
   end, { silent = false, desc = cmds.close.desc })
 
   vim.keymap.set({ 'n', 'v' }, global.toggle_fullscreen, function()
-    vim.cmd(cmds.toggle_fullscreen.name)
+    api.toggle_fullscreen()
   end, { silent = false, desc = cmds.toggle_fullscreen.desc })
 
   vim.keymap.set({ 'n', 'v' }, global.select_session, function()
-    vim.cmd(cmds.select_session.name)
+    api.select_session()
   end, { silent = false, desc = cmds.select_session.desc })
   
   vim.keymap.set({ 'n', 'v' }, global.resume_session, function()

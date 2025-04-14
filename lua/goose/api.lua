@@ -5,6 +5,7 @@ local state = require("goose.state")
 local M = {}
 
 -- Core API functions
+
 function M.open_input()
   core.open({ new_session = false, focus = "input" })
   return true

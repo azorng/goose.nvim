@@ -64,6 +64,21 @@ describe("goose.keymap", function()
     end)
 
     it("sets up callbacks that execute the correct commands", function()
+      -- Mock API functions to track calls
+      local original_api_functions = {}
+      local api_calls = {}
+      local api = require("goose.api")
+      
+      -- Save original functions
+      for k, v in pairs(api) do
+        if type(v) == "function" then
+          original_api_functions[k] = v
+          api[k] = function()
+            table.insert(api_calls, k)
+          end
+        end
+      end
+      
       -- Setup the keymap
       keymap.setup({
         global = {
@@ -78,27 +93,32 @@ describe("goose.keymap", function()
 
       -- Call the first callback (continue session)
       set_keymaps[1].callback()
-      assert.equal("GooseOpenInput", cmd_calls[1])
+      assert.equal("open_input", api_calls[1])
 
       -- Call the second callback (new session)
       set_keymaps[2].callback()
-      assert.equal("GooseOpenInputNewSession", cmd_calls[2])
+      assert.equal("open_input_new_session", api_calls[2])
 
       -- Call the third callback (open output)
       set_keymaps[3].callback()
-      assert.equal("GooseOpenOutput", cmd_calls[3])
+      assert.equal("open_output", api_calls[3])
 
       -- Call the fourth callback (close)
       set_keymaps[4].callback()
-      assert.equal("GooseClose", cmd_calls[4])
+      assert.equal("close", api_calls[4])
 
       -- Call the fifth callback (toggle fullscreen)
       set_keymaps[5].callback()
-      assert.equal("GooseToggleFullscreen", cmd_calls[5])
+      assert.equal("toggle_fullscreen", api_calls[5])
 
       -- Call the sixth callback (select session)
       set_keymaps[6].callback()
-      assert.equal("GooseSelectSession", cmd_calls[6])
+      assert.equal("select_session", api_calls[6])
+      
+      -- Restore original API functions
+      for k, v in pairs(original_api_functions) do
+        api[k] = v
+      end
     end)
   end)
 end)
