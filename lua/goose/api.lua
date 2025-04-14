@@ -63,6 +63,35 @@ function M.select_session()
   return true
 end
 
+function M.toggle_pane()
+  if not state.windows then
+    core.open({ new_session = false, focus = "output" })
+    return true
+  end
+
+  local current_win = vim.api.nvim_get_current_win()
+  if current_win == state.windows.input_win then
+    -- When moving from input to output, exit insert mode first
+    vim.cmd('stopinsert')
+    vim.api.nvim_set_current_win(state.windows.output_win)
+  else
+    -- When moving from output to input, just change window
+    -- (don't automatically enter insert mode)
+    vim.api.nvim_set_current_win(state.windows.input_win)
+    
+    -- Fix placeholder text when switching to input window
+    local lines = vim.api.nvim_buf_get_lines(state.windows.input_buf, 0, -1, false)
+    if #lines == 1 and lines[1] == "" then
+      -- Only show placeholder if the buffer is empty
+      require('goose.ui.window_config').setup_placeholder(state.windows)
+    else
+      -- Clear placeholder if there's text in the buffer
+      vim.api.nvim_buf_clear_namespace(state.windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+    end
+  end
+  return true
+end
+
 -- Command definitions that call the API functions
 M.commands = {
   open_input = {
@@ -118,6 +147,14 @@ M.commands = {
     desc = "Select and load a goose session",
     fn = function()
       M.select_session()
+    end
+  },
+
+  toggle_pane = {
+    name = "GooseTogglePane",
+    desc = "Toggle between input and output panes",
+    fn = function()
+      M.toggle_pane()
     end
   },
 
