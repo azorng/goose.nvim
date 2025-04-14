@@ -48,7 +48,6 @@ function M.setup_autocmds(windows)
     group = group,
     buffer = windows.output_buf,
     callback = function()
-      M.setup_placeholder(windows)
       vim.cmd('stopinsert')
     end
   })
@@ -57,7 +56,18 @@ function M.setup_autocmds(windows)
   vim.api.nvim_create_autocmd('WinEnter', {
     group = group,
     buffer = windows.input_buf,
-    callback = function() vim.cmd('startinsert') end
+    callback = function() 
+      -- Don't automatically enter insert mode when switching windows
+      -- Check if the buffer has content
+      local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+      if #lines == 1 and lines[1] == "" then
+        -- Only show placeholder if the buffer is empty
+        M.setup_placeholder(windows)
+      else
+        -- Clear placeholder if there's text in the buffer
+        vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+      end
+    end
   })
 
   vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
@@ -198,6 +208,15 @@ function M.setup_keymaps(windows)
   vim.keymap.set('i', window_keymap.mention_file, function()
     require('goose.core').add_file_to_context()
   end, { buffer = windows.input_buf, silent = true })
+
+  -- Add toggle pane keymapping for both buffers in normal and insert mode
+  vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_pane, function()
+    api.toggle_pane()
+  end, { buffer = windows.input_buf, silent = true })
+
+  vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_pane, function()
+    api.toggle_pane()
+  end, { buffer = windows.output_buf, silent = true })
 end
 
 return M
