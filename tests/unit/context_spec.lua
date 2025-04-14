@@ -43,17 +43,20 @@ describe("goose.context", function()
   end)
 
   describe("get_current_selection", function()
-    it("returns selected text when in visual mode", function()
+    it("returns selected text and lines when in visual mode", function()
       -- Setup a visual selection (line 2 to line 3)
       vim.cmd("normal! 2Gvj$")
 
       -- Call the function
-      local selection = context.get_current_selection()
+      local selection_result = context.get_current_selection()
 
-      -- Check the returned selection contains the expected text
-      assert.is_not_nil(selection)
-      assert.truthy(selection:match("Line 2"))
-      assert.truthy(selection:match("Line 3"))
+      -- Check the returned selection contains the expected text and lines
+      assert.is_not_nil(selection_result)
+      assert.is_not_nil(selection_result.text)
+      assert.is_not_nil(selection_result.lines)
+      assert.truthy(selection_result.text:match("Line 2"))
+      assert.truthy(selection_result.text:match("Line 3"))
+      assert.equal("(2, 3)", selection_result.lines)
     end)
 
     it("returns nil when not in visual mode", function()
@@ -61,10 +64,10 @@ describe("goose.context", function()
       vim.cmd("normal! G")
 
       -- Call the function
-      local selection = context.get_current_selection()
+      local selection_result = context.get_current_selection()
 
       -- Should be nil since we're not in visual mode
-      assert.is_nil(selection)
+      assert.is_nil(selection_result)
     end)
   end)
 
@@ -79,9 +82,10 @@ describe("goose.context", function()
         return "rendered template"
       end
 
-      -- Set state
-      state.current_file = test_file
-      state.selection = nil
+      -- Set up context
+      context.reset()
+      context.context.current_file = test_file
+      context.context.selected_text = nil
 
       local prompt = "Help me with this code"
       local message = context.format_message(prompt)
@@ -98,7 +102,7 @@ describe("goose.context", function()
       assert.equal("rendered template", message)
     end)
 
-    it("includes selection in template variables when available", function()
+    it("includes selection and selection lines in template variables when available", function()
       -- Mock template.render_template
       local original_render = template.render_template
       local called_with_vars = nil
@@ -108,9 +112,11 @@ describe("goose.context", function()
         return "rendered template with selection"
       end
 
-      -- Set state
-      state.current_file = test_file
-      state.selection = "Selected text for testing"
+      -- Set up context
+      context.reset()
+      context.context.current_file = test_file
+      context.context.selected_text = "Selected text for testing"
+      context.context.selected_lines = "(10, 15)"
 
       local prompt = "Help with this selection"
       local message = context.format_message(prompt)
@@ -122,10 +128,41 @@ describe("goose.context", function()
       assert.truthy(called_with_vars)
       assert.equal(test_file, called_with_vars.current_file)
       assert.equal(prompt, called_with_vars.prompt)
-      assert.equal("Selected text for testing", called_with_vars.selection)
+      assert.equal("Selected text for testing", called_with_vars.selected_text)
+      assert.equal("(10, 15)", called_with_vars.selected_lines)
 
       -- Verify the message was returned
       assert.equal("rendered template with selection", message)
     end)
+  end)
+end)
+
+describe("extract_from_message", function()
+  it("extracts context elements from a formatted message", function()
+    -- Updated to use 'Editor context:' instead of 'Goose context:'
+    local message = [[
+Help me with this code
+
+Editor context:
+Current file: /path/to/file.lua
+Selected text:
+function test()
+  return "hello"
+end
+Selected lines: (10, 15)
+Additional files:
+- /path/to/other.lua
+- /path/to/another.lua
+]]
+
+    local result = context.extract_from_message(message)
+
+    assert.equal("Help me with this code", result.prompt)
+    assert.equal("/path/to/file.lua", result.current_file)
+    assert.truthy(result.selected_text:match("function test"))
+    assert.equal("(10, 15)", result.selected_lines)
+    assert.equal(2, #result.additional_files)
+    assert.equal("/path/to/other.lua", result.additional_files[1])
+    assert.equal("/path/to/another.lua", result.additional_files[2])
   end)
 end)

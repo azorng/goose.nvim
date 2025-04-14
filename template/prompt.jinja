@@ -1,14 +1,18 @@
 {{ prompt }}
 
-{% if current_file or selection or additional_files %}
+{% if current_file or selected_text or cursor_position or additional_files %}
 {{ context_section }}
 {% endif %}
 {% if current_file %}
 {{ file_path_section }} {{ current_file }}
 {% endif %}
-{% if selection %}
-{{ selection_section }}
-{{ selection }}
+{% if selected_text %}
+{{ selected_text_section }}
+{{ selected_text }}
+{{ selected_lines_section }} {{ selected_lines }}
+{% endif %}
+{% if cursor_position %}
+{{ cursor_position_section }} {{ cursor_position }}
 {% endif %}
 {% if additional_files %}
 {{ additional_files_section }}

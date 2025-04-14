@@ -74,7 +74,7 @@ function M.setup_autocmds(windows)
     buffer = windows.input_buf,
     callback = function()
       local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
-      state.prompt = lines
+      state.input_content = lines
       if #lines == 1 and lines[1] == "" then
         M.setup_placeholder(windows)
       else
@@ -146,8 +146,9 @@ function M.setup_resize_handler(windows)
 end
 
 local function recover_input(windows)
-  local input_content = state.prompt
+  local input_content = state.input_content
   vim.api.nvim_buf_set_lines(windows.input_buf, 0, -1, false, input_content)
+  require('goose.ui.mention').highlight_all_mentions(windows.input_buf)
 end
 
 function M.setup_after_actions(windows)

@@ -25,6 +25,7 @@ This plugin provides a bridge between neovim and the [goose](https://github.com/
 - [Installation](#-installation)
 - [Configuration](#️-configuration)
 - [Usage](#-usage)
+- [Context](#-context)
 - [Setting Up Goose CLI](#-setting-up-goose-cli)
 
 ## 📋 Requirements
@@ -81,7 +82,8 @@ require('goose').setup({
       stop = '<C-c>',                      -- Stop a running job
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
-      mention_file = '@'                   -- Pick a file and add to context
+      mention_file = '@'                   -- Pick a file and add to context. See File Mentions section
+      toggle_pane = '<C-n>'                -- Toggle between input and output panes
     }
   },
   ui = {
@@ -98,22 +100,42 @@ require('goose').setup({
 
 The plugin provides the following actions that can be triggered via keymaps, commands, or the Lua API:
 
-> **Note:** Buffer context is only set by calling the open actions 
-
 | Action | Default keymap | Command | API Function |
 |-------------|--------|---------|---------|
 | Open input window (current session) | `<leader>gi` | `:GooseOpenInput` | `require('goose.api').open_input()` |
 | Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
 | Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
 | Close UI windows | `<leader>gq` | `:GooseClose` | `require('goose.api').close()` |
-| Stop running job | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
-| Pick a file and add to context | `@` |- | -|
+| Stop running job | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
+| [Pick a file and add to context](#file-mentions) | `@` |- | -|
 | Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
+| Toggle input/output panes | `<C-n>` | - | - |
+
+## 📝 Context
+
+When using any of the Open actions in the [Usage](#-usage) section, goose.nvim automatically captures and includes editor context in your conversation with Goose. This contextual information helps Goose understand what you're working on and provide more relevant assistance.
+
+### Captured context information
+
+The following context information is automatically captured and included in your conversations:
+
+| Context Type | Description |
+|-------------|-------------|
+| Current File | Path to the file currently open in the editor |
+| Selected Text | Text currently selected in visual mode |
+| Selected Lines | Line numbers of the current selection (start, end) |
+| Cursor Position | Current cursor position (line, column) |
+| Additional Files | Other relevant files you've added to the conversation |
+
+### Adding more files to context through file mentions
+
+You can reference files in your project directly in your conversations with Goose. This is useful when you want to ask about or provide context about specific files. Type `@` in the input window to trigger the file picker. 
+Supported pickers include [`fzf-lua`](https://github.com/ibhagwan/fzf-lua), [`telescope`](https://github.com/nvim-telescope/telescope.nvim), [`mini.pick`](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-pick.md), [`snacks`](https://github.com/folke/snacks.nvim/blob/main/docs/picker.md)
 
 ## 🔧 Setting Up Goose CLI
 

@@ -24,6 +24,8 @@ end
 function M.open(opts)
   if not M.goose_ok() then return end
 
+  context.load()
+
   if state.windows == nil then
     state.windows = ui.create_windows()
   end
@@ -37,8 +39,6 @@ function M.open(opts)
     end
     ui.render_output()
   end
-
-  context.load()
 
   if opts.focus == "input" then
     ui.focus_input()
@@ -86,10 +86,12 @@ function M.run(prompt, opts)
 end
 
 function M.add_file_to_context()
-  require('goose.ui.file_mention').mention(function(file)
-    if file then
+  local picker = require('goose.ui.file_picker')
+  require('goose.ui.mention').mention(function(mention_cb)
+    picker.pick(function(file)
+      mention_cb(file.name)
       context.add_file(file.path)
-    end
+    end)
   end)
 end
 
