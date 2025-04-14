@@ -59,6 +59,11 @@ function M.toggle_fullscreen()
 end
 
 function M.select_session()
+  -- If windows aren't showing, open them first
+  if not state.windows then
+    core.open({ new_session = false, focus = "output" })
+  end
+  
   core.select_session()
   return true
 end
