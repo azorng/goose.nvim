@@ -118,7 +118,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 
 ## 📝 Context
 
-When using any of the Open actions in the [Usage](#🧰-usage) section, goose.nvim automatically captures and includes editor context in your conversation with Goose. This contextual information helps Goose understand what you're working on and provide more relevant assistance.
+When using any of the Open actions in the [Usage](#-usage) section, goose.nvim automatically captures and includes editor context in your conversation with Goose. This contextual information helps Goose understand what you're working on and provide more relevant assistance.
 
 ### Captured context information
 
