@@ -4,7 +4,6 @@ local state = require("goose.state")
 local renderer = require('goose.ui.output_renderer')
 
 function M.scroll_to_bottom()
-  vim.cmd("normal! zb")
   local line_count = vim.api.nvim_buf_line_count(state.windows.output_buf)
   vim.api.nvim_win_set_cursor(state.windows.output_win, { line_count, 0 })
 

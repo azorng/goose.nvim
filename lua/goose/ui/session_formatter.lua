@@ -47,9 +47,9 @@ function M._format_user_message(lines, text)
   if context.current_file then
     current_file_name_context = vim.fn.fnamemodify(context.current_file, ":t")
 
-    -- context selection already includes file name
-    table.insert(lines, "@" .. current_file_name_context)
-    table.insert(lines, "")
+    -- show current file name on prompt? 
+    -- table.insert(lines, "@" .. current_file_name_context)
+    -- table.insert(lines, "")
   end
 
   for _, line in ipairs(vim.split(context.prompt, "\n")) do

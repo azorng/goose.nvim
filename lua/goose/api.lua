@@ -78,7 +78,7 @@ function M.toggle_pane()
     -- When moving from output to input, just change window
     -- (don't automatically enter insert mode)
     vim.api.nvim_set_current_win(state.windows.input_win)
-    
+
     -- Fix placeholder text when switching to input window
     local lines = vim.api.nvim_buf_get_lines(state.windows.input_buf, 0, -1, false)
     if #lines == 1 and lines[1] == "" then
