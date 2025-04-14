@@ -34,7 +34,6 @@ end
 local function insert_mention(windows, row, col, name)
   local current_line = vim.api.nvim_buf_get_lines(windows.input_buf, row - 1, row, false)[1]
 
-  -- Format the filename with potential icon
   local insert_name = '@' .. name .. " "
 
   local new_line = current_line:sub(1, col) .. insert_name .. current_line:sub(col + 2)

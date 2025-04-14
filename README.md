@@ -115,7 +115,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
 
-### File Mentions
+## File Mentions
 
 You can reference files in your project directly in your conversations with Goose. This is useful when you want to ask about or provide context about specific files. Type `@` in the input window to trigger the file picker. 
 Supported pickers include [`fzf-lua`](https://github.com/ibhagwan/fzf-lua), [`telescope`](https://github.com/nvim-telescope/telescope.nvim), [`mini.pick`](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-pick.md), [`snacks`](https://github.com/folke/snacks.nvim/blob/main/docs/picker.md)

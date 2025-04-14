@@ -82,9 +82,10 @@ describe("goose.context", function()
         return "rendered template"
       end
 
-      -- Set state
-      state.current_file = test_file
-      state.selection_text = nil
+      -- Set up context
+      context.reset()
+      context.context.current_file = test_file
+      context.context.selected_text = nil
 
       local prompt = "Help me with this code"
       local message = context.format_message(prompt)
@@ -111,10 +112,11 @@ describe("goose.context", function()
         return "rendered template with selection"
       end
 
-      -- Set state
-      state.current_file = test_file
-      state.selection_text = "Selected text for testing"
-      state.selection_lines = "(10, 15)"
+      -- Set up context
+      context.reset()
+      context.context.current_file = test_file
+      context.context.selected_text = "Selected text for testing"
+      context.context.selected_lines = "(10, 15)"
 
       local prompt = "Help with this selection"
       local message = context.format_message(prompt)
@@ -126,8 +128,8 @@ describe("goose.context", function()
       assert.truthy(called_with_vars)
       assert.equal(test_file, called_with_vars.current_file)
       assert.equal(prompt, called_with_vars.prompt)
-      assert.equal("Selected text for testing", called_with_vars.selection)
-      assert.equal("(10, 15)", called_with_vars.selection_lines)
+      assert.equal("Selected text for testing", called_with_vars.selected_text)
+      assert.equal("(10, 15)", called_with_vars.selected_lines)
 
       -- Verify the message was returned
       assert.equal("rendered template with selection", message)
@@ -137,10 +139,11 @@ end)
 
 describe("extract_from_message", function()
   it("extracts context elements from a formatted message", function()
+    -- Updated to use 'Editor context:' instead of 'Goose context:'
     local message = [[
 Help me with this code
 
-Goose context:
+Editor context:
 Current file: /path/to/file.lua
 Selected text:
 function test()
