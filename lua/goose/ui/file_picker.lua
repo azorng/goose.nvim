@@ -88,7 +88,7 @@ local function snacks_picker_ui(callback)
   })
 end
 
-function M.open(callback)
+function M.pick(callback)
   local picker = get_best_picker()
 
   if not picker then

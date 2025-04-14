@@ -34,6 +34,8 @@ function M.execute(prompt, handle_output, handle_err)
 
   local args = M.build_args(prompt)
 
+  print("Running goose with args: " .. vim.inspect(args))
+
   state.goose_run_job = Job:new({
     command = 'goose',
     args = args,

@@ -188,6 +188,7 @@ function M.render(windows, force_refresh)
     M.handle_auto_scroll(windows)
   end
   render()
+  require('goose.ui.mention').highlight_all_mentions(windows.output_buf)
   M.render_session_bar()
   M.render_markdown()
 end

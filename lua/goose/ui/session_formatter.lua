@@ -42,29 +42,29 @@ end
 
 function M._format_user_message(lines, text)
   local context = context_module.extract_from_message(text)
+  local current_file_name_context = ""
+
+  if context.current_file then
+    current_file_name_context = vim.fn.fnamemodify(context.current_file, ":t")
+
+    -- context selection already includes file name
+    table.insert(lines, "@" .. current_file_name_context)
+    table.insert(lines, "")
+  end
 
   for _, line in ipairs(vim.split(context.prompt, "\n")) do
     table.insert(lines, "> " .. line)
   end
 
-  if context.file_path then
-    local file_name = vim.fn.fnamemodify(context.file_path, ":t")
-    local file_ext = vim.fn.fnamemodify(context.file_path, ":e")
-
-    -- context selection already includes file name
-    if not context.selection then
-      -- not convinced how it looks like, maybe for the future
-      -- M._format_context(lines, "📄file", file_name)
+  if context.selected_text then
+    local curret_file_extension_context = vim.fn.fnamemodify(current_file_name_context, ":e")
+    table.insert(lines, "")
+    table.insert(lines,
+      "```" .. curret_file_extension_context .. " " .. current_file_name_context .. " " .. context.selected_lines)
+    for _, line in ipairs(vim.split(context.selected_text, "\n")) do
+      table.insert(lines, line)
     end
-
-    if context.selection then
-      table.insert(lines, "")
-      table.insert(lines, "```" .. file_ext .. " " .. file_name)
-      for _, line in ipairs(vim.split(context.selection, "\n")) do
-        table.insert(lines, line)
-      end
-      table.insert(lines, "```")
-    end
+    table.insert(lines, "```")
   end
 end
 
