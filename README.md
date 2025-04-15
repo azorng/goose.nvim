@@ -130,6 +130,7 @@ The following editor context information is automatically captured and included 
 | Cursor Position | Current cursor position (line, column) |
 | Additional Files | Other relevant files you've added to the conversation |
 
+<a id="file-mentions"></a>
 ### Adding more files to context through file mentions
 
 You can reference files in your project directly in your conversations with Goose. This is useful when you want to ask about or provide context about specific files. Type `@` in the input window to trigger the file picker. 
