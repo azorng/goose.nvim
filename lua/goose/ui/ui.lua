@@ -15,18 +15,28 @@ end
 function M.close_windows(windows)
   if not windows then return end
 
-  renderer.stop()
+  if M.is_goose_focused() then M.return_to_last_code_win() end
 
-  -- Clear autocmd groups
-  pcall(vim.api.nvim_del_augroup_by_name, 'GooseResize')
-  pcall(vim.api.nvim_del_augroup_by_name, 'GooseWindows')
+  renderer.stop()
 
   -- Close windows and delete buffers
   pcall(vim.api.nvim_win_close, windows.input_win, true)
   pcall(vim.api.nvim_win_close, windows.output_win, true)
   pcall(vim.api.nvim_buf_delete, windows.input_buf, { force = true })
   pcall(vim.api.nvim_buf_delete, windows.output_buf, { force = true })
+
+  -- Clear autocmd groups
+  pcall(vim.api.nvim_del_augroup_by_name, 'GooseResize')
+  pcall(vim.api.nvim_del_augroup_by_name, 'GooseWindows')
+
   state.windows = nil
+end
+
+function M.return_to_last_code_win()
+  local last_win = state.last_code_win_before_goose
+  if last_win and vim.api.nvim_win_is_valid(last_win) then
+    vim.api.nvim_set_current_win(last_win)
+  end
 end
 
 function M.create_windows()
@@ -46,7 +56,7 @@ function M.create_windows()
   }
 
   configurator.setup_options(windows)
-  configurator.setup_placeholder(windows)
+  configurator.refresh_placeholder(windows)
   configurator.setup_autocmds(windows)
   configurator.setup_resize_handler(windows)
   configurator.setup_keymaps(windows)
@@ -55,15 +65,37 @@ function M.create_windows()
   return windows
 end
 
-function M.focus_input()
+function M.focus_input(opts)
+  opts = opts or {}
   local windows = state.windows
   vim.api.nvim_set_current_win(windows.input_win)
-  vim.cmd('startinsert')
+
+  if opts.restore_position and state.last_input_window_position then
+    vim.api.nvim_win_set_cursor(0, state.last_input_window_position)
+  end
 end
 
-function M.focus_output()
+function M.focus_output(opts)
+  opts = opts or {}
+
   local windows = state.windows
   vim.api.nvim_set_current_win(windows.output_win)
+
+  if opts.restore_position and state.last_output_window_position then
+    vim.api.nvim_win_set_cursor(0, state.last_output_window_position)
+  end
+end
+
+function M.is_goose_focused()
+  if not state.windows then return false end
+  -- are we in a goose window?
+  local current_win = vim.api.nvim_get_current_win()
+  return M.is_goose_window(current_win)
+end
+
+function M.is_goose_window(win)
+  local windows = state.windows
+  return win == windows.input_win or win == windows.output_win
 end
 
 function M.clear_output()
@@ -120,10 +152,7 @@ function M.toggle_fullscreen()
 
   require("goose.ui.window_config").configure_window_dimentions(windows)
 
-  local current_win = vim.api.nvim_get_current_win()
-  local is_goose_focused = current_win == windows.input_win or current_win == windows.output_win
-
-  if not is_goose_focused then
+  if not M.is_goose_focused() then
     vim.api.nvim_set_current_win(windows.output_win)
   end
 end
@@ -161,7 +190,7 @@ function M.toggle_pane()
     local lines = vim.api.nvim_buf_get_lines(state.windows.input_buf, 0, -1, false)
     if #lines == 1 and lines[1] == "" then
       -- Only show placeholder if the buffer is empty
-      require('goose.ui.window_config').setup_placeholder(state.windows)
+      require('goose.ui.window_config').refresh_placeholder(state.windows)
     else
       -- Clear placeholder if there's text in the buffer
       vim.api.nvim_buf_clear_namespace(state.windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)

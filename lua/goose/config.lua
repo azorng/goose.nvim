@@ -6,6 +6,7 @@ local M = {}
 M.defaults = {
   keymap = {
     global = {
+      toggle = '<leader>gg',
       open_input = '<leader>gi',
       open_input_new_session = '<leader>gI',
       open_output = '<leader>go',

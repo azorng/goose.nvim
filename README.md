@@ -12,7 +12,7 @@
 
 ## ✨ Description
 
-This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing editor context (current file, selections) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer.
+This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing [editor context](#-context) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer.
 
 <div align="center">
   <img src="https://i.imgur.com/2dkDllr.png" alt="Goose.nvim interface" width="85%" />
@@ -69,9 +69,10 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 require('goose').setup({
   keymap = {
     global = {
-      open_input = '<leader>gi',             -- Opens and focuses on input window. Loads current buffer context
-      open_input_new_session = '<leader>gI', -- Opens and focuses on input window. Loads current buffer context. Creates a new session
-      open_output = '<leader>go',            -- Opens and focuses on output window. Loads current buffer context
+      toggle = '<leader>gg',                 -- Open goose. Close if opened 
+      open_input = '<leader>gi',             -- Opens and focuses on input window on insert mode
+      open_input_new_session = '<leader>gI', -- Opens and focuses on input window on insert mode. Creates a new session
+      open_output = '<leader>go',            -- Opens and focuses on output window 
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
@@ -102,6 +103,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 
 | Action | Default keymap | Command | API Function |
 |-------------|--------|---------|---------|
+|  Open goose. Close if opened | `<leader>gg` | `:Goose` | `require('goose.api').toggle()` |
 | Open input window (current session) | `<leader>gi` | `:GooseOpenInput` | `require('goose.api').open_input()` |
 | Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
 | Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
@@ -118,11 +120,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 
 ## 📝 Context
 
-When using any of the Open actions in the [Usage](#-usage) section, goose.nvim automatically captures and includes editor context in your conversation with Goose. This contextual information helps Goose understand what you're working on and provide more relevant assistance.
-
-### Captured context information
-
-The following context information is automatically captured and included in your conversations:
+The following editor context information is automatically captured and included in your conversations. This contextual information helps Goose understand what you're working on and provide more relevant assistance.
 
 | Context Type | Description |
 |-------------|-------------|
@@ -132,6 +130,7 @@ The following context information is automatically captured and included in your
 | Cursor Position | Current cursor position (line, column) |
 | Additional Files | Other relevant files you've added to the conversation |
 
+<a id="file-mentions"></a>
 ### Adding more files to context through file mentions
 
 You can reference files in your project directly in your conversations with Goose. This is useful when you want to ask about or provide context about specific files. Type `@` in the input window to trigger the file picker. 
@@ -143,12 +142,12 @@ If you're new to Goose CLI:
 
 1. **What is Goose CLI?** 
    - Goose is an AI agent developed by Block (the company behind Square, Cash App...)
-   - It offers powerful AI assistance through a command-line interface
+   - It offers powerful AI assistance with extensible configurations such as LLMs and MCP servers 
 
 2. **Installation:**
-   - Visit [Install Goose](https://block.github.io/goose/docs/getting-started/installation/) for installation instructions
+   - Visit [Install Goose](https://block.github.io/goose/docs/getting-started/installation/) for installation and configuration instructions
    - Ensure the `goose` command is available after installation
 
 3. **Configuration:**
-   - Run `goose configure` to set up your provider (**Claude 3.7 Sonnet is recommended**)
+   - Run `goose configure` to set up your LLM provider (**Claude 3.7 Sonnet is recommended**)
 

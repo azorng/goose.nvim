@@ -40,14 +40,10 @@ function M.load()
   local selection_result = M.get_current_selection()
   local cursor_position = M.get_current_cursor_position()
 
-  if file then M.context.current_file = file end
-
-  if selection_result then
-    M.context.selected_text = selection_result.text
-    M.context.selected_lines = selection_result.lines
-  end
-
-  if cursor_position then M.context.cursor_position = cursor_position end
+  M.context.current_file = file
+  M.context.selected_text = selection_result and selection_result.text
+  M.context.selected_lines = selection_result and selection_result.lines
+  M.context.cursor_position = cursor_position
   return M
 end
 
