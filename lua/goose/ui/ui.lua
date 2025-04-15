@@ -15,6 +15,8 @@ end
 function M.close_windows(windows)
   if not windows then return end
 
+  if M.is_goose_focused() then M.return_to_last_code_win() end
+
   renderer.stop()
 
   -- Close windows and delete buffers
@@ -30,10 +32,10 @@ function M.close_windows(windows)
   state.windows = nil
 end
 
-function M.return_to_last_buf()
-  local last_buf = state.last_buf_before_goose
-  if M.is_goose_focused() and last_buf and vim.api.nvim_buf_is_valid(last_buf) then
-    vim.api.nvim_set_current_win(last_buf)
+function M.return_to_last_code_win()
+  local last_win = state.last_code_win_before_goose
+  if last_win and vim.api.nvim_win_is_valid(last_win) then
+    vim.api.nvim_set_current_win(last_win)
   end
 end
 
@@ -85,10 +87,15 @@ function M.focus_output(opts)
 end
 
 function M.is_goose_focused()
+  if not state.windows then return false end
   -- are we in a goose window?
-  local windows = state.windows
   local current_win = vim.api.nvim_get_current_win()
-  return current_win == windows.input_win or current_win == windows.output_win
+  return M.is_goose_window(current_win)
+end
+
+function M.is_goose_window(win)
+  local windows = state.windows
+  return win == windows.input_win or win == windows.output_win
 end
 
 function M.clear_output()
@@ -145,10 +152,7 @@ function M.toggle_fullscreen()
 
   require("goose.ui.window_config").configure_window_dimentions(windows)
 
-  local current_win = vim.api.nvim_get_current_win()
-  local is_goose_focused = current_win == windows.input_win or current_win == windows.output_win
-
-  if not is_goose_focused then
+  if not M.is_goose_focused() then
     vim.api.nvim_set_current_win(windows.output_win)
   end
 end

@@ -86,8 +86,6 @@ function M.setup_autocmds(windows)
     group = group,
     pattern = tostring(windows.input_win) .. ',' .. tostring(windows.output_win),
     callback = function(opts)
-      require('goose.ui.ui').return_to_last_buf()
-
       -- Get the window that was closed
       local closed_win = tonumber(opts.match)
       -- If either window is closed, close both
@@ -105,7 +103,7 @@ function M.setup_autocmds(windows)
     callback = function()
       if not require('goose.ui.ui').is_goose_focused() then
         require('goose.context').load()
-        state.last_buf_before_goose = vim.api.nvim_get_current_buf()
+        state.last_code_win_before_goose = vim.api.nvim_get_current_win()
       end
     end
   })
