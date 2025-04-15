@@ -9,6 +9,7 @@ local function re_focus()
 end
 
 function M.goto_next_message()
+  require('goose.ui.ui').focus_output()
   local windows = state.windows
   local win = windows.output_win
   local buf = windows.output_buf
@@ -27,6 +28,7 @@ function M.goto_next_message()
 end
 
 function M.goto_prev_message()
+  require('goose.ui.ui').focus_output()
   local windows = state.windows
   local win = windows.output_win
   local buf = windows.output_buf

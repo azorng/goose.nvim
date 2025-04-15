@@ -29,6 +29,10 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, global.select_session, function()
     api.select_session()
   end, { silent = false, desc = cmds.select_session.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.toggle, function()
+    api.toggle()
+  end, { silent = false, desc = cmds.toggle.desc })
 end
 
 return M

@@ -8,10 +8,12 @@ local M = {}
 
 function M.open_input()
   core.open({ new_session = false, focus = "input" })
+  vim.cmd('startinsert')
 end
 
 function M.open_input_new_session()
   core.open({ new_session = true, focus = "input" })
+  vim.cmd('startinsert')
 end
 
 function M.open_output()
@@ -20,6 +22,15 @@ end
 
 function M.close()
   ui.close_windows(state.windows)
+end
+
+function M.toggle()
+  if state.windows == nil then
+    local focus = state.last_focused_goose_window or "input"
+    core.open({ new_session = false, focus = focus })
+  else
+    M.close()
+  end
 end
 
 function M.stop()
@@ -65,9 +76,17 @@ end
 
 -- Command definitions that call the API functions
 M.commands = {
+  toggle = {
+    name = "Goose",
+    desc = "Open goose. Close if opened",
+    fn = function()
+      M.toggle()
+    end
+  },
+
   open_input = {
     name = "GooseOpenInput",
-    desc = "Opens and focuses on input window. Loads current buffer context",
+    desc = "Opens and focuses on input window on insert mode",
     fn = function()
       M.open_input()
     end
@@ -75,7 +94,7 @@ M.commands = {
 
   open_input_new_session = {
     name = "GooseOpenInputNewSession",
-    desc = "Opens and focuses on input window. Loads current buffer context. Creates a new session",
+    desc = "Opens and focuses on input window on insert mode. Creates a new session",
     fn = function()
       M.open_input_new_session()
     end
@@ -83,7 +102,7 @@ M.commands = {
 
   open_output = {
     name = "GooseOpenOutput",
-    desc = "Opens and focuses on output window. Loads current buffer context",
+    desc = "Opens and focuses on output window",
     fn = function()
       M.open_output()
     end
@@ -131,7 +150,7 @@ M.commands = {
 
   run = {
     name = "GooseRun",
-    desc = "Run Goose with a prompt (continue last session)",
+    desc = "Run goose with a prompt (continue last session)",
     fn = function(opts)
       M.run(opts.args)
     end
@@ -139,7 +158,7 @@ M.commands = {
 
   run_new_session = {
     name = "GooseRunNewSession",
-    desc = "Run Goose with a prompt (new session)",
+    desc = "Run goose with a prompt (new session)",
     fn = function(opts)
       M.run_new_session(opts.args)
     end

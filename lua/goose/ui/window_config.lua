@@ -32,12 +32,21 @@ function M.setup_options(windows)
   vim.api.nvim_buf_set_option(windows.output_buf, 'swapfile', false)
 end
 
-function M.setup_placeholder(windows)
-  local ns_id = vim.api.nvim_create_namespace('input-placeholder')
-  vim.api.nvim_buf_set_extmark(windows.input_buf, ns_id, 0, 0, {
-    virt_text = { { INPUT_PLACEHOLDER, 'Comment' } },
-    virt_text_pos = 'overlay',
-  })
+function M.refresh_placeholder(windows, input_lines)
+  -- show placeholder if input buffer is empty - otherwise clear it
+  if not input_lines then
+    input_lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+  end
+
+  if #input_lines == 1 and input_lines[1] == "" then
+    local ns_id = vim.api.nvim_create_namespace('input-placeholder')
+    vim.api.nvim_buf_set_extmark(windows.input_buf, ns_id, 0, 0, {
+      virt_text = { { INPUT_PLACEHOLDER, 'Comment' } },
+      virt_text_pos = 'overlay',
+    })
+  else
+    vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
+  end
 end
 
 function M.setup_autocmds(windows)
@@ -49,6 +58,8 @@ function M.setup_autocmds(windows)
     buffer = windows.output_buf,
     callback = function()
       vim.cmd('stopinsert')
+      state.last_focused_goose_window = "output"
+      M.refresh_placeholder(windows)
     end
   })
 
@@ -56,30 +67,18 @@ function M.setup_autocmds(windows)
   vim.api.nvim_create_autocmd('WinEnter', {
     group = group,
     buffer = windows.input_buf,
-    callback = function() 
-      -- Don't automatically enter insert mode when switching windows
-      -- Check if the buffer has content
-      local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
-      if #lines == 1 and lines[1] == "" then
-        -- Only show placeholder if the buffer is empty
-        M.setup_placeholder(windows)
-      else
-        -- Clear placeholder if there's text in the buffer
-        vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
-      end
+    callback = function()
+      M.refresh_placeholder(windows)
+      state.last_focused_goose_window = "input"
     end
   })
 
   vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
     buffer = windows.input_buf,
     callback = function()
-      local lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
-      state.input_content = lines
-      if #lines == 1 and lines[1] == "" then
-        M.setup_placeholder(windows)
-      else
-        vim.api.nvim_buf_clear_namespace(windows.input_buf, vim.api.nvim_create_namespace('input-placeholder'), 0, -1)
-      end
+      local input_lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
+      state.input_content = input_lines
+      M.refresh_placeholder(windows, input_lines)
     end
   })
 
@@ -87,6 +86,8 @@ function M.setup_autocmds(windows)
     group = group,
     pattern = tostring(windows.input_win) .. ',' .. tostring(windows.output_win),
     callback = function(opts)
+      require('goose.ui.ui').return_to_last_buf()
+
       -- Get the window that was closed
       local closed_win = tonumber(opts.match)
       -- If either window is closed, close both
@@ -95,6 +96,33 @@ function M.setup_autocmds(windows)
           require('goose.ui.ui').close_windows(windows)
         end)
       end
+    end
+  })
+
+  vim.api.nvim_create_autocmd('WinLeave', {
+    group = group,
+    pattern = "*",
+    callback = function()
+      if not require('goose.ui.ui').is_goose_focused() then
+        require('goose.context').load()
+        state.last_buf_before_goose = vim.api.nvim_get_current_buf()
+      end
+    end
+  })
+
+  vim.api.nvim_create_autocmd('WinLeave', {
+    group = group,
+    buffer = windows.input_buf,
+    callback = function()
+      state.last_input_window_position = vim.api.nvim_win_get_cursor(0)
+    end
+  })
+
+  vim.api.nvim_create_autocmd('WinLeave', {
+    group = group,
+    buffer = windows.output_buf,
+    callback = function()
+      state.last_output_window_position = vim.api.nvim_win_get_cursor(0)
     end
   })
 end
@@ -197,6 +225,14 @@ function M.setup_keymaps(windows)
   vim.keymap.set('n', window_keymap.prev_message, function()
     require('goose.ui.navigation').goto_prev_message()
   end, { buffer = windows.output_buf, silent = true })
+
+  vim.keymap.set('n', window_keymap.next_message, function()
+    require('goose.ui.navigation').goto_next_message()
+  end, { buffer = windows.input_buf, silent = true })
+
+  vim.keymap.set('n', window_keymap.prev_message, function()
+    require('goose.ui.navigation').goto_prev_message()
+  end, { buffer = windows.input_buf, silent = true })
 
   vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
     api.stop()

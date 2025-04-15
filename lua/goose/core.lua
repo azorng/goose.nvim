@@ -24,9 +24,9 @@ end
 function M.open(opts)
   if not M.goose_ok() then return end
 
-  context.load()
+  local are_windows_closed = state.windows == nil
 
-  if state.windows == nil then
+  if are_windows_closed then
     state.windows = ui.create_windows()
   end
 
@@ -41,9 +41,9 @@ function M.open(opts)
   end
 
   if opts.focus == "input" then
-    ui.focus_input()
+    ui.focus_input({ restore_position = are_windows_closed })
   elseif opts.focus == "output" then
-    ui.focus_output()
+    ui.focus_output({ restore_position = are_windows_closed })
   end
 end
 
