@@ -33,6 +33,15 @@ function M.toggle()
   end
 end
 
+function M.toggle_focus()
+  if not ui.is_goose_focused() then
+    local focus = state.last_focused_goose_window or "input"
+    core.open({ new_session = false, focus = focus })
+  else
+    ui.return_to_last_code_win()
+  end
+end
+
 function M.stop()
   core.stop()
 end
@@ -81,6 +90,14 @@ M.commands = {
     desc = "Open goose. Close if opened",
     fn = function()
       M.toggle()
+    end
+  },
+
+  toggle_focus = {
+    name = "GooseToggleFocus",
+    desc = "Toggle focus between goose and last window",
+    fn = function()
+      M.toggle_focus()
     end
   },
 

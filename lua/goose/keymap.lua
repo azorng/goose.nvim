@@ -33,6 +33,10 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, global.toggle, function()
     api.toggle()
   end, { silent = false, desc = cmds.toggle.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.toggle_focus, function()
+    api.toggle_focus()
+  end, { silent = false, desc = cmds.toggle_focus.desc })
 end
 
 return M

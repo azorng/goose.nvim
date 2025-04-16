@@ -38,7 +38,10 @@ function M.open(opts)
     if not state.active_session then
       state.active_session = session.get_last_workspace_session()
     end
-    ui.render_output()
+
+    if are_windows_closed or ui.is_output_empty() then
+      ui.render_output()
+    end
   end
 
   if opts.focus == "input" then

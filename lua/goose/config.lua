@@ -10,6 +10,7 @@ M.defaults = {
       open_input = '<leader>gi',
       open_input_new_session = '<leader>gI',
       open_output = '<leader>go',
+      toggle_focus = '<leader>gt',
       close = '<leader>gq',
       toggle_fullscreen = '<leader>gf',
       select_session = '<leader>gs',
@@ -21,7 +22,7 @@ M.defaults = {
       next_message = ']]',
       prev_message = '[[',
       mention_file = '@',
-      toggle_pane = '<C-n>'
+      toggle_pane = '<tab>'
     }
   },
   ui = {
