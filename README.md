@@ -83,7 +83,7 @@ require('goose').setup({
       stop = '<C-c>',                      -- Stop a running job
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
-      mention_file = '@'                   -- Pick a file and add to context. See File Mentions section
+      mention_file = '@',                  -- Pick a file and add to context. See File Mentions section
       toggle_pane = '<C-n>'                -- Toggle between input and output panes
     }
   },
@@ -91,6 +91,9 @@ require('goose').setup({
     window_width = 0.35,                   -- Width as percentage of editor width
     input_height = 0.15,                   -- Input height as percentage of window height
     fullscreen = false                     -- Start in fullscreen mode (default: false)
+    layout = "centered",                   -- Options: "floating" (centered) or "right" (right-aligned)
+    floating_height = 0.8,                 -- Height as percentage of editor height for floating layout
+    
   }
 })
 ```

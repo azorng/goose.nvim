@@ -128,7 +128,6 @@ end
 function M.configure_window_dimentions(windows)
   local total_width = vim.api.nvim_get_option('columns')
   local total_height = vim.api.nvim_get_option('lines')
-
   local is_fullscreen = config.ui.fullscreen
 
   local width
@@ -138,17 +137,33 @@ function M.configure_window_dimentions(windows)
     width = math.floor(total_width * config.ui.window_width)
   end
 
-  local total_usable_height = total_height - 3
-  local input_height = math.floor(total_usable_height * config.ui.input_height)
+  local layout = config.ui.layout or "right"
+  local total_usable_height
+  local row, col
 
-  local col = is_fullscreen and 0 or (total_width - width)
+  if layout == "floating" then
+    -- Use a smaller height for floating; allow an optional `floating_height` factor (e.g. 0.8).
+    local fh = config.ui.floating_height or 0.8
+    total_usable_height = math.floor(total_height * fh)
+    -- Center the floating window vertically and horizontally.
+    row = math.floor((total_height - total_usable_height) / 2)
+    col = is_fullscreen and 0 or math.floor((total_width - width) / 2)
+  else
+    -- "right" layout uses the original full usable height.
+    total_usable_height = total_height - 3
+    row = 0
+    col = is_fullscreen and 0 or (total_width - width)
+  end
+
+  local input_height = math.floor(total_usable_height * config.ui.input_height)
+  local output_height = total_usable_height - input_height - 2
 
   vim.api.nvim_win_set_config(windows.output_win, {
     relative = 'editor',
     width = width,
-    height = total_usable_height - input_height - 2,
+    height = output_height,
     col = col,
-    row = 0
+    row = row,
   })
 
   vim.api.nvim_win_set_config(windows.input_win, {
@@ -156,7 +171,7 @@ function M.configure_window_dimentions(windows)
     width = width,
     height = input_height,
     col = col,
-    row = total_usable_height - input_height,
+    row = row + output_height + 2,
   })
 end
 
