@@ -137,13 +137,13 @@ function M.configure_window_dimentions(windows)
     width = math.floor(total_width * config.ui.window_width)
   end
 
-  local layout = config.ui.layout or "right"
+  local layout = config.ui.layout
   local total_usable_height
   local row, col
 
   if layout == "center" then
     -- Use a smaller height for floating; allow an optional `floating_height` factor (e.g. 0.8).
-    local fh = config.ui.floating_height or 0.8
+    local fh = config.ui.floating_height
     total_usable_height = math.floor(total_height * fh)
     -- Center the floating window vertically and horizontally.
     row = math.floor((total_height - total_usable_height) / 2)

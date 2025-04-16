@@ -118,7 +118,7 @@ M.commands = {
 
   stop = {
     name = "GooseStop",
-    desc = "Stop a running job",
+    desc = "Stop goose while it is running",
     fn = function()
       M.stop()
     end

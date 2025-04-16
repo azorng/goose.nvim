@@ -157,7 +157,7 @@ describe("goose.job", function()
     state.goose_run_job = mock_job
 
     -- Call the function we're testing
-    job.stop()
+    job.stop(mock_job)
 
     -- Restore original function
     if vim.uv then
@@ -169,6 +169,5 @@ describe("goose.job", function()
     -- Verify results
     assert.is_true(process_kill_called, "process_kill should be called")
     assert.is_true(shutdown_called, "job:shutdown should be called")
-    assert.is_nil(state.goose_run_job, "Job should be cleared from state")
   end)
 end)

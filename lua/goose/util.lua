@@ -10,6 +10,16 @@ function M.uid()
   return tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999))
 end
 
+function M.is_current_buf_a_file()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local buftype = vim.api.nvim_buf_get_option(bufnr, "buftype")
+  local filepath = vim.fn.expand('%:p')
+
+  -- Valid files have empty buftype
+  -- This excludes special buffers like help, terminal, nofile, etc.
+  return buftype == "" and filepath ~= ""
+end
+
 function M.indent_code_block(text)
   if not text then return nil end
   local lines = vim.split(text, "\n", true)
@@ -44,7 +54,7 @@ function M.indent_code_block(text)
     end
   end
 
-  return table.concat(content, "\n")
+  return vim.trim(table.concat(content, "\n"))
 end
 
 -- Get timezone offset in seconds for various timezone formats

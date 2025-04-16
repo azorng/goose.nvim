@@ -15,7 +15,7 @@
 This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing [editor context](#-context) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer.
 
 <div align="center">
-  <img src="https://i.imgur.com/2dkDllr.png" alt="Goose.nvim interface" width="85%" />
+  <img src="https://i.imgur.com/2dkDllr.png" alt="Goose.nvim interface" width="90%" />
 </div>
 
 ## 📑 Table of Contents
@@ -26,16 +26,16 @@ This plugin provides a bridge between neovim and the [goose](https://github.com/
 - [Configuration](#️-configuration)
 - [Usage](#-usage)
 - [Context](#-context)
-- [Setting Up Goose CLI](#-setting-up-goose-cli)
+- [Setting up goose](#-setting-up-goose)
 
 ## 📋 Requirements
 
-- Goose CLI installed and available (see [Setting Up Goose CLI](#-setting-up-goose-cli) below)
+- Goose CLI installed and available (see [Setting up goose](#-setting-up-goose-cli) below)
 
 ## ⚡ Compatibility
 
-This plugin is compatible with Goose CLI version **`1.0.17`**. 
-Future versions may work but are not guaranteed. If you encounter issues with newer Goose CLI versions, please report them in the issues section.
+This plugin is compatible with Goose CLI version **`1.0.18`**. 
+Other versions may work but are not guaranteed. If you encounter issues with newer Goose CLI versions, please report them in the issues section.
 
 ## 🚀 Installation
 
@@ -93,7 +93,6 @@ require('goose').setup({
     fullscreen = false                     -- Start in fullscreen mode (default: false)
     layout = "right",                      -- Options: "center" or "right"
     floating_height = 0.8,                 -- Height as percentage of editor height for floating layout
-    
   }
 })
 ```
@@ -113,7 +112,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Close UI windows | `<leader>gq` | `:GooseClose` | `require('goose.api').close()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
-| Stop running job | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
+| Stop goose while it is running | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
 | [Pick a file and add to context](#file-mentions) | `@` |- | -|
 | Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
@@ -127,11 +126,10 @@ The following editor context information is automatically captured and included 
 
 | Context Type | Description |
 |-------------|-------------|
-| Current File | Path to the file currently open in the editor |
-| Selected Text | Text currently selected in visual mode |
-| Selected Lines | Line numbers of the current selection (start, end) |
-| Cursor Position | Current cursor position (line, column) |
-| Additional Files | Other relevant files you've added to the conversation |
+| Current file | Path to the focused file before entering goose |
+| Cursor line | Current cursor line number and line content |
+| Selected text | Text and lines currently selected in visual mode |
+| Mentioned files | File info added through [mentions](#file-mentions) |
 
 <a id="file-mentions"></a>
 ### Adding more files to context through file mentions
@@ -139,18 +137,16 @@ The following editor context information is automatically captured and included 
 You can reference files in your project directly in your conversations with Goose. This is useful when you want to ask about or provide context about specific files. Type `@` in the input window to trigger the file picker. 
 Supported pickers include [`fzf-lua`](https://github.com/ibhagwan/fzf-lua), [`telescope`](https://github.com/nvim-telescope/telescope.nvim), [`mini.pick`](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-pick.md), [`snacks`](https://github.com/folke/snacks.nvim/blob/main/docs/picker.md)
 
-## 🔧 Setting Up Goose CLI
+## 🔧 Setting up goose 
 
-If you're new to Goose CLI:
+If you're new to goose:
 
-1. **What is Goose CLI?** 
-   - Goose is an AI agent developed by Block (the company behind Square, Cash App...)
-   - It offers powerful AI assistance with extensible configurations such as LLMs and MCP servers 
+goose is an open source AI agent developed by Block (the company behind Square, Cash App...). It offers powerful AI assistance with extensible configurations such as multiple LLMs and MCP servers - goose can build entire projects from scratch, write and execute code, debug failures, orchestrate workflows, and interact with external APIs - autonomously.
 
-2. **Installation:**
+1. **CLI installation:**
    - Visit [Install Goose](https://block.github.io/goose/docs/getting-started/installation/) for installation and configuration instructions
    - Ensure the `goose` command is available after installation
 
-3. **Configuration:**
-   - Run `goose configure` to set up your LLM provider (**Claude 3.7 Sonnet is recommended**)
+2. **Configuration:**
+   - Run `goose configure` to set up your LLM provider
 

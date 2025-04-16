@@ -196,11 +196,16 @@ describe("goose.core", function()
 
       local job_execute_called = false
       local execute_prompt = nil
+      local execute_handlers = nil
 
-      job.execute = function(prompt, callback)
+      job.execute = function(prompt, handlers)
         job_execute_called = true
         execute_prompt = prompt
-        if callback then callback() end
+        execute_handlers = handlers
+        -- Call the start handler to simulate job start
+        if handlers and handlers.on_start then
+          handlers.on_start()
+        end
       end
 
       core.run("test prompt")
@@ -210,6 +215,7 @@ describe("goose.core", function()
 
       assert.is_true(job_execute_called)
       assert.equal("test prompt", execute_prompt)
+      assert.truthy(execute_handlers)
     end)
 
     it("creates UI when running a job even without ensure_ui option", function()

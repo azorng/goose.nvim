@@ -32,6 +32,7 @@ function M.open(opts)
 
   if opts.new_session then
     state.active_session = nil
+    state.last_sent_context = nil
     ui.clear_output()
   else
     if not state.active_session then
@@ -61,28 +62,39 @@ function M.run(prompt, opts)
   -- Add small delay to ensure stop is complete
   vim.defer_fn(function()
     job.execute(prompt,
-      function(out) -- stdout
-        -- for new sessions, session data can only be retrieved after running the command, retrieve once
-        if not state.active_session and state.new_session_name then
-          state.active_session = session.get_by_name(state.new_session_name)
+      {
+        on_start = function()
+          M.after_send()
+        end,
+        on_output = function(output)
+          -- for new sessions, session data can only be retrieved after running the command, retrieve once
+          if not state.active_session and state.new_session_name then
+            state.active_session = session.get_by_name(state.new_session_name)
+          end
+        end,
+        on_error = function(err)
+          vim.notify(
+            err,
+            vim.log.levels.ERROR
+          )
+
+          ui.close_windows(state.windows)
+        end,
+        on_exit = function()
+          state.goose_run_job = nil
         end
-      end,
-      function(err) -- stderr
-        vim.notify(
-          err,
-          vim.log.levels.ERROR
-        )
-
-        ui.close_windows(state.windows)
-      end
+      }
     )
-
-    context.reset()
-
-    if state.windows then
-      ui.render_output()
-    end
   end, 10)
+end
+
+function M.after_send()
+  context.unload_attachments()
+  state.last_sent_context = vim.deepcopy(context.context)
+
+  if state.windows then
+    ui.render_output()
+  end
 end
 
 function M.add_file_to_context()
@@ -96,7 +108,8 @@ function M.add_file_to_context()
 end
 
 function M.stop()
-  job.stop()
+  if (state.goose_run_job) then job.stop(state.goose_run_job) end
+  state.goose_run_job = nil
   if state.windows then
     ui.stop_render_output()
     ui.render_output()

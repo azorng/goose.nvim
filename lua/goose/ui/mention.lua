@@ -46,7 +46,7 @@ local function insert_mention(windows, row, col, name)
     vim.cmd('startinsert')
     vim.api.nvim_set_current_win(windows.input_win)
     vim.api.nvim_win_set_cursor(windows.input_win, { row, col + 1 + #insert_name + 1 })
-  end, 10)
+  end, 100)
 end
 
 function M.mention(get_name)
