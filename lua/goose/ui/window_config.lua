@@ -141,7 +141,7 @@ function M.configure_window_dimentions(windows)
   local total_usable_height
   local row, col
 
-  if layout == "floating" then
+  if layout == "center" then
     -- Use a smaller height for floating; allow an optional `floating_height` factor (e.g. 0.8).
     local fh = config.ui.floating_height or 0.8
     total_usable_height = math.floor(total_height * fh)
