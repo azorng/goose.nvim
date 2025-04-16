@@ -17,11 +17,15 @@ function M.select_session()
     if state.windows then
       ui.render_output()
       ui.scroll_to_bottom()
+    else
+      M.open()
     end
   end)
 end
 
 function M.open(opts)
+  opts = opts or { focus = "input", new_session = false }
+
   if not M.goose_ok() then return end
 
   local are_windows_closed = state.windows == nil
@@ -41,6 +45,7 @@ function M.open(opts)
 
     if are_windows_closed or ui.is_output_empty() then
       ui.render_output()
+      ui.scroll_to_bottom()
     end
   end
 

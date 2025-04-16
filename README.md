@@ -12,7 +12,7 @@
 
 ## ✨ Description
 
-This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing [editor context](#-context) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer.
+This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing editor context (current file, selections) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer.
 
 <div align="center">
   <img src="https://i.imgur.com/2dkDllr.png" alt="Goose.nvim interface" width="90%" />
@@ -120,11 +120,11 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
-| Toggle input/output panes | `<C-n>` | - | - |
+| Toggle input/output panes | `<tab>` | - | - |
 
 ## 📝 Context
 
-The following editor context information is automatically captured and included in your conversations. This contextual information helps Goose understand what you're working on and provide more relevant assistance.
+The following editor context is automatically captured and included in your conversations.
 
 | Context Type | Description |
 |-------------|-------------|
@@ -142,12 +142,14 @@ Supported pickers include [`fzf-lua`](https://github.com/ibhagwan/fzf-lua), [`te
 
 If you're new to goose:
 
-goose is an open source AI agent developed by Block (the company behind Square, Cash App...). It offers powerful AI assistance with extensible configurations such as multiple LLMs and MCP servers - goose can build entire projects from scratch, write and execute code, debug failures, orchestrate workflows, and interact with external APIs - autonomously.
+1. **What is Goose?** 
+   - Goose is an AI agent developed by Block (the company behind Square, Cash App...)
+   - It offers powerful AI assistance with extensible configurations such as LLMs and MCP servers 
 
-1. **CLI installation:**
+2. **Installation:**
    - Visit [Install Goose](https://block.github.io/goose/docs/getting-started/installation/) for installation and configuration instructions
    - Ensure the `goose` command is available after installation
 
-2. **Configuration:**
-   - Run `goose configure` to set up your LLM provider
+3. **Configuration:**
+   - Run `goose configure` to set up your LLM provider (**Claude 3.7 Sonnet is recommended**)
 

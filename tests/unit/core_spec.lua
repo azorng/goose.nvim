@@ -25,6 +25,7 @@ describe("goose.core", function()
     ui.focus_input = function() end
     ui.focus_output = function() end
     ui.scroll_to_bottom = function() end
+    ui.is_output_empty = function() return true end
     session.get_last_workspace_session = function() return { id = "test-session" } end
     job.execute = function() end
   end)
@@ -160,12 +161,13 @@ describe("goose.core", function()
         callback(sessions[1])
       end
 
-      -- Mock render_output to verify it's not called
-      local render_output_called = false
-      ui.render_output = function() render_output_called = true end
-
-      local scroll_to_bottom_called = false
-      ui.scroll_to_bottom = function() scroll_to_bottom_called = true end
+      -- Mock functions that would be called by open()
+      local open_called = false
+      local original_open = core.open
+      core.open = function()
+        open_called = true
+        state.windows = ui.create_windows()
+      end
 
       -- Set up state for the test
       state.windows = nil
@@ -174,13 +176,15 @@ describe("goose.core", function()
       -- Call the function being tested
       core.select_session()
 
+      -- Restore original open function
+      core.open = original_open
+
       -- Verify active session was set
       assert.truthy(state.active_session, "Active session should be set")
       assert.equal("session1", state.active_session.name, "Active session should match selected session")
 
-      -- Verify output is not rendered
-      assert.is_false(render_output_called, "Output should not be rendered without windows")
-      assert.is_false(scroll_to_bottom_called, "Should not scroll to bottom without windows")
+      -- Verify open was called when windows don't exist
+      assert.is_true(open_called, "core.open should be called when windows don't exist")
     end)
   end)
 
