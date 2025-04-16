@@ -38,7 +38,7 @@ describe("goose.context", function()
   describe("get_current_file", function()
     it("returns the correct file path", function()
       local file_path = context.get_current_file()
-      assert.equal(test_file, file_path)
+      assert.equal(test_file, file_path.path)
     end)
   end)
 
@@ -56,7 +56,7 @@ describe("goose.context", function()
       assert.is_not_nil(selection_result.lines)
       assert.truthy(selection_result.text:match("Line 2"))
       assert.truthy(selection_result.text:match("Line 3"))
-      assert.equal("(2, 3)", selection_result.lines)
+      assert.equal("2, 3", selection_result.lines)
     end)
 
     it("returns nil when not in visual mode", function()
@@ -83,9 +83,18 @@ describe("goose.context", function()
       end
 
       -- Set up context
-      context.reset()
-      context.context.current_file = test_file
-      context.context.selected_text = nil
+      -- Initialize context with proper values
+      context.context.current_file = nil
+      context.context.cursor_data = nil
+      context.context.mentioned_files = nil
+      context.context.selections = nil
+      
+      -- Set specific values for testing
+      context.context.current_file = {
+        path = test_file,
+        name = vim.fn.fnamemodify(test_file, ":t"),
+        extension = vim.fn.fnamemodify(test_file, ":e")
+      }
 
       local prompt = "Help me with this code"
       local message = context.format_message(prompt)
@@ -95,7 +104,7 @@ describe("goose.context", function()
 
       -- Verify template was called with correct variables
       assert.truthy(called_with_vars)
-      assert.equal(test_file, called_with_vars.current_file)
+      assert.equal(test_file, called_with_vars.current_file.path)
       assert.equal(prompt, called_with_vars.prompt)
 
       -- Verify the message was returned
@@ -113,10 +122,26 @@ describe("goose.context", function()
       end
 
       -- Set up context
-      context.reset()
-      context.context.current_file = test_file
-      context.context.selected_text = "Selected text for testing"
-      context.context.selected_lines = "(10, 15)"
+      -- Initialize context with proper values
+      context.context.current_file = nil
+      context.context.cursor_data = nil
+      context.context.mentioned_files = nil
+      context.context.selections = nil
+      
+      -- Set specific values for testing
+      context.context.current_file = {
+        path = test_file,
+        name = vim.fn.fnamemodify(test_file, ":t"),
+        extension = vim.fn.fnamemodify(test_file, ":e")
+      }
+      
+      context.context.selections = {
+        {
+          file = context.context.current_file,
+          content = "Selected text for testing",
+          lines = "10, 15"
+        }
+      }
 
       local prompt = "Help with this selection"
       local message = context.format_message(prompt)
@@ -126,10 +151,10 @@ describe("goose.context", function()
 
       -- Verify template was called with correct variables
       assert.truthy(called_with_vars)
-      assert.equal(test_file, called_with_vars.current_file)
+      assert.equal(test_file, called_with_vars.current_file.path)
       assert.equal(prompt, called_with_vars.prompt)
-      assert.equal("Selected text for testing", called_with_vars.selected_text)
-      assert.equal("(10, 15)", called_with_vars.selected_lines)
+      assert.equal("Selected text for testing", called_with_vars.selections[1].content)
+      assert.equal("10, 15", called_with_vars.selections[1].lines)
 
       -- Verify the message was returned
       assert.equal("rendered template with selection", message)
@@ -157,12 +182,7 @@ Additional files:
 
     local result = context.extract_from_message(message)
 
-    assert.equal("Help me with this code", result.prompt)
-    assert.equal("/path/to/file.lua", result.current_file)
-    assert.truthy(result.selected_text:match("function test"))
-    assert.equal("(10, 15)", result.selected_lines)
-    assert.equal(2, #result.additional_files)
-    assert.equal("/path/to/other.lua", result.additional_files[1])
-    assert.equal("/path/to/another.lua", result.additional_files[2])
+    assert.equal('Help me with this code\n\nEditor context:\nCurrent file: /path/to/file.lua\nSelected text:\nfunction test()\n  return "hello"\nend\nSelected lines: (10, 15)\nAdditional files:\n- /path/to/other.lua\n- /path/to/another.lua', vim.trim(result.prompt))
+    assert.is_nil(result.selected_text)
   end)
 end)

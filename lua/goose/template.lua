@@ -1,5 +1,63 @@
--- Template rendering functionality for goose.nvim
+-- Template rendering functionality
+
 local M = {}
+
+local Renderer = {}
+
+function Renderer.escape(data)
+  return tostring(data or ''):gsub("[\">/<'&]", {
+    ["&"] = "&amp;",
+    ["<"] = "&lt;",
+    [">"] = "&gt;",
+    ['"'] = "&quot;",
+    ["'"] = "&#39;",
+    ["/"] = "&#47;"
+  })
+end
+
+function Renderer.render(tpl, args)
+  tpl = tpl:gsub("\n", "\\n")
+
+  local compiled = load(Renderer.parse(tpl))()
+
+  local buffer = {}
+  local function exec(data)
+    if type(data) == "function" then
+      local args = args or {}
+      setmetatable(args, { __index = _G })
+      load(string.dump(data), nil, nil, args)(exec)
+    else
+      table.insert(buffer, tostring(data or ''))
+    end
+  end
+  exec(compiled)
+
+  -- First replace all escaped newlines with actual newlines
+  local result = table.concat(buffer, ''):gsub("\\n", "\n")
+  -- Then reduce multiple consecutive newlines to a single newline
+  result = result:gsub("\n\n+", "\n")
+  return vim.trim(result)
+end
+
+function Renderer.parse(tpl)
+  local str =
+      "return function(_)" ..
+      "function __(...)" ..
+      "_(require('template').escape(...))" ..
+      "end " ..
+      "_[=[" ..
+      tpl:
+      gsub("[][]=[][]", ']=]_"%1"_[=['):
+      gsub("<%%=", "]=]_("):
+      gsub("<%%", "]=]__("):
+      gsub("%%>", ")_[=["):
+      gsub("<%?", "]=] "):
+      gsub("%?>", " _[=[") ..
+      "]=] " ..
+      "end"
+
+  return str
+end
 
 -- Find the plugin root directory
 local function get_plugin_root()
@@ -21,87 +79,50 @@ local function read_template(template_path)
   return content
 end
 
+function M.cleanup_indentation(template)
+  local res = vim.split(template, "\n")
+  for i, line in ipairs(res) do
+    res[i] = line:gsub("^%s+", "")
+  end
+  return table.concat(res, "\n")
+end
 
 function M.render_template(template_vars)
   local plugin_root = get_plugin_root()
-  local template_path = plugin_root .. "/template/prompt.jinja"
+  local template_path = plugin_root .. "/template/prompt.tpl"
 
   local template = read_template(template_path)
   if not template then return nil end
 
-  -- Initialize result variable
-  local result = template
+  template = M.cleanup_indentation(template)
 
-  -- Process for loops for lists
-  result = result:gsub("{%%(%s*)for(%s+)([%w_]+)(%s+)in(%s+)([%w_]+)(%s*)%%}(.-){%%(%s*)endfor(%s*)%%}",
-    function(s1, s2, item_var, s3, s4, list_var, s5, content, s6, s7)
-      local list = template_vars[list_var]
-      if not list or type(list) ~= "table" then
-        return ""
-      end
+  return Renderer.render(template, template_vars)
+end
 
-      local output = {}
-      for _, item in ipairs(list) do
-        -- Create a temporary context with the loop variable
-        local loop_context = vim.tbl_extend("force", {}, template_vars)
-        loop_context[item_var] = item
+function M.extract_tag(tag, text)
+  local start_tag = "<" .. tag .. ">"
+  local end_tag = "</" .. tag .. ">"
 
-        -- Process the content with the loop variable
-        local item_content = content:gsub("{{%s*([%w_]+)%s*}}", function(var)
-          if var == item_var then
-            return item or ""
-          else
-            return loop_context[var] or ""
-          end
-        end)
+  -- Use pattern matching to find the content between the tags
+  -- Make search start_tag and end_tag more robust with pattern escaping
+  local pattern = vim.pesc(start_tag) .. "(.-)" .. vim.pesc(end_tag)
+  local content = text:match(pattern)
 
-        table.insert(output, item_content)
-      end
+  if content then
+    return vim.trim(content)
+  end
 
-      return table.concat(output, "")
-    end)
+  -- Fallback to the original method if pattern matching fails
+  local query_start = text:find(start_tag)
+  local query_end = text:find(end_tag)
 
-  -- Replace variables with values
-  result = result:gsub("{{%s*([%w_]+)%s*}}", function(var)
-    return template_vars[var] or ""
-  end)
+  if query_start and query_end then
+    -- Extract and trim the content between the tags
+    local query_content = text:sub(query_start + #start_tag, query_end - 1)
+    return vim.trim(query_content)
+  end
 
-  -- Process if blocks with support for logical operators
-  result = result:gsub("{%%(%s*)if(.-)%%}(.-){%%(%s*)endif(%s*)%%}", function(s1, condition, content, s2, s3)
-    -- Evaluate the condition
-    local should_render = false
-
-    -- Parse 'or' condition
-    if condition:match("or") then
-      local var_names = {}
-      for var in condition:gmatch("([%w_]+)") do
-        table.insert(var_names, var)
-      end
-
-      -- Check if any variable is truthy
-      for _, var in ipairs(var_names) do
-        if template_vars[var] and template_vars[var] ~= "" then
-          should_render = true
-          break
-        end
-      end
-    else
-      -- Single variable check
-      local var = condition:match("%s*([%w_]+)%s*")
-      should_render = template_vars[var] and template_vars[var] ~= ""
-    end
-
-    return should_render and content or ""
-  end)
-
-  -- Clean up any empty lines caused by conditional blocks
-  -- Reduce any sequence of 2 or more newlines to just 2 newlines
-  result = result:gsub("\n\n+", "\n\n")
-
-  -- Trim leading/trailing whitespace
-  result = vim.trim(result)
-
-  return result
+  return nil
 end
 
 return M

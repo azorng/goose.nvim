@@ -28,6 +28,8 @@ M.defaults = {
     window_width = 0.35,
     input_height = 0.15,
     fullscreen = false,
+    layout = "right",
+    floating_height = 0.8,
   }
 }
 
