@@ -4,8 +4,6 @@
     <? if current_file then ?>
       <current-file>
         Path: <%= current_file.path %>
-        Line: <%= cursor_data.line %>
-        Line Content: <%= cursor_data.line_content %>
       </current-file>
     <? end ?>
     <? if selections or mentioned_files then ?>

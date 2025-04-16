@@ -136,15 +136,9 @@ function M.get_current_selection()
 end
 
 function M.format_message(prompt)
-  local template_vars = { prompt = prompt }
   local delta_context = M.delta_context()
-
-  -- inject from context
-  for key, value in pairs(delta_context) do
-    template_vars[key] = value
-  end
-
-  return template.render_template(template_vars)
+  delta_context.prompt = prompt
+  return template.render_template(delta_context)
 end
 
 function M.extract_from_message(text)

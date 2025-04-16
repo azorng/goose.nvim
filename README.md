@@ -127,7 +127,6 @@ The following editor context information is automatically captured and included 
 | Context Type | Description |
 |-------------|-------------|
 | Current file | Path to the focused file before entering goose |
-| Cursor line | Current cursor line number and line content |
 | Selected text | Text and lines currently selected in visual mode |
 | Mentioned files | File info added through [mentions](#file-mentions) |
 
