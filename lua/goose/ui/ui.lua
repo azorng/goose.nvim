@@ -98,6 +98,13 @@ function M.is_goose_window(win)
   return win == windows.input_win or win == windows.output_win
 end
 
+function M.is_output_empty()
+  local windows = state.windows
+  if not windows or not windows.output_buf then return true end
+  local lines = vim.api.nvim_buf_get_lines(windows.output_buf, 0, -1, false)
+  return #lines == 0 or (#lines == 1 and lines[1] == "")
+end
+
 function M.clear_output()
   local windows = state.windows
 

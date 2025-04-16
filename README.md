@@ -73,6 +73,7 @@ require('goose').setup({
       open_input = '<leader>gi',             -- Opens and focuses on input window on insert mode
       open_input_new_session = '<leader>gI', -- Opens and focuses on input window on insert mode. Creates a new session
       open_output = '<leader>go',            -- Opens and focuses on output window 
+      toggle_focus = '<leader>gt',           -- Toggle focus between goose and last window
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
@@ -84,7 +85,7 @@ require('goose').setup({
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
       mention_file = '@',                  -- Pick a file and add to context. See File Mentions section
-      toggle_pane = '<C-n>'                -- Toggle between input and output panes
+      toggle_pane = '<tab>'                -- Toggle between input and output panes
     }
   },
   ui = {
@@ -109,6 +110,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Open input window (current session) | `<leader>gi` | `:GooseOpenInput` | `require('goose.api').open_input()` |
 | Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
 | Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
+|  Toggle focus goose / last window | `<leader>gt` | `:GooseToggleFocus` | `require('goose.api').toggle_focus()` |
 | Close UI windows | `<leader>gq` | `:GooseClose` | `require('goose.api').close()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
