@@ -75,6 +75,9 @@ function M.run(prompt, opts)
           M.after_send()
         end,
         on_output = function(output)
+          -- Reload all modified file buffers
+          vim.cmd('checktime')
+
           -- for new sessions, session data can only be retrieved after running the command, retrieve once
           if not state.active_session and state.new_session_name then
             state.active_session = session.get_by_name(state.new_session_name)
