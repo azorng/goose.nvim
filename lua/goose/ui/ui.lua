@@ -170,12 +170,18 @@ function M.select_session(sessions, cb)
   vim.ui.select(sessions, {
     prompt = "",
     format_item = function(session)
-      if not session.modified then
-        return session.description
+      local parts = { session.description }
+
+      if session.message_count then
+        table.insert(parts, session.message_count .. " messages")
       end
 
       local modified = util.time_ago(session.modified)
-      return session.description .. " ~ " .. modified
+      if modified then
+        table.insert(parts, modified)
+      end
+
+      return table.concat(parts, " ~ ")
     end
   }, function(session_choice)
     cb(session_choice)

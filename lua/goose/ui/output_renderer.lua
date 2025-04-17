@@ -261,7 +261,13 @@ end
 
 function M.render_session_bar()
   local function update_winbar(desc)
-    -- content
+    --[[ ** TODO: use this right side win bar text with something useful
+      local winwidth = vim.api.nvim_win_get_width(state.windows.output_win)
+      local txt = "txt content here"
+      local padding = string.rep(" ", winwidth - #desc - #txt - 1)
+      local right_side_txt = padding .. txt
+    ]]
+
     vim.wo[state.windows.output_win].winbar = " " .. desc
 
     -- Add our winbar highlights while preserving existing highlights

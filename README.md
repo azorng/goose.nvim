@@ -81,7 +81,7 @@ require('goose').setup({
     window = {
       submit = '<cr>',                     -- Submit prompt
       close = '<esc>',                     -- Close UI windows
-      stop = '<C-c>',                      -- Stop a running job
+      stop = '<C-c>',                      -- Stop goose while it is running
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
       mention_file = '@',                  -- Pick a file and add to context. See File Mentions section

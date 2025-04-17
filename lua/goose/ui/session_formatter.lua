@@ -62,12 +62,13 @@ function M._format_message(message)
 
   for _, part in ipairs(message.content) do
     if part.type == 'text' and part.text and part.text ~= "" then
+      local text = vim.trim(part.text)
       has_content = true
 
       if message.role == 'user' then
-        M._format_user_message(lines, part.text)
+        M._format_user_message(lines, text)
       elseif message.role == 'assistant' then
-        for _, line in ipairs(vim.split(part.text, "\n")) do
+        for _, line in ipairs(vim.split(text, "\n")) do
           table.insert(lines, line)
         end
       end

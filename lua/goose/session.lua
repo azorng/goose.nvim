@@ -14,6 +14,8 @@ function M.get_all_sessions()
     return {
       workspace = session.metadata.working_dir,
       description = session.metadata.description,
+      message_count = session.metadata.message_count,
+      tokens = session.metadata.total_tokens,
       modified = session.modified,
       name = session.id,
       path = session.path
@@ -21,7 +23,6 @@ function M.get_all_sessions()
   end, sessions)
 end
 
--- Helper function to get all sessions as JSON
 function M.get_all_workspace_sessions()
   local sessions = M.get_all_sessions()
   if not sessions then return nil end
