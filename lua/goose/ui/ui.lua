@@ -170,7 +170,11 @@ function M.select_session(sessions, cb)
   vim.ui.select(sessions, {
     prompt = "",
     format_item = function(session)
-      local parts = { session.description }
+      local parts = {}
+
+      if session.description then
+        table.insert(parts, session.description)
+      end
 
       if session.message_count then
         table.insert(parts, session.message_count .. " messages")
