@@ -4,7 +4,6 @@ local state = require("goose.state")
 local formatter = require("goose.ui.session_formatter")
 
 local LABELS = {
-  NEW_SESSION_TITLE = "New session",
   GENERATING_RESPONSE = "Thinking..."
 }
 
@@ -189,7 +188,7 @@ function M.render(windows, force_refresh)
   end
   render()
   require('goose.ui.mention').highlight_all_mentions(windows.output_buf)
-  M.render_session_bar()
+  require('goose.ui.topbar').render()
   M.render_markdown()
 end
 
@@ -257,49 +256,6 @@ function M.write_output(windows, output_lines)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, output_lines)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
-end
-
-function M.render_session_bar()
-  local function update_winbar(desc)
-    --[[ ** TODO: use this right side win bar text with something useful
-      local winwidth = vim.api.nvim_win_get_width(state.windows.output_win)
-      local txt = "txt content here"
-      local padding = string.rep(" ", winwidth - #desc - #txt - 1)
-      local right_side_txt = padding .. txt
-    ]]
-
-    vim.wo[state.windows.output_win].winbar = " " .. desc
-
-    -- Add our winbar highlights while preserving existing highlights
-    local win_id = state.windows.output_win
-    local current_hl = vim.api.nvim_win_get_option(win_id, 'winhighlight')
-    local highlight_parts = {}
-    for part in string.gmatch(current_hl, "[^,]+") do
-      if not part:match("^WinBar:") and not part:match("^WinBarNC:") then
-        table.insert(highlight_parts, part)
-      end
-    end
-
-    -- Add our custom winbar highlights
-    table.insert(highlight_parts, "WinBar:GooseSessionDescription")
-    table.insert(highlight_parts, "WinBarNC:GooseSessionDescription")
-
-    vim.api.nvim_win_set_option(win_id, 'winhighlight', table.concat(highlight_parts, ","))
-  end
-
-
-  if not state.active_session then
-    update_winbar(LABELS.NEW_SESSION_TITLE)
-    return
-  end
-
-  local session_lines = vim.fn.readfile(state.active_session.path)
-
-  local _, metadata = pcall(vim.fn.json_decode, session_lines[1])
-  local session_desc =
-      metadata.description and (metadata.description) or LABELS.NEW_SESSION_TITLE
-
-  update_winbar(session_desc)
 end
 
 function M.handle_auto_scroll(windows)
