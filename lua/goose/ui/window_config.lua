@@ -178,7 +178,7 @@ end
 function M.setup_resize_handler(windows)
   local function cb()
     M.configure_window_dimentions(windows)
-    require('goose.ui.output_renderer').render_top_winbar()
+    require('goose.ui.topbar').render()
   end
 
   vim.api.nvim_create_autocmd('VimResized', {

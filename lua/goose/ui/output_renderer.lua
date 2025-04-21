@@ -4,7 +4,6 @@ local state = require("goose.state")
 local formatter = require("goose.ui.session_formatter")
 
 local LABELS = {
-  NEW_SESSION_TITLE = "New session",
   GENERATING_RESPONSE = "Thinking..."
 }
 
@@ -189,7 +188,7 @@ function M.render(windows, force_refresh)
   end
   render()
   require('goose.ui.mention').highlight_all_mentions(windows.output_buf)
-  M.render_top_winbar()
+  require('goose.ui.topbar').render()
   M.render_markdown()
 end
 
@@ -257,63 +256,6 @@ function M.write_output(windows, output_lines)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, output_lines)
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
-end
-
-local function format_model_name()
-  local model = require("goose.info").parse_goose_info().goose_model
-  return (model and (model:match("[^/]+$") or model) or "")
-end
-
-local function create_winbar_text(description, model_name, win_width)
-  local available_width = win_width - 2
-  local padding = string.rep(" ", available_width - #description - #model_name)
-  return string.format(" %s%s%s ", description, padding, model_name)
-end
-
-local function update_winbar_highlights(win_id)
-  local current = vim.api.nvim_win_get_option(win_id, 'winhighlight')
-  local parts = vim.split(current, ",")
-
-  -- Remove any existing winbar highlights
-  parts = vim.tbl_filter(function(part)
-    return not part:match("^WinBar:") and not part:match("^WinBarNC:")
-  end, parts)
-
-  if not vim.tbl_contains(parts, "Normal:GooseNormal") then
-    table.insert(parts, "Normal:GooseNormal")
-  end
-
-  table.insert(parts, "WinBar:GooseSessionDescription")
-  table.insert(parts, "WinBarNC:GooseSessionDescription")
-
-  vim.api.nvim_win_set_option(win_id, 'winhighlight', table.concat(parts, ","))
-end
-
-local function get_session_desc()
-  local session_desc = LABELS.NEW_SESSION_TITLE
-
-  if state.active_session then
-    local session = require('goose.session').get_by_name(state.active_session.name)
-    if session and session.description ~= "" then
-      session_desc = session.description
-    end
-  end
-
-  return session_desc
-end
-
-function M.render_top_winbar()
-  local win = state.windows.output_win
-
-  vim.schedule(function()
-    vim.wo[win].winbar = create_winbar_text(
-      get_session_desc(),
-      format_model_name(),
-      vim.api.nvim_win_get_width(win)
-    )
-
-    update_winbar_highlights(win)
-  end)
 end
 
 function M.handle_auto_scroll(windows)
