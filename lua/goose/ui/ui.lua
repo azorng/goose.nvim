@@ -138,7 +138,7 @@ function M.clear_output()
   vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, {})
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
 
-  renderer.render_session_bar()
+  renderer.render_top_winbar()
   renderer.render_markdown()
 end
 
