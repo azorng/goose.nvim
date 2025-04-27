@@ -125,7 +125,7 @@ function M.setup_autocmds(windows)
   })
 end
 
-function M.configure_window_dimentions(windows)
+function M.configure_window_dimensions(windows)
   local total_width = vim.api.nvim_get_option('columns')
   local total_height = vim.api.nvim_get_option('lines')
   local is_fullscreen = config.ui.fullscreen
@@ -177,7 +177,7 @@ end
 
 function M.setup_resize_handler(windows)
   local function cb()
-    M.configure_window_dimentions(windows)
+    M.configure_window_dimensions(windows)
     require('goose.ui.topbar').render()
   end
 
@@ -220,17 +220,9 @@ function M.setup_keymaps(windows)
   local window_keymap = config.keymap.window
   local api = require('goose.api')
 
-  vim.keymap.set({ 'n', 'i' }, window_keymap.submit, function()
+  vim.keymap.set('n', window_keymap.submit, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
-
-  vim.keymap.set('n', window_keymap.close, function()
-    api.close()
-  end, { buffer = windows.input_buf, silent = true })
-
-  vim.keymap.set('n', window_keymap.close, function()
-    api.close()
-  end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.next_message, function()
     require('goose.ui.navigation').goto_next_message()
@@ -252,7 +244,7 @@ function M.setup_keymaps(windows)
     api.stop()
   end, { buffer = windows.output_buf, silent = true })
 
-  vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
+  vim.keymap.set('n', window_keymap.stop, function()
     api.stop()
   end, { buffer = windows.input_buf, silent = true })
 

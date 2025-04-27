@@ -67,6 +67,7 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 ```lua
 -- Default configuration with all available options
 require('goose').setup({
+  default_global_keymaps = true,             -- If true: Set global keymaps
   keymap = {
     global = {
       toggle = '<leader>gg',                 -- Open goose. Close if opened 
@@ -80,7 +81,6 @@ require('goose').setup({
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
-      close = '<esc>',                     -- Close UI windows
       stop = '<C-c>',                      -- Stop goose while it is running
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
