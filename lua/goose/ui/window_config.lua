@@ -126,7 +126,7 @@ function M.setup_autocmds(windows)
   })
 end
 
-function M.configure_window_dimentions(windows)
+function M.configure_window_dimensions(windows)
   local total_width = vim.api.nvim_get_option('columns')
   local total_height = vim.api.nvim_get_option('lines')
   local is_fullscreen = config.ui.fullscreen
@@ -178,7 +178,7 @@ end
 
 function M.setup_resize_handler(windows)
   local function cb()
-    M.configure_window_dimentions(windows)
+    M.configure_window_dimensions(windows)
     require('goose.ui.topbar').render()
   end
 

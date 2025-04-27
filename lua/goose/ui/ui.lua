@@ -61,7 +61,7 @@ function M.create_windows()
   configurator.setup_resize_handler(windows)
   configurator.setup_keymaps(windows)
   configurator.setup_after_actions(windows)
-  configurator.configure_window_dimentions(windows)
+  configurator.configure_window_dimensions(windows)
   return windows
 end
 
@@ -157,7 +157,7 @@ function M.toggle_fullscreen()
   local ui_config = require("goose.config").get("ui")
   ui_config.fullscreen = not ui_config.fullscreen
 
-  require("goose.ui.window_config").configure_window_dimentions(windows)
+  require("goose.ui.window_config").configure_window_dimensions(windows)
   require('goose.ui.topbar').render()
 
   if not M.is_goose_focused() then
