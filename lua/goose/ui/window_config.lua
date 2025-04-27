@@ -220,7 +220,7 @@ function M.setup_keymaps(windows)
   local window_keymap = config.keymap.window
   local api = require('goose.api')
 
-  vim.keymap.set({ 'n', 'i' }, window_keymap.submit, function()
+  vim.keymap.set('n', window_keymap.submit, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
@@ -244,7 +244,7 @@ function M.setup_keymaps(windows)
     api.stop()
   end, { buffer = windows.output_buf, silent = true })
 
-  vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()
+  vim.keymap.set('n', window_keymap.stop, function()
     api.stop()
   end, { buffer = windows.input_buf, silent = true })
 
