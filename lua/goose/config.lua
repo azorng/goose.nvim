@@ -4,6 +4,7 @@ local M = {}
 
 -- Default configuration
 M.defaults = {
+  default_global_keymaps = true,
   keymap = {
     global = {
       toggle = '<leader>gg',
@@ -39,6 +40,10 @@ M.values = vim.deepcopy(M.defaults)
 
 function M.setup(opts)
   opts = opts or {}
+
+  if opts.default_global_keymaps == false then
+    M.values.keymap.global = {}
+  end
 
   -- Merge user options with defaults (deep merge for nested tables)
   for k, v in pairs(opts) do

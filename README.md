@@ -67,6 +67,7 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 ```lua
 -- Default configuration with all available options
 require('goose').setup({
+  default_global_keymaps = true,             -- If true: Set global keymaps
   keymap = {
     global = {
       toggle = '<leader>gg',                 -- Open goose. Close if opened 
