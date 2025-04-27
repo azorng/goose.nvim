@@ -91,7 +91,7 @@ require('goose').setup({
   ui = {
     window_width = 0.35,                   -- Width as percentage of editor width
     input_height = 0.15,                   -- Input height as percentage of window height
-    fullscreen = false                     -- Start in fullscreen mode (default: false)
+    fullscreen = false,                     -- Start in fullscreen mode (default: false)
     layout = "right",                      -- Options: "center" or "right"
     floating_height = 0.8,                 -- Height as percentage of editor height for floating layout
   }
