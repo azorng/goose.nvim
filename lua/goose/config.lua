@@ -18,7 +18,6 @@ M.defaults = {
     },
     window = {
       submit = '<cr>',
-      close = '<esc>',
       stop = '<C-c>',
       next_message = ']]',
       prev_message = '[[',

@@ -224,14 +224,6 @@ function M.setup_keymaps(windows)
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
-  vim.keymap.set('n', window_keymap.close, function()
-    api.close()
-  end, { buffer = windows.input_buf, silent = true })
-
-  vim.keymap.set('n', window_keymap.close, function()
-    api.close()
-  end, { buffer = windows.output_buf, silent = true })
-
   vim.keymap.set('n', window_keymap.next_message, function()
     require('goose.ui.navigation').goto_next_message()
   end, { buffer = windows.output_buf, silent = true })

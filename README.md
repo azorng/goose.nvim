@@ -81,7 +81,6 @@ require('goose').setup({
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
-      close = '<esc>',                     -- Close UI windows
       stop = '<C-c>',                      -- Stop goose while it is running
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
