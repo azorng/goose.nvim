@@ -37,6 +37,10 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, global.toggle_focus, function()
     api.toggle_focus()
   end, { silent = false, desc = cmds.toggle_focus.desc })
+
+  vim.keymap.set('n', global.goose_mode_chat, function() api.set_chat_mode() end, { desc = cmds.chat_mode.desc })
+
+  vim.keymap.set('n', global.goose_mode_auto, function() api.set_auto_mode() end, { desc = cmds.auto_mode.desc })
 end
 
 return M

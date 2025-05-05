@@ -1,4 +1,5 @@
 local core = require("goose.core")
+
 local ui = require("goose.ui.ui")
 local state = require("goose.state")
 
@@ -40,6 +41,20 @@ function M.toggle_focus()
   else
     ui.return_to_last_code_win()
   end
+end
+
+function M.change_mode(mode)
+  local info_mod = require("goose.info")
+  info_mod.set_config_value(info_mod.GOOSE_INFO.MODE, mode)
+  require('goose.ui.topbar').render()
+end
+
+function M.set_chat_mode()
+  M.change_mode(require('goose.info').GOOSE_MODE.CHAT)
+end
+
+function M.set_auto_mode()
+  M.change_mode(require('goose.info').GOOSE_MODE.AUTO)
 end
 
 function M.stop()
@@ -162,6 +177,22 @@ M.commands = {
     desc = "Toggle between input and output panes",
     fn = function()
       M.toggle_pane()
+    end
+  },
+
+  chat_mode = {
+    name = "GooseModeChat",
+    desc = "Goose only engages in chat, with no file modifications",
+    fn = function()
+      M.set_chat_mode()
+    end
+  },
+
+  auto_mode = {
+    name = "GooseModeAuto",
+    desc = "Default mode with full agent capabilities",
+    fn = function()
+      M.set_auto_mode()
     end
   },
 
