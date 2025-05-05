@@ -1,5 +1,6 @@
 -- Default and user-provided settings for goose.nvim
 
+
 local M = {}
 
 -- Default configuration
@@ -14,6 +15,9 @@ M.defaults = {
       close = '<leader>gq',
       toggle_fullscreen = '<leader>gf',
       select_session = '<leader>gs',
+      diff_changes = '<leader>gd',
+      revert_all = '<leader>gra',
+      revert_this = '<leader>grt'
     },
     window = {
       submit = '<cr>',

@@ -1,6 +1,7 @@
 local core = require("goose.core")
 local ui = require("goose.ui.ui")
 local state = require("goose.state")
+local review = require("goose.review")
 
 local M = {}
 
@@ -81,6 +82,22 @@ function M.toggle_pane()
   end
 
   ui.toggle_pane()
+end
+
+function M.diff()
+  review.review()
+end
+
+function M.set_review_breakpoint()
+  review.set_breakpoint()
+end
+
+function M.revert_all()
+  review.revert_all()
+end
+
+function M.revert_this()
+  review.revert_current()
 end
 
 -- Command definitions that call the API functions
@@ -178,6 +195,38 @@ M.commands = {
     desc = "Run goose with a prompt (new session)",
     fn = function(opts)
       M.run_new_session(opts.args)
+    end
+  },
+
+  diff = {
+    name = "GooseDiff",
+    desc = "Display a vertical split diff of the changes since the last goose prompt",
+    fn = function()
+      M.diff()
+    end
+  },
+
+  set_review_breakpoint = {
+    name = "GooseSetReviewBreakpoint",
+    desc = "Set a review breakpoint to track changes",
+    fn = function()
+      M.set_review_breakpoint()
+    end
+  },
+
+  revert_all = {
+    name = "GooseRevertAll",
+    desc = "Revert all file changes since the last goose prompt",
+    fn = function()
+      M.revert_all()
+    end
+  },
+
+  revert_this = {
+    name = "GooseRevertThis",
+    desc = "Revert current file changes since the last goose prompt",
+    fn = function()
+      M.revert_this()
     end
   }
 }
