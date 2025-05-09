@@ -46,18 +46,6 @@ function M.execute(prompt, handlers)
       if out then
         vim.schedule(function()
           handlers.on_output(out)
-
-
-          print(out)
-
-          state.goose_run_job.stdin:write('Allow\n')
-          if out:match("Goose would like to call the above tool, do you allow") then
-            -- local choice = vim.ui.prompt_user("Goose wants to make changes. Accept?", {"Yes", "No"})
-            print("REQUEST")
-            state.goose_run_job.stdin:write('Allow\n')
-          end
-
-
         end)
       end
     end,
