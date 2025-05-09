@@ -37,6 +37,18 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, global.toggle_focus, function()
     api.toggle_focus()
   end, { silent = false, desc = cmds.toggle_focus.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.diff_changes, function()
+    api.diff()
+  end, { silent = false, desc = cmds.diff.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.revert_all, function()
+    api.revert_all()
+  end, { silent = false, desc = cmds.revert_all.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.revert_this, function()
+    api.revert_this()
+  end, { silent = false, desc = cmds.revert_this.desc })
 end
 
 return M

@@ -100,6 +100,7 @@ function M.run(prompt, opts)
 end
 
 function M.after_send()
+  require('goose.review').set_breakpoint()
   context.unload_attachments()
   state.last_sent_context = vim.deepcopy(context.context)
 
