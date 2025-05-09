@@ -74,8 +74,8 @@ require('goose').setup({
       diff_changes = '<leader>gd',           -- Display a vertical split diff of changes since the last goose prompt
       revert_all = '<leader>gra',            -- Revert all file changes since the last goose prompt
       revert_this = '<leader>grt',           -- Revert current file changes since the last goose prompt
-      goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No file context except selections)
-      goose_mode_auto = '<leader>gma'        -- Set goose mode to `auto` (Tool calling enabled. Full editor context)
+      goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. Chat only. No file context)
+      goose_mode_auto = '<leader>gma'        -- Set goose mode to `auto` (Default mode with full agent capabilities)
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
