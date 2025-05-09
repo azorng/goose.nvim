@@ -21,7 +21,6 @@ This plugin provides a bridge between neovim and the [goose](https://github.com/
 ## 📑 Table of Contents
 
 - [Requirements](#-requirements)
-- [Compatibility](#-compatibility)
 - [Installation](#-installation)
 - [Configuration](#️-configuration)
 - [Usage](#-usage)
@@ -31,11 +30,6 @@ This plugin provides a bridge between neovim and the [goose](https://github.com/
 ## 📋 Requirements
 
 - Goose CLI installed and available (see [Setting up goose](#-setting-up-goose-cli) below)
-
-## ⚡ Compatibility
-
-This plugin is compatible with Goose CLI version **`1.0.18`**. 
-Other versions may work but are not guaranteed. If you encounter issues with newer Goose CLI versions, please report them in the issues section.
 
 ## 🚀 Installation
 
@@ -77,6 +71,9 @@ require('goose').setup({
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
+      diff_changes = '<leader>gd',           -- Display a vertical split diff of changes since the last goose prompt
+      revert_all = '<leader>gra',            -- Revert all file changes since the last goose prompt
+      revert_this = '<leader>grt',           -- Revert current file changes since the last goose prompt
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
@@ -121,6 +118,9 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
 | Toggle input/output panes | `<tab>` | - | - |
+| Display diff of changes since last prompt | `<leader>gd` | `:GooseDiff` | `require('goose.api').diff()` |
+| Revert all file changes since last prompt | `<leader>gra` | `:GooseRevertAll` | `require('goose.api').revert_all()` |
+| Revert current file changes since last prompt | `<leader>grt` | `:GooseRevertThis` | `require('goose.api').revert_this()` |
 
 ## 📝 Context
 

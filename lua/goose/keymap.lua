@@ -38,6 +38,18 @@ function M.setup(keymap)
     api.toggle_focus()
   end, { silent = false, desc = cmds.toggle_focus.desc })
 
+  vim.keymap.set({ 'n', 'v' }, global.diff_changes, function()
+    api.diff()
+  end, { silent = false, desc = cmds.diff.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.revert_all, function()
+    api.revert_all()
+  end, { silent = false, desc = cmds.revert_all.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.revert_this, function()
+    api.revert_this()
+  end, { silent = false, desc = cmds.revert_this.desc })
+
   vim.keymap.set('n', global.goose_mode_chat, function() api.set_chat_mode() end, { desc = cmds.chat_mode.desc })
 
   vim.keymap.set('n', global.goose_mode_auto, function() api.set_auto_mode() end, { desc = cmds.auto_mode.desc })
