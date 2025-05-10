@@ -38,15 +38,27 @@ function M.setup(keymap)
     api.toggle_focus()
   end, { silent = false, desc = cmds.toggle_focus.desc })
 
-  vim.keymap.set({ 'n', 'v' }, global.diff_changes, function()
+  vim.keymap.set({ 'n', 'v' }, global.diff.open, function()
     api.diff()
   end, { silent = false, desc = cmds.diff.desc })
 
-  vim.keymap.set({ 'n', 'v' }, global.revert_all, function()
+  vim.keymap.set({ 'n', 'v' }, global.diff.next, function()
+    api.next_diff()
+  end, { silent = false, desc = cmds.next_diff.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.diff.prev, function()
+    api.prev_diff()
+  end, { silent = false, desc = cmds.prev_diff.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.diff.close, function()
+    api.close_diff()
+  end, { silent = false, desc = cmds.close_diff.desc })
+
+  vim.keymap.set({ 'n', 'v' }, global.diff.revert_all, function()
     api.revert_all()
   end, { silent = false, desc = cmds.revert_all.desc })
 
-  vim.keymap.set({ 'n', 'v' }, global.revert_this, function()
+  vim.keymap.set({ 'n', 'v' }, global.diff.revert_this, function()
     api.revert_this()
   end, { silent = false, desc = cmds.revert_this.desc })
 end
