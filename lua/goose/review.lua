@@ -4,7 +4,7 @@ local M = {}
 -- State variables for diff navigation
 M.__changed_files = nil
 M.__current_file_index = nil
-M.__diff_tab = nil -- Track the diff tab ID
+M.__diff_tab = nil
 
 -- Git helpers
 local git = {
@@ -54,14 +54,12 @@ local function get_snapshot_dir()
   return Path:new(vim.fn.stdpath('data')):joinpath('goose', 'snapshot', cwd_hash)
 end
 
--- Helper function to revert a file
 local function revert_file(file_path, snapshot_path)
   if snapshot_path then
     Path:new(snapshot_path):copy({ destination = file_path, override = true })
   elseif git.is_tracked(file_path) then
     local temp_file = Path:new(vim.fn.tempname())
     if git.get_head_content(file_path, tostring(temp_file)) then
-      -- Use explicit parentheses for function call
       temp_file:copy({ destination = file_path, override = true })
       temp_file:rm()
     end
@@ -167,16 +165,13 @@ local function show_file_diff(file_path, snapshot_path)
   })
 
   if snapshot_path then
-    -- Compare with snapshot file (maintain original positions)
+    -- Compare with snapshot file
     vim.cmd('edit ' .. snapshot_path)
     vim.cmd('setlocal readonly buftype=nofile nomodifiable')
     vim.cmd('diffthis')
 
     vim.cmd('vsplit ' .. file_path)
     vim.cmd('diffthis')
-
-    -- Focus on right side (current file)
-    -- which is already where we are after vsplit
   else
     -- If file is tracked by git, compare with HEAD, otherwise just open it
     if git.is_tracked(file_path) then
@@ -208,7 +203,6 @@ end
 
 -- Public functions
 
--- Review the changes in a file
 M.review = require_git_project(function()
   local files = get_changed_files()
 
@@ -231,9 +225,7 @@ M.review = require_git_project(function()
   end
 end)
 
--- Navigate to the next file diff
 M.next_diff = require_git_project(function()
-  -- If no cached files or we're at the end, refresh the list
   if not M.__changed_files or not M.__current_file_index or M.__current_file_index >= #M.__changed_files then
     local files = get_changed_files()
     if #files == 0 then
@@ -251,9 +243,7 @@ M.next_diff = require_git_project(function()
   show_file_diff(file_data[1], file_data[2])
 end)
 
--- Navigate to the previous file diff
 M.prev_diff = require_git_project(function()
-  -- If no cached files, refresh the list
   if not M.__changed_files or #M.__changed_files == 0 then
     local files = get_changed_files()
     if #files == 0 then
@@ -262,7 +252,6 @@ M.prev_diff = require_git_project(function()
     end
     M.__current_file_index = #files
   else
-    -- If we're at the beginning or no current index, go to the end
     if not M.__current_file_index or M.__current_file_index <= 1 then
       M.__current_file_index = #M.__changed_files
     else
@@ -276,12 +265,10 @@ M.prev_diff = require_git_project(function()
   show_file_diff(file_data[1], file_data[2])
 end)
 
--- Close the diff view completely
 M.close_diff = function()
   close_diff_tab()
 end
 
--- Set a snapshot of the current state for future comparison
 M.set_breakpoint = require_git_project(function()
   local snapshot_base = get_snapshot_dir()
 
@@ -299,7 +286,6 @@ M.set_breakpoint = require_git_project(function()
   end
 end, true)
 
--- Revert all changes since the last snapshot
 M.revert_all = require_git_project(function()
   local files = get_changed_files()
 
@@ -322,7 +308,6 @@ M.revert_all = require_git_project(function()
   vim.notify("Reverted " .. success_count .. " of " .. #files .. " files.")
 end)
 
--- Revert changes in the current file
 M.revert_current = require_git_project(function()
   local files = get_changed_files()
   local current_file = vim.fn.expand('%:p')
@@ -350,7 +335,6 @@ M.revert_current = require_git_project(function()
   end
 end)
 
--- Reset the git project status cache
 M.reset_git_status = function()
   M.__is_git_project = nil
 end
