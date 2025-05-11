@@ -39,10 +39,10 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 
 ```lua
 {
-  'azorng/goose.nvim',
-  branch = 'main',
+  "azorng/goose.nvim",
+  version = "*",
   config = function()
-    require('goose').setup({})
+    require("goose").setup({})
   end,
   dependencies = {
     "nvim-lua/plenary.nvim",
