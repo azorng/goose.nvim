@@ -114,9 +114,11 @@ end
 
 local function get_changed_files()
   local files = {}
-  local git_files = git.list_changed_files()
   local snapshot_base = get_snapshot_dir()
 
+  if not snapshot_base:exists() then return files end
+
+  local git_files = git.list_changed_files()
   for file in git_files:gmatch("[^\n]+") do
     local snapshot_file = snapshot_base:joinpath(file)
 
@@ -185,6 +187,13 @@ local function show_file_diff(file_path, snapshot_path)
   })
 end
 
+local function display_file_at_index(idx)
+  local file_data = M.__changed_files[idx]
+  local file_name = vim.fn.fnamemodify(file_data[1], ":t")
+  vim.notify(string.format("Showing file %d of %d: %s", idx, #M.__changed_files, file_name))
+  show_file_diff(file_data[1], file_data[2])
+end
+
 -- Public functions
 
 M.review = require_git_project(function()
@@ -221,10 +230,7 @@ M.next_diff = require_git_project(function()
     M.__current_file_index = M.__current_file_index + 1
   end
 
-  local idx = M.__current_file_index
-  local file_data = M.__changed_files[idx]
-  vim.notify(string.format("Showing file %d of %d: %s", idx, #M.__changed_files, file_data[1]))
-  show_file_diff(file_data[1], file_data[2])
+  display_file_at_index(M.__current_file_index)
 end)
 
 M.prev_diff = require_git_project(function()
@@ -243,14 +249,21 @@ M.prev_diff = require_git_project(function()
     end
   end
 
-  local idx = M.__current_file_index
-  local file_data = M.__changed_files[idx]
-  vim.notify(string.format("Showing file %d of %d: %s", idx, #M.__changed_files, file_data[1]))
-  show_file_diff(file_data[1], file_data[2])
+  display_file_at_index(M.__current_file_index)
 end)
 
 M.close_diff = function()
   close_diff_tab()
+end
+
+M.check_cleanup_breakpoint = function()
+  local changed_files = get_changed_files()
+  if #changed_files == 0 then
+    local snapshot_base = get_snapshot_dir()
+    if snapshot_base:exists() then
+      snapshot_base:rm({ recursive = true })
+    end
+  end
 end
 
 M.set_breakpoint = require_git_project(function()

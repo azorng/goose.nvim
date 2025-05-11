@@ -93,6 +93,7 @@ function M.run(prompt, opts)
         end,
         on_exit = function()
           state.goose_run_job = nil
+          require('goose.review').check_cleanup_breakpoint()
         end
       }
     )
