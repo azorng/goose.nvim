@@ -1,4 +1,5 @@
 local core = require("goose.core")
+
 local ui = require("goose.ui.ui")
 local state = require("goose.state")
 local review = require("goose.review")
@@ -41,6 +42,25 @@ function M.toggle_focus()
   else
     ui.return_to_last_code_win()
   end
+end
+
+function M.change_mode(mode)
+  local info_mod = require("goose.info")
+  info_mod.set_config_value(info_mod.GOOSE_INFO.MODE, mode)
+
+  if state.windows then
+    require('goose.ui.topbar').render()
+  else
+    vim.notify('Goose mode changed to ' .. mode)
+  end
+end
+
+function M.set_chat_mode()
+  M.change_mode(require('goose.info').GOOSE_MODE.CHAT)
+end
+
+function M.set_auto_mode()
+  M.change_mode(require('goose.info').GOOSE_MODE.AUTO)
 end
 
 function M.stop()
@@ -191,6 +211,22 @@ M.commands = {
     desc = "Toggle between input and output panes",
     fn = function()
       M.toggle_pane()
+    end
+  },
+
+  chat_mode = {
+    name = "GooseModeChat",
+    desc = "Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)",
+    fn = function()
+      M.set_chat_mode()
+    end
+  },
+
+  auto_mode = {
+    name = "GooseModeAuto",
+    desc = "Set goose mode to `auto`. (Default mode with full agent capabilities)",
+    fn = function()
+      M.set_auto_mode()
     end
   },
 

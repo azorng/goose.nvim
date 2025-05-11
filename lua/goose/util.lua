@@ -219,4 +219,49 @@ function M.time_ago(dateTime)
   end
 end
 
+-- Simple YAML key/value setter
+-- Note: This is a basic implementation that assumes simple YAML structure
+-- It will either update an existing key or append a new key at the end
+function M.set_yaml_value(path, key, value)
+  if not path then
+    return false, "No file path provided"
+  end
+
+  -- Read the current content
+  local lines = {}
+  local key_pattern = "^%s*" .. vim.pesc(key) .. ":%s*"
+  local found = false
+
+  local file = io.open(path, "r")
+  if not file then
+    return false, "Could not open file"
+  end
+
+  for line in file:lines() do
+    if line:match(key_pattern) then
+      -- Update existing key
+      lines[#lines + 1] = string.format("%s: %s", key, value)
+      found = true
+    else
+      lines[#lines + 1] = line
+    end
+  end
+  file:close()
+
+  -- If key wasn't found, append it
+  if not found then
+    lines[#lines + 1] = string.format("%s: %s", key, value)
+  end
+
+  -- Write back to file
+  file = io.open(path, "w")
+  if not file then
+    return false, "Could not open file for writing"
+  end
+  file:write(table.concat(lines, "\n"))
+  file:close()
+
+  return true
+end
+
 return M

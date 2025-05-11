@@ -29,11 +29,11 @@ This plugin provides a bridge between neovim and the [goose](https://github.com/
 
 ## 📋 Requirements
 
-- Goose CLI installed and available (see [Setting up goose](#-setting-up-goose-cli) below)
+- Goose CLI installed and available (see [Setting up goose](#-setting-up-goose) below)
 
 ## 🚀 Installation
 
-Install the plugin with your favorite package manager. See the [Configuration](#-configuration) section below for customization options.
+Install the plugin with your favorite package manager. See the [Configuration](#️-configuration) section below for customization options.
 
 ### With lazy.nvim
 
@@ -71,6 +71,8 @@ require('goose').setup({
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
+      goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)
+      goose_mode_auto = '<leader>gma'        -- Set goose mode to `auto`. (Default mode with full agent capabilities)
 
       diff = {
         open = '<leader>gd',                 -- Opens a diff tab of a modified file since the last goose prompt
@@ -94,9 +96,11 @@ require('goose').setup({
   ui = {
     window_width = 0.35,                   -- Width as percentage of editor width
     input_height = 0.15,                   -- Input height as percentage of window height
-    fullscreen = false,                     -- Start in fullscreen mode (default: false)
+    fullscreen = false,                    -- Start in fullscreen mode (default: false)
     layout = "right",                      -- Options: "center" or "right"
-    floating_height = 0.8,                 -- Height as percentage of editor height for floating layout
+    floating_height = 0.8,                 -- Height as percentage of editor height for "center" layout
+    display_model = true,                  -- Display model name on top winbar
+    display_goose_mode = true              -- Display mode on top winbar: auto|chat
   }
 })
 ```

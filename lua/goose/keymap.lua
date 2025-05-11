@@ -61,6 +61,10 @@ function M.setup(keymap)
   vim.keymap.set({ 'n', 'v' }, global.diff.revert_this, function()
     api.revert_this()
   end, { silent = false, desc = cmds.revert_this.desc })
+
+  vim.keymap.set('n', global.goose_mode_chat, function() api.set_chat_mode() end, { desc = cmds.chat_mode.desc })
+
+  vim.keymap.set('n', global.goose_mode_auto, function() api.set_auto_mode() end, { desc = cmds.auto_mode.desc })
 end
 
 return M
