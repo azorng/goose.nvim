@@ -1,6 +1,4 @@
 -- Default and user-provided settings for goose.nvim
---
-
 
 local M = {}
 
@@ -16,6 +14,8 @@ M.defaults = {
       close = '<leader>gq',
       toggle_fullscreen = '<leader>gf',
       select_session = '<leader>gs',
+      goose_mode_chat = '<leader>gmc',
+      goose_mode_auto = '<leader>gma',
 
       diff = {
         open = '<leader>gd',
@@ -42,6 +42,8 @@ M.defaults = {
     fullscreen = false,
     layout = "right",
     floating_height = 0.8,
+    display_model = true,
+    display_goose_mode = true
   }
 }
 

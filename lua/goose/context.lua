@@ -136,9 +136,20 @@ function M.get_current_selection()
 end
 
 function M.format_message(prompt)
-  local delta_context = M.delta_context()
-  delta_context.prompt = prompt
-  return template.render_template(delta_context)
+  local info = require('goose.info')
+  local context = nil
+
+  if info.parse_goose_info().goose_mode == info.GOOSE_MODE.CHAT then
+    -- For chat mode only send selection context
+    context = {
+      selections = M.context.selections
+    }
+  else
+    context = M.delta_context()
+  end
+
+  context.prompt = prompt
+  return template.render_template(context)
 end
 
 function M.extract_from_message(text)

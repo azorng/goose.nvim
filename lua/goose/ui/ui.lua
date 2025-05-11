@@ -158,6 +158,7 @@ function M.toggle_fullscreen()
   ui_config.fullscreen = not ui_config.fullscreen
 
   require("goose.ui.window_config").configure_window_dimentions(windows)
+  require('goose.ui.topbar').render()
 
   if not M.is_goose_focused() then
     vim.api.nvim_set_current_win(windows.output_win)
