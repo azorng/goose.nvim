@@ -1,12 +1,10 @@
 local Path = require('plenary.path')
 local M = {}
 
--- State variables for diff navigation
 M.__changed_files = nil
 M.__current_file_index = nil
 M.__diff_tab = nil
 
--- Git helpers
 local git = {
   is_project = function()
     if M.__is_git_project ~= nil then
@@ -34,7 +32,6 @@ local git = {
   end
 }
 
--- Decorator for git project checks
 local function require_git_project(fn, silent)
   return function(...)
     if not git.is_project() then
@@ -64,7 +61,6 @@ local function revert_file(file_path, snapshot_path)
       temp_file:rm()
     end
   else
-    -- File not tracked - remove and close buffer
     local absolute_path = vim.fn.fnamemodify(file_path, ":p")
     local bufnr = vim.fn.bufnr(absolute_path)
     if bufnr ~= -1 then
@@ -79,28 +75,21 @@ end
 
 local function close_diff_tab()
   if M.__diff_tab and vim.api.nvim_tabpage_is_valid(M.__diff_tab) then
-    -- Clean up the autocommand group for this tab
     pcall(vim.api.nvim_del_augroup_by_name, "GooseDiffCleanup" .. M.__diff_tab)
 
-    -- Get all windows in the diff tab
     local windows = vim.api.nvim_tabpage_list_wins(M.__diff_tab)
 
-    -- Store the buffer numbers before closing the tab
     local buffers = {}
     for _, win in ipairs(windows) do
       local buf = vim.api.nvim_win_get_buf(win)
       table.insert(buffers, buf)
     end
 
-    -- Switch to diff tab and close it
     vim.api.nvim_set_current_tabpage(M.__diff_tab)
     pcall(vim.cmd, 'tabclose')
 
-    -- Now close all buffers that were in the diff tab
-    -- Use pcall to safely handle any errors
     for _, buf in ipairs(buffers) do
       if vim.api.nvim_buf_is_valid(buf) then
-        -- Only close the buffer if it's not visible in any window
         local visible = false
         for _, win in ipairs(vim.api.nvim_list_wins()) do
           if vim.api.nvim_win_get_buf(win) == buf then
@@ -144,25 +133,11 @@ local function get_changed_files()
   return files
 end
 
--- Show a diff between file and its reference (snapshot or HEAD)
 local function show_file_diff(file_path, snapshot_path)
-  -- First close any existing diff tab
   close_diff_tab()
 
-  -- Create new tab for diffing
   vim.cmd('tabnew')
   M.__diff_tab = vim.api.nvim_get_current_tabpage()
-
-  -- Close tab on any split window close
-  local augroup = vim.api.nvim_create_augroup("GooseDiffCleanup" .. M.__diff_tab, { clear = true })
-  vim.api.nvim_create_autocmd("WinClosed", {
-    group = augroup,
-    callback = function(event)
-      if M.__diff_tab and vim.api.nvim_tabpage_is_valid(M.__diff_tab) then
-        close_diff_tab()
-      end
-    end
-  })
 
   if snapshot_path then
     -- Compare with snapshot file
@@ -199,6 +174,15 @@ local function show_file_diff(file_path, snapshot_path)
       vim.cmd('edit ' .. file_path)
     end
   end
+
+  -- auto close tab if any diff window is closed
+  local augroup = vim.api.nvim_create_augroup("GooseDiffCleanup" .. M.__diff_tab, { clear = true })
+  local tab_windows = vim.api.nvim_tabpage_list_wins(M.__diff_tab)
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = augroup,
+    pattern = tostring(tab_windows[1]) .. ',' .. tostring(tab_windows[2]),
+    callback = function() close_diff_tab() end
+  })
 end
 
 -- Public functions
