@@ -73,7 +73,7 @@ require('goose').setup({
       select_session = '<leader>gs',         -- Select and load a goose session
 
       diff = {
-        open = '<leader>gd',                 -- Opens a diff view tab of a selected file modified by goose since the last prompt
+        open = '<leader>gd',                 -- Opens a diff tab of a modified file since the last goose prompt
         next = '<leader>g]',                 -- Navigate to next file diff
         prev = '<leader>g[',                 -- Navigate to previous file diff
         close = '<leader>gc',                -- Close diff view tab and return to normal editing

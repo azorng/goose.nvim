@@ -212,7 +212,7 @@ M.commands = {
 
   diff = {
     name = "GooseDiff",
-    desc = "Opens a diff view tab of a selected file modified by goose since the last prompt",
+    desc = "Opens a diff tab of a modified file since the last goose prompt",
     fn = function()
       M.diff()
     end
