@@ -88,6 +88,18 @@ function M.diff()
   review.review()
 end
 
+function M.next_diff()
+  review.next_diff()
+end
+
+function M.prev_diff()
+  review.prev_diff()
+end
+
+function M.close_diff()
+  review.close_diff()
+end
+
 function M.set_review_breakpoint()
   review.set_breakpoint()
 end
@@ -200,9 +212,33 @@ M.commands = {
 
   diff = {
     name = "GooseDiff",
-    desc = "Display a vertical split diff of the changes since the last goose prompt",
+    desc = "Opens a diff tab of a modified file since the last goose prompt",
     fn = function()
       M.diff()
+    end
+  },
+
+  next_diff = {
+    name = "GooseDiffNext",
+    desc = "Navigate to next file diff",
+    fn = function()
+      M.next_diff()
+    end
+  },
+
+  prev_diff = {
+    name = "GooseDiffPrev",
+    desc = "Navigate to previous file diff",
+    fn = function()
+      M.prev_diff()
+    end
+  },
+
+  close_diff = {
+    name = "GooseDiffClose",
+    desc = "Close diff view tab and return to normal editing",
+    fn = function()
+      M.close_diff()
     end
   },
 

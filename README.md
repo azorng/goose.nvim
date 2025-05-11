@@ -71,9 +71,15 @@ require('goose').setup({
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
-      diff_changes = '<leader>gd',           -- Display a vertical split diff of changes since the last goose prompt
-      revert_all = '<leader>gra',            -- Revert all file changes since the last goose prompt
-      revert_this = '<leader>grt',           -- Revert current file changes since the last goose prompt
+
+      diff = {
+        open = '<leader>gd',                 -- Opens a diff tab of a modified file since the last goose prompt
+        next = '<leader>g]',                 -- Navigate to next file diff
+        prev = '<leader>g[',                 -- Navigate to previous file diff
+        close = '<leader>gc',                -- Close diff view tab and return to normal editing
+        revert_all = '<leader>gra',          -- Revert all file changes since the last goose prompt
+        revert_this = '<leader>grt',         -- Revert current file changes since the last goose prompt
+      }
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
@@ -118,9 +124,12 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
 | Toggle input/output panes | `<tab>` | - | - |
-| Display diff of changes since last prompt | `<leader>gd` | `:GooseDiff` | `require('goose.api').diff()` |
-| Revert all file changes since last prompt | `<leader>gra` | `:GooseRevertAll` | `require('goose.api').revert_all()` |
-| Revert current file changes since last prompt | `<leader>grt` | `:GooseRevertThis` | `require('goose.api').revert_this()` |
+| Open diff view of changes | `<leader>gd` | `:GooseDiff` | `require('goose.api').diff()` |
+| Navigate to next file diff | `<leader>g]` | `:GooseDiffNext` | `require('goose.api').next_diff()` |
+| Navigate to previous file diff | `<leader>g[` | `:GooseDiffPrev` | `require('goose.api').prev_diff()` |
+| Close diff view tab | `<leader>gc` | `:GooseDiffClose` | `require('goose.api').close_diff()` |
+| Revert all file changes | `<leader>gra` | `:GooseRevertAll` | `require('goose.api').revert_all()` |
+| Revert current file changes | `<leader>grt` | `:GooseRevertThis` | `require('goose.api').revert_this()` |
 
 ## 📝 Context
 

@@ -50,7 +50,17 @@ describe("goose.keymap", function()
           open_output = "<leader>out",
           close = "<leader>close",
           toggle_fullscreen = "<leader>full",
-          select_session = "<leader>select"
+          select_session = "<leader>select",
+          toggle = "<leader>toggle",
+          toggle_focus = "<leader>focus",
+          diff = {
+            open = "<leader>diff",
+            next = "<leader>next",
+            prev = "<leader>prev",
+            close = "<leader>diffclose",
+            revert_all = "<leader>revertall",
+            revert_this = "<leader>revertthis"
+          }
         }
       }
 
@@ -87,7 +97,17 @@ describe("goose.keymap", function()
           open_output = "<leader>out",
           close = "<leader>close",
           toggle_fullscreen = "<leader>full",
-          select_session = "<leader>select"
+          select_session = "<leader>select",
+          toggle = "<leader>toggle",
+          toggle_focus = "<leader>focus",
+          diff = {
+            open = "<leader>diff",
+            next = "<leader>next",
+            prev = "<leader>prev",
+            close = "<leader>diffclose",
+            revert_all = "<leader>revertall",
+            revert_this = "<leader>revertthis"
+          }
         }
       })
 
