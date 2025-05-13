@@ -3,6 +3,7 @@ local core = require("goose.core")
 local ui = require("goose.ui.ui")
 local state = require("goose.state")
 local review = require("goose.review")
+local history = require("goose.history")
 
 local M = {}
 
@@ -130,6 +131,20 @@ end
 
 function M.revert_this()
   review.revert_current()
+end
+
+function M.prev_history()
+  local prev_prompt = history.prev()
+  if prev_prompt then
+    ui.write_to_input(prev_prompt)
+  end
+end
+
+function M.next_history()
+  local next_prompt = history.next()
+  if next_prompt then
+    ui.write_to_input(next_prompt)
+  end
 end
 
 -- Command definitions that call the API functions
@@ -299,6 +314,22 @@ M.commands = {
     desc = "Revert current file changes since the last goose prompt",
     fn = function()
       M.revert_this()
+    end
+  },
+
+  prev_history = {
+    name = "GoosePrevHistory",
+    desc = "Navigate to previous prompt in history",
+    fn = function()
+      M.prev_history()
+    end
+  },
+
+  next_history = {
+    name = "GooseNextHistory",
+    desc = "Navigate to next prompt in history",
+    fn = function()
+      M.next_history()
     end
   }
 }

@@ -72,7 +72,7 @@ function M.run(prompt, opts)
     job.execute(prompt,
       {
         on_start = function()
-          M.after_send()
+          M.after_send(prompt)
         end,
         on_output = function(output)
           -- Reload all modified file buffers
@@ -100,10 +100,11 @@ function M.run(prompt, opts)
   end, 10)
 end
 
-function M.after_send()
+function M.after_send(prompt)
   require('goose.review').set_breakpoint()
   context.unload_attachments()
   state.last_sent_context = vim.deepcopy(context.context)
+  require('goose.history').write(prompt)
 
   if state.windows then
     ui.render_output()
@@ -126,6 +127,8 @@ function M.stop()
   if state.windows then
     ui.stop_render_output()
     ui.render_output()
+    ui.write_to_input({})
+    require('goose.history').index = nil
   end
 end
 

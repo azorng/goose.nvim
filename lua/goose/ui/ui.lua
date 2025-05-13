@@ -216,4 +216,29 @@ function M.toggle_pane()
   end
 end
 
+function M.write_to_input(text, windows)
+  if not windows then windows = state.windows end
+  if not windows then return end
+
+  local lines
+
+  -- Check if text is already a table/list of lines
+  if type(text) == "table" then
+    lines = text
+  else
+    -- If it's a string, split it into lines
+    lines = {}
+    for line in (text .. '\n'):gmatch('(.-)\n') do
+      table.insert(lines, line)
+    end
+
+    -- If no newlines were found (empty result), use the original text
+    if #lines == 0 then
+      lines = { text }
+    end
+  end
+
+  vim.api.nvim_buf_set_lines(windows.input_buf, 0, -1, false, lines)
+end
+
 return M

@@ -89,7 +89,9 @@ require('goose').setup({
       next_message = ']]',                 -- Navigate to next message in the conversation
       prev_message = '[[',                 -- Navigate to previous message in the conversation
       mention_file = '@',                  -- Pick a file and add to context. See File Mentions section
-      toggle_pane = '<tab>'                -- Toggle between input and output panes
+      toggle_pane = '<tab>',               -- Toggle between input and output panes
+      prev_prompt_history = '<up>',        -- Navigate to previous prompt in history
+      next_prompt_history = '<down>'       -- Navigate to previous prompt in history
     }
   },
   ui = {
@@ -126,6 +128,8 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |
 | Navigate to previous message | `[[` | - | - |
+| Navigate to previous history prompt | `<C-p>` | `:GoosePrevHistory` | `require('goose.api').prev_history()` |
+| Navigate to next history prompt | `<C-n>` | `:GooseNextHistory` | `require('goose.api').next_history()` |
 | Toggle input/output panes | `<tab>` | - | - |
 | Open diff view of changes | `<leader>gd` | `:GooseDiff` | `require('goose.api').diff()` |
 | Navigate to next file diff | `<leader>g]` | `:GooseDiffNext` | `require('goose.api').next_diff()` |

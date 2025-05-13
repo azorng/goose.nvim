@@ -3,6 +3,7 @@ local M = {}
 local INPUT_PLACEHOLDER = 'Plan, search, build anything'
 local config = require("goose.config").get()
 local state = require("goose.state")
+local ui_util = require('goose.ui.util')
 
 M.base_window_opts = {
   relative = 'editor',
@@ -189,7 +190,7 @@ end
 
 local function recover_input(windows)
   local input_content = state.input_content
-  vim.api.nvim_buf_set_lines(windows.input_buf, 0, -1, false, input_content)
+  require('goose.ui.ui').write_to_input(input_content, windows)
   require('goose.ui.mention').highlight_all_mentions(windows.input_buf)
 end
 
@@ -260,7 +261,6 @@ function M.setup_keymaps(windows)
     require('goose.core').add_file_to_context()
   end, { buffer = windows.input_buf, silent = true })
 
-  -- Add toggle pane keymapping for both buffers in normal and insert mode
   vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_pane, function()
     api.toggle_pane()
   end, { buffer = windows.input_buf, silent = true })
@@ -268,6 +268,14 @@ function M.setup_keymaps(windows)
   vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_pane, function()
     api.toggle_pane()
   end, { buffer = windows.output_buf, silent = true })
+
+  vim.keymap.set({ 'n', 'i' }, window_keymap.prev_prompt_history,
+    ui_util.navigate_history('prev', window_keymap.prev_prompt_history, api.prev_history, api.next_history),
+    { buffer = windows.input_buf, silent = true })
+
+  vim.keymap.set({ 'n', 'i' }, window_keymap.next_prompt_history,
+    ui_util.navigate_history('next', window_keymap.next_prompt_history, api.prev_history, api.next_history),
+    { buffer = windows.input_buf, silent = true })
 end
 
 return M
