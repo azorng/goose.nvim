@@ -220,6 +220,11 @@ function M.write_to_input(text, windows)
   if not windows then windows = state.windows end
   if not windows then return end
 
+  -- Check if input_buf is valid
+  if not windows.input_buf or type(windows.input_buf) ~= "number" or not vim.api.nvim_buf_is_valid(windows.input_buf) then
+    return
+  end
+
   local lines
 
   -- Check if text is already a table/list of lines
