@@ -316,22 +316,6 @@ M.commands = {
       M.revert_this()
     end
   },
-
-  prev_history = {
-    name = "GoosePrevHistory",
-    desc = "Navigate to previous prompt in history",
-    fn = function()
-      M.prev_history()
-    end
-  },
-
-  next_history = {
-    name = "GooseNextHistory",
-    desc = "Navigate to next prompt in history",
-    fn = function()
-      M.next_history()
-    end
-  }
 }
 
 function M.setup()
