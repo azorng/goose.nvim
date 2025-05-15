@@ -162,6 +162,7 @@ The following editor context is automatically captured and included in your conv
 | Current file | Path to the focused file before entering goose |
 | Selected text | Text and lines currently selected in visual mode |
 | Mentioned files | File info added through [mentions](#file-mentions) |
+| Diagnostics | Error diagnostics from the current file (if any) |
 
 <a id="file-mentions"></a>
 ### Adding more files to context through file mentions

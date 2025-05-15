@@ -12,12 +12,14 @@ M.context = {
 
   -- attachments
   mentioned_files = nil,
-  selections = nil
+  selections = nil,
+  linter_errors = nil
 }
 
 function M.unload_attachments()
   M.context.mentioned_files = nil
   M.context.selections = nil
+  M.context.linter_errors = nil
 end
 
 function M.load()
@@ -27,6 +29,7 @@ function M.load()
 
     M.context.current_file = current_file
     M.context.cursor_data = cursor_data
+    M.context.linter_errors = M.check_linter_errors()
   end
 
   local current_selection = M.get_current_selection()
@@ -38,6 +41,25 @@ function M.load()
     )
     M.add_selection(selection)
   end
+end
+
+function M.check_linter_errors()
+  local diagnostics = vim.diagnostic.get(0, { severity = vim.diagnostic.severity.ERROR })
+  if #diagnostics == 0 then
+    return nil
+  end
+
+  local message = "Found " .. #diagnostics .. " error" .. (#diagnostics > 1 and "s" or "") .. ":"
+
+  for i, diagnostic in ipairs(diagnostics) do
+    local line_number = diagnostic.lnum + 1 -- Convert to 1-based line numbers
+    local short_message = diagnostic.message:gsub("%s+", " "):gsub("^%s", ""):gsub("%s$", "")
+    message = message .. "\n Line " .. line_number .. ": " .. short_message
+  end
+
+  print(message)
+
+  return message
 end
 
 function M.new_selection(file, content, lines)
