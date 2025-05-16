@@ -154,14 +154,6 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Revert all file changes | `<leader>gra` | `:GooseRevertAll` | `require('goose.api').revert_all()` |
 | Revert current file changes | `<leader>grt` | `:GooseRevertThis` | `require('goose.api').revert_this()` |
 
-### Switching between providers and models
-
-You can easily switch between different AI providers and models:
-
-1. Use the `<leader>gm` keybinding (or run `:GooseSelectModel`)
-2. Select your desired provider and model from the dropdown menu (e.g., "openrouter: anthropic/claude-3.7-sonnet")
-
-This feature allows you to quickly switch between models for different tasks without manually editing the goose configuration file.
 
 ## 📝 Context
 
