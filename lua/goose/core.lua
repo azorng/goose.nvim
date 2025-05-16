@@ -121,6 +121,22 @@ function M.add_file_to_context()
   end)
 end
 
+function M.configure_provider()
+  local info_mod = require("goose.info")
+  require("goose.provider").select(function(selection)
+    if not selection then return end
+
+    info_mod.set_config_value(info_mod.GOOSE_INFO.PROVIDER, selection.provider)
+    info_mod.set_config_value(info_mod.GOOSE_INFO.MODEL, selection.model)
+
+    vim.notify("Changed provider to " .. selection.display, vim.log.levels.INFO)
+
+    if state.windows then
+      require('goose.ui.topbar').render()
+    end
+  end)
+end
+
 function M.stop()
   if (state.goose_run_job) then job.stop(state.goose_run_job) end
   state.goose_run_job = nil

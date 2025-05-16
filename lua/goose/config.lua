@@ -16,6 +16,7 @@ M.defaults = {
       select_session = '<leader>gs',
       goose_mode_chat = '<leader>gmc',
       goose_mode_auto = '<leader>gma',
+      configure_provider = '<leader>gp',
 
       diff = {
         open = '<leader>gd',
@@ -46,6 +47,20 @@ M.defaults = {
     floating_height = 0.8,
     display_model = true,
     display_goose_mode = true
+  },
+  providers = {
+    --[[
+    Define available providers and their models for quick model switching
+    anthropic|azure|bedrock|databricks|google|groq|ollama|openai|openrouter
+    Example:
+    openrouter = {
+      "anthropic/claude-3.5-sonnet",
+      "openai/gpt-4.1",
+    },
+    ollama = {
+      "cogito:14b"
+    }
+    --]]
   }
 }
 

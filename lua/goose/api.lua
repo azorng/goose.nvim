@@ -64,6 +64,10 @@ function M.set_auto_mode()
   M.change_mode(require('goose.info').GOOSE_MODE.AUTO)
 end
 
+function M.configure_provider()
+  core.configure_provider()
+end
+
 function M.stop()
   core.stop()
 end
@@ -242,6 +246,14 @@ M.commands = {
     desc = "Set goose mode to `auto`. (Default mode with full agent capabilities)",
     fn = function()
       M.set_auto_mode()
+    end
+  },
+
+  configure_provider = {
+    name = "GooseConfigureProvider",
+    desc = "Quick provider and model switch from predefined list",
+    fn = function()
+      M.configure_provider()
     end
   },
 

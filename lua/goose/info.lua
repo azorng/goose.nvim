@@ -3,6 +3,7 @@ local util = require('goose.util')
 
 M.GOOSE_INFO = {
   MODEL = "GOOSE_MODEL",
+  PROVIDER = "GOOSE_PROVIDER",
   MODE = "GOOSE_MODE",
   CONFIG = "Config file"
 }
@@ -27,6 +28,11 @@ function M.parse_goose_info()
   local model = output:match(M.GOOSE_INFO.MODEL .. ":%s*(.-)\n") or output:match(M.GOOSE_INFO.MODEL .. ":%s*(.-)$")
   if model then
     result.goose_model = vim.trim(model)
+  end
+
+  local provider = output:match(M.GOOSE_INFO.PROVIDER .. ":%s*(.-)\n") or output:match(M.GOOSE_INFO.PROVIDER .. ":%s*(.-)$")
+  if provider then
+    result.goose_provider = vim.trim(provider)
   end
 
   local mode = output:match(M.GOOSE_INFO.MODE .. ":%s*(.-)\n") or output:match(M.GOOSE_INFO.MODE .. ":%s*(.-)$")

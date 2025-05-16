@@ -71,7 +71,8 @@ require('goose').setup({
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
       select_session = '<leader>gs',         -- Select and load a goose session
       goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)
-      goose_mode_auto = '<leader>gma'        -- Set goose mode to `auto`. (Default mode with full agent capabilities)
+      goose_mode_auto = '<leader>gma',       -- Set goose mode to `auto`. (Default mode with full agent capabilities)
+      configure_provider = '<leader>gp'      -- Quick provider and model switch from predefined list
 
       diff = {
         open = '<leader>gd',                 -- Opens a diff tab of a modified file since the last goose prompt
@@ -102,6 +103,20 @@ require('goose').setup({
     floating_height = 0.8,                 -- Height as percentage of editor height for "center" layout
     display_model = true,                  -- Display model name on top winbar
     display_goose_mode = true              -- Display mode on top winbar: auto|chat
+  },
+  providers = {
+    --[[
+    Define available providers and their models for quick model switching
+    anthropic|azure|bedrock|databricks|google|groq|ollama|openai|openrouter
+    Example:
+    openrouter = {
+      "anthropic/claude-3.5-sonnet",
+      "openai/gpt-4.1",
+    },
+    ollama = {
+      "cogito:14b"
+    }
+    --]]
   }
 })
 ```
@@ -114,16 +129,17 @@ The plugin provides the following actions that can be triggered via keymaps, com
 
 | Action | Default keymap | Command | API Function |
 |-------------|--------|---------|---------|
-|  Open goose. Close if opened | `<leader>gg` | `:Goose` | `require('goose.api').toggle()` |
+| Open goose. Close if opened | `<leader>gg` | `:Goose` | `require('goose.api').toggle()` |
 | Open input window (current session) | `<leader>gi` | `:GooseOpenInput` | `require('goose.api').open_input()` |
 | Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
 | Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
-|  Toggle focus goose / last window | `<leader>gt` | `:GooseToggleFocus` | `require('goose.api').toggle_focus()` |
+| Toggle focus goose / last window | `<leader>gt` | `:GooseToggleFocus` | `require('goose.api').toggle_focus()` |
 | Close UI windows | `<leader>gq` | `:GooseClose` | `require('goose.api').close()` |
 | Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
 | Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
+| Configure provider and model | `<leader>gp` | `:GooseConfigureProvider` | `require('goose.api').configure_provider()` |
 | Stop goose while it is running | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
-| [Pick a file and add to context](#file-mentions) | `@` |- | -|
+| [Pick a file and add to context](#file-mentions) | `@` | - | - |
 | Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
 | Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
 | Navigate to next message | `]]` | - | - |
@@ -137,6 +153,15 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Close diff view tab | `<leader>gc` | `:GooseDiffClose` | `require('goose.api').close_diff()` |
 | Revert all file changes | `<leader>gra` | `:GooseRevertAll` | `require('goose.api').revert_all()` |
 | Revert current file changes | `<leader>grt` | `:GooseRevertThis` | `require('goose.api').revert_this()` |
+
+### Switching between providers and models
+
+You can easily switch between different AI providers and models:
+
+1. Use the `<leader>gm` keybinding (or run `:GooseSelectModel`)
+2. Select your desired provider and model from the dropdown menu (e.g., "openrouter: anthropic/claude-3.7-sonnet")
+
+This feature allows you to quickly switch between models for different tasks without manually editing the goose configuration file.
 
 ## 📝 Context
 
