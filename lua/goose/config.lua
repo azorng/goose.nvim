@@ -65,31 +65,6 @@ M.defaults = {
 -- Active configuration
 M.values = vim.deepcopy(M.defaults)
 
--- Backward compatibility helper for diff nested mappings
-local function ensure_backward_compatibility()
-  -- If the old nested format exists in user config, map it to the new flat format
-  if M.values.keymap.global.diff then
-    if M.values.keymap.global.diff.open and not M.values.keymap.global.diff_open then
-      M.values.keymap.global.diff_open = M.values.keymap.global.diff.open
-    end
-    if M.values.keymap.global.diff.next and not M.values.keymap.global.diff_next then
-      M.values.keymap.global.diff_next = M.values.keymap.global.diff.next
-    end
-    if M.values.keymap.global.diff.prev and not M.values.keymap.global.diff_prev then
-      M.values.keymap.global.diff_prev = M.values.keymap.global.diff.prev
-    end
-    if M.values.keymap.global.diff.close and not M.values.keymap.global.diff_close then
-      M.values.keymap.global.diff_close = M.values.keymap.global.diff.close
-    end
-    if M.values.keymap.global.diff.revert_all and not M.values.keymap.global.diff_revert_all then
-      M.values.keymap.global.diff_revert_all = M.values.keymap.global.diff.revert_all
-    end
-    if M.values.keymap.global.diff.revert_this and not M.values.keymap.global.diff_revert_this then
-      M.values.keymap.global.diff_revert_this = M.values.keymap.global.diff.revert_this
-    end
-  end
-end
-
 function M.setup(opts)
   opts = opts or {}
 
@@ -105,10 +80,6 @@ function M.setup(opts)
       M.values[k] = v
     end
   end
-
-  -- Ensure backward compatibility with old nested diff format
-  -- TODO: Remove at some point
-  ensure_backward_compatibility()
 end
 
 function M.get(key)
