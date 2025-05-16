@@ -60,7 +60,7 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 ```lua
 -- Default configuration with all available options
 require('goose').setup({
-  default_global_keymaps = true,             -- If true: Set global keymaps
+  default_global_keymaps = true,             -- If false, disables all default global keymaps
   keymap = {
     global = {
       toggle = '<leader>gg',                 -- Open goose. Close if opened 
@@ -73,16 +73,13 @@ require('goose').setup({
       select_session = '<leader>gs',         -- Select and load a goose session
       goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)
       goose_mode_auto = '<leader>gma',       -- Set goose mode to `auto`. (Default mode with full agent capabilities)
-      configure_provider = '<leader>gp'      -- Quick provider and model switch from predefined list
-
-      diff = {
-        open = '<leader>gd',                 -- Opens a diff tab of a modified file since the last goose prompt
-        next = '<leader>g]',                 -- Navigate to next file diff
-        prev = '<leader>g[',                 -- Navigate to previous file diff
-        close = '<leader>gc',                -- Close diff view tab and return to normal editing
-        revert_all = '<leader>gra',          -- Revert all file changes since the last goose prompt
-        revert_this = '<leader>grt',         -- Revert current file changes since the last goose prompt
-      }
+      configure_provider = '<leader>gp',     -- Quick provider and model switch from predefined list
+      diff_open = '<leader>gd',              -- Opens a diff tab of a modified file since the last goose prompt
+      diff_next = '<leader>g]',              -- Navigate to next file diff
+      diff_prev = '<leader>g[',              -- Navigate to previous file diff
+      diff_close = '<leader>gc',             -- Close diff view tab and return to normal editing
+      diff_revert_all = '<leader>gra',       -- Revert all file changes since the last goose prompt
+      diff_revert_this = '<leader>grt',      -- Revert current file changes since the last goose prompt
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
@@ -129,31 +126,31 @@ require('goose').setup({
 The plugin provides the following actions that can be triggered via keymaps, commands, or the Lua API:
 
 | Action | Default keymap | Command | API Function |
-|-------------|--------|---------|---------|
-| Open goose. Close if opened | `<leader>gg` | `:Goose` | `require('goose.api').toggle()` |
-| Open input window (current session) | `<leader>gi` | `:GooseOpenInput` | `require('goose.api').open_input()` |
-| Open input window (new session) | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
-| Open output window | `<leader>go` | `:GooseOpenOutput` | `require('goose.api').open_output()` |
-| Toggle focus goose / last window | `<leader>gt` | `:GooseToggleFocus` | `require('goose.api').toggle_focus()` |
-| Close UI windows | `<leader>gq` | `:GooseClose` | `require('goose.api').close()` |
-| Toggle fullscreen mode | `<leader>gf` | `:GooseToggleFullscreen` | `require('goose.api').toggle_fullscreen()` |
-| Select and load session | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
-| Configure provider and model | `<leader>gp` | `:GooseConfigureProvider` | `require('goose.api').configure_provider()` |
-| Stop goose while it is running | `<C-c>`  | `:GooseStop` | `require('goose.api').stop()` |
+|-----------------------------|---------------------|------------------------|----------------------------------------------|
+| Open goose. Close if opened | `<leader>gg`        | `:Goose`               | `require('goose.api').toggle()`              |
+| Open input window (current session) | `<leader>gi` | `:GooseOpenInput`      | `require('goose.api').open_input()`          |
+| Open input window (new session)     | `<leader>gI` | `:GooseOpenInputNewSession` | `require('goose.api').open_input_new_session()` |
+| Open output window          | `<leader>go`        | `:GooseOpenOutput`     | `require('goose.api').open_output()`         |
+| Toggle focus goose / last window | `<leader>gt`   | `:GooseToggleFocus`    | `require('goose.api').toggle_focus()`        |
+| Close UI windows            | `<leader>gq`        | `:GooseClose`          | `require('goose.api').close()`               |
+| Toggle fullscreen mode      | `<leader>gf`        | `:GooseToggleFullscreen`| `require('goose.api').toggle_fullscreen()`    |
+| Select and load session     | `<leader>gs`        | `:GooseSelectSession`  | `require('goose.api').select_session()`      |
+| Configure provider and model| `<leader>gp`        | `:GooseConfigureProvider` | `require('goose.api').configure_provider()`  |
+| Open diff view of changes   | `<leader>gd`       | `:GooseDiff`           | `require('goose.api').diff_open()`           |
+| Navigate to next file diff  | `<leader>g]`       | `:GooseDiffNext`       | `require('goose.api').diff_next()`           |
+| Navigate to previous file diff | `<leader>g[`    | `:GooseDiffPrev`       | `require('goose.api').diff_prev()`           |
+| Close diff view tab        | `<leader>gc`        | `:GooseDiffClose`      | `require('goose.api').diff_close()`          |
+| Revert all file changes    | `<leader>gra`       | `:GooseRevertAll`      | `require('goose.api').diff_revert_all()`     |
+| Revert current file changes| `<leader>grt`       | `:GooseRevertThis`     | `require('goose.api').diff_revert_this()`    |
+| Run prompt (continue session)| -                 | `:GooseRun <prompt>`   | `require('goose.api').run("prompt")`        |
+| Run prompt (new session)    | -                  | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
+| Stop goose while it is running | `<C-c>`          | `:GooseStop`           | `require('goose.api').stop()`                |
 | [Pick a file and add to context](#file-mentions) | `@` | - | - |
-| Run prompt (continue session) | - | `:GooseRun <prompt>` | `require('goose.api').run("prompt")` |
-| Run prompt (new session) | - | `:GooseRunNewSession <prompt>` | `require('goose.api').run_new_session("prompt")` |
-| Navigate to next message | `]]` | - | - |
-| Navigate to previous message | `[[` | - | - |
-| Navigate to previous prompt in history | `<up>` | - | `require('goose.api').prev_history()` |
-| Navigate to next prompt in history | `<down>` | - | `require('goose.api').next_history()` |
-| Toggle input/output panes | `<tab>` | - | - |
-| Open diff view of changes | `<leader>gd` | `:GooseDiff` | `require('goose.api').diff()` |
-| Navigate to next file diff | `<leader>g]` | `:GooseDiffNext` | `require('goose.api').next_diff()` |
-| Navigate to previous file diff | `<leader>g[` | `:GooseDiffPrev` | `require('goose.api').prev_diff()` |
-| Close diff view tab | `<leader>gc` | `:GooseDiffClose` | `require('goose.api').close_diff()` |
-| Revert all file changes | `<leader>gra` | `:GooseRevertAll` | `require('goose.api').revert_all()` |
-| Revert current file changes | `<leader>grt` | `:GooseRevertThis` | `require('goose.api').revert_this()` |
+| Navigate to next message    | `]]`               | -                      | -                                            |
+| Navigate to previous message| `[[`               | -                      | -                                            |
+| Navigate to previous prompt in history | `<up>`  | -                      | `require('goose.api').prev_history()`        |
+| Navigate to next prompt in history | `<down>`    | -                      | `require('goose.api').next_history()`        |
+| Toggle input/output panes   | `<tab>`            | -                      | -                                            |
 
 
 ## 📝 Context
