@@ -52,31 +52,35 @@ describe("goose.keymap", function()
           toggle_fullscreen = "<leader>full",
           select_session = "<leader>select",
           toggle = "<leader>toggle",
-          toggle_focus = "<leader>focus",
-          diff = {
-            open = "<leader>diff",
-            next = "<leader>next",
-            prev = "<leader>prev",
-            close = "<leader>diffclose",
-            revert_all = "<leader>revertall",
-            revert_this = "<leader>revertthis"
-          }
+          toggle_focus = "<leader>focus"
         }
       }
 
       keymap.setup(test_keymap)
 
-      -- Verify the keymap was set up
-      assert.same({ "n", "v" }, set_keymaps[1].modes)
-      assert.equal("<leader>test", set_keymaps[1].key)
-      assert.is_function(set_keymaps[1].callback)
-      assert.is_table(set_keymaps[1].opts)
+      -- Verify that all keymaps were set up correctly
+      assert.equal(#set_keymaps, 8) -- Should have 8 keymaps for our test config
+      
+      -- Create a map to find keymaps by key
+      local keymaps_by_key = {}
+      for _, km in ipairs(set_keymaps) do
+        keymaps_by_key[km.key] = km
+      end
+      
+      -- Check that all our expected keymaps were set up
+      for action, key in pairs(test_keymap.global) do
+        local km = keymaps_by_key[key]
+        assert.is_not_nil(km, "Keymap for key " .. key .. " not found")
+        assert.same({ "n", "v" }, km.modes, "Modes for " .. key .. " should be n and v")
+        assert.is_function(km.callback, "Callback for " .. key .. " should be a function")
+        assert.is_table(km.opts, "Options for " .. key .. " should be a table")
+      end
     end)
 
     it("sets up callbacks that execute the correct commands", function()
       -- Mock API functions to track calls
       local original_api_functions = {}
-      local api_calls = {}
+      local api_calls_by_function = {}
       local api = require("goose.api")
       
       -- Save original functions
@@ -84,13 +88,13 @@ describe("goose.keymap", function()
         if type(v) == "function" then
           original_api_functions[k] = v
           api[k] = function()
-            table.insert(api_calls, k)
+            api_calls_by_function[k] = (api_calls_by_function[k] or 0) + 1
           end
         end
       end
       
-      -- Setup the keymap
-      keymap.setup({
+      -- Setup the keymap with test mappings
+      local test_mappings = {
         global = {
           open_input = "<leader>test",
           open_input_new_session = "<leader>testNew",
@@ -99,41 +103,28 @@ describe("goose.keymap", function()
           toggle_fullscreen = "<leader>full",
           select_session = "<leader>select",
           toggle = "<leader>toggle",
-          toggle_focus = "<leader>focus",
-          diff = {
-            open = "<leader>diff",
-            next = "<leader>next",
-            prev = "<leader>prev",
-            close = "<leader>diffclose",
-            revert_all = "<leader>revertall",
-            revert_this = "<leader>revertthis"
-          }
+          toggle_focus = "<leader>focus"
         }
-      })
+      }
+      
+      keymap.setup(test_mappings)
 
-      -- Call the first callback (continue session)
-      set_keymaps[1].callback()
-      assert.equal("open_input", api_calls[1])
-
-      -- Call the second callback (new session)
-      set_keymaps[2].callback()
-      assert.equal("open_input_new_session", api_calls[2])
-
-      -- Call the third callback (open output)
-      set_keymaps[3].callback()
-      assert.equal("open_output", api_calls[3])
-
-      -- Call the fourth callback (close)
-      set_keymaps[4].callback()
-      assert.equal("close", api_calls[4])
-
-      -- Call the fifth callback (toggle fullscreen)
-      set_keymaps[5].callback()
-      assert.equal("toggle_fullscreen", api_calls[5])
-
-      -- Call the sixth callback (select session)
-      set_keymaps[6].callback()
-      assert.equal("select_session", api_calls[6])
+      -- Create a map of key bindings to their corresponding keymaps
+      local mapping_to_keymap = {}
+      for _, keymap_entry in ipairs(set_keymaps) do
+        mapping_to_keymap[keymap_entry.key] = keymap_entry
+      end
+      
+      -- Test each callback individually
+      for func_name, key_binding in pairs(test_mappings.global) do
+        local keymap_entry = mapping_to_keymap[key_binding]
+        assert.is_not_nil(keymap_entry, "Keymap for " .. func_name .. " not found")
+        
+        -- Call the callback and check if the corresponding API function was called
+        keymap_entry.callback()
+        assert.equal(1, api_calls_by_function[func_name] or 0, 
+          "API function " .. func_name .. " was not called by its callback")
+      end
       
       -- Restore original API functions
       for k, v in pairs(original_api_functions) do
