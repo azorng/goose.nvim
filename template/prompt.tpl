@@ -6,12 +6,7 @@
         Path: <%= current_file.path %>
       </current-file>
     <? end ?>
-    <? if linter_errors then ?>
-      <linter-errors>
-        <%= linter_errors %>
-      </linter-errors>
-    <? end ?>
-    <? if selections or mentioned_files then ?>
+    <? if selections or mentioned_files or linter_errors then ?>
       <attached-files>
         <? if selections then ?>
           <? for x, selection in ipairs(selections) do ?>
@@ -34,6 +29,11 @@
               Path: <%= path %>
             </mentioned-file>
           <? end ?>
+        <? end ?>
+        <? if linter_errors then ?>
+          <linter-errors>
+            <%= linter_errors %>
+          </linter-errors>
         <? end ?>
       </attached-files>
     <? end ?>
