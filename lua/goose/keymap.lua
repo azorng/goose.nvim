@@ -9,12 +9,14 @@ function M.setup(keymap)
   local global = keymap.global
 
   for key, mapping in pairs(global) do
-    vim.keymap.set(
-      { 'n', 'v' },
-      mapping,
-      function() api[key]() end,
-      { silent = false, desc = cmds[key] and cmds[key].desc }
-    )
+    if type(mapping) == "string" then
+      vim.keymap.set(
+        { 'n', 'v' },
+        mapping,
+        function() api[key]() end,
+        { silent = false, desc = cmds[key] and cmds[key].desc }
+      )
+    end
   end
 end
 
