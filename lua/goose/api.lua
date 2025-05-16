@@ -56,7 +56,6 @@ function M.change_mode(mode)
   end
 end
 
--- Renamed functions to match keymap names
 function M.goose_mode_chat()
   M.change_mode(require('goose.info').GOOSE_MODE.CHAT)
 end
@@ -110,7 +109,6 @@ function M.toggle_pane()
   ui.toggle_pane()
 end
 
--- Renamed diff functions to match keymap names
 function M.diff_open()
   review.review()
 end
@@ -235,7 +233,6 @@ M.commands = {
     end
   },
 
-  -- Updated command names
   goose_mode_chat = {
     name = "GooseModeChat",
     desc = "Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)",
