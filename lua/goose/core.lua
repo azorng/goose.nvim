@@ -129,10 +129,10 @@ function M.configure_provider()
     info_mod.set_config_value(info_mod.GOOSE_INFO.PROVIDER, selection.provider)
     info_mod.set_config_value(info_mod.GOOSE_INFO.MODEL, selection.model)
 
-    vim.notify("Changed provider to " .. selection.display, vim.log.levels.INFO)
-
     if state.windows then
       require('goose.ui.topbar').render()
+    else
+      vim.notify("Changed provider to " .. selection.display, vim.log.levels.INFO)
     end
   end)
 end
