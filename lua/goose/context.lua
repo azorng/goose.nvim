@@ -57,8 +57,6 @@ function M.check_linter_errors()
     message = message .. "\n Line " .. line_number .. ": " .. short_message
   end
 
-  print(message)
-
   return message
 end
 
