@@ -65,10 +65,6 @@ function M.goose_mode_auto()
   M.change_mode(require('goose.info').GOOSE_MODE.AUTO)
 end
 
--- Alias set_chat_mode and set_auto_mode to the new names for backward compatibility
-M.set_chat_mode = M.goose_mode_chat
-M.set_auto_mode = M.goose_mode_auto
-
 function M.configure_provider()
   core.configure_provider()
 end
@@ -138,14 +134,6 @@ end
 function M.diff_revert_this()
   review.revert_current()
 end
-
--- Alias old diff functions for backward compatibility
-M.diff = M.diff_open
-M.next_diff = M.diff_next
-M.prev_diff = M.diff_prev
-M.close_diff = M.diff_close
-M.revert_all = M.diff_revert_all
-M.revert_this = M.diff_revert_this
 
 function M.set_review_breakpoint()
   review.set_breakpoint()
@@ -345,16 +333,6 @@ M.commands = {
     end
   },
 }
-
--- Add back aliases for backward compatibility
-M.commands.chat_mode = M.commands.goose_mode_chat
-M.commands.auto_mode = M.commands.goose_mode_auto
-M.commands.diff = M.commands.diff_open
-M.commands.next_diff = M.commands.diff_next
-M.commands.prev_diff = M.commands.diff_prev
-M.commands.close_diff = M.commands.diff_close
-M.commands.revert_all = M.commands.diff_revert_all
-M.commands.revert_this = M.commands.diff_revert_this
 
 function M.setup()
   -- Register commands without arguments
