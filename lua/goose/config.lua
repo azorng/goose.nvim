@@ -4,6 +4,7 @@ local M = {}
 
 -- Default configuration
 M.defaults = {
+  prefered_picker = nil,
   default_global_keymaps = true,
   keymap = {
     global = {

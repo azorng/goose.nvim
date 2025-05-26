@@ -60,6 +60,7 @@ Install the plugin with your favorite package manager. See the [Configuration](#
 ```lua
 -- Default configuration with all available options
 require('goose').setup({
+  prefered_picker = nil,                     -- 'telescope', 'fzf', 'mini.pick', 'snacks', if nil, it will use the best available picker
   default_global_keymaps = true,             -- If false, disables all default global keymaps
   keymap = {
     global = {

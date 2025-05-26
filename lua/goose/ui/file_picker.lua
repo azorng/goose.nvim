@@ -1,6 +1,13 @@
 local M = {}
 
 local function get_best_picker()
+  local config = require("goose.config")
+
+  local prefered_picker =  config.get('prefered_picker')
+  if prefered_picker and prefered_picker ~= "" then
+    return prefered_picker
+  end
+  
   if pcall(require, "telescope") then return "telescope" end
   if pcall(require, "fzf-lua") then return "fzf" end
   if pcall(require, "mini.pick") then return "mini.pick" end
