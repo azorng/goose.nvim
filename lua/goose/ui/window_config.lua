@@ -221,7 +221,11 @@ function M.setup_keymaps(windows)
   local window_keymap = config.keymap.window
   local api = require('goose.api')
 
-  vim.keymap.set({ 'i', 'n' }, window_keymap.submit, function()
+  vim.keymap.set({  'n' }, window_keymap.submit, function()
+    handle_submit(windows)
+  end, { buffer = windows.input_buf, silent = false })
+
+  vim.keymap.set({  'i' }, window_keymap.submit_insert, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 

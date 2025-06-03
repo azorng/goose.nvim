@@ -28,6 +28,7 @@ M.defaults = {
     },
     window = {
       submit = '<cr>',
+      submit_insert = '<cr>',
       close = '<esc>',
       stop = '<C-c>',
       next_message = ']]',

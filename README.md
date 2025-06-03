@@ -64,10 +64,10 @@ require('goose').setup({
   default_global_keymaps = true,             -- If false, disables all default global keymaps
   keymap = {
     global = {
-      toggle = '<leader>gg',                 -- Open goose. Close if opened 
+      toggle = '<leader>gg',                 -- Open goose. Close if opened
       open_input = '<leader>gi',             -- Opens and focuses on input window on insert mode
       open_input_new_session = '<leader>gI', -- Opens and focuses on input window on insert mode. Creates a new session
-      open_output = '<leader>go',            -- Opens and focuses on output window 
+      open_output = '<leader>go',            -- Opens and focuses on output window
       toggle_focus = '<leader>gt',           -- Toggle focus between goose and last window
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
@@ -84,6 +84,7 @@ require('goose').setup({
     },
     window = {
       submit = '<cr>',                     -- Submit prompt
+      submit_insert = '<cr>',              -- Submit prompt
       close = '<esc>',                     -- Close UI windows
       stop = '<C-c>',                      -- Stop goose while it is running
       next_message = ']]',                 -- Navigate to next message in the conversation
