@@ -84,7 +84,7 @@ require('goose').setup({
     },
     window = {
       submit = '<cr>',                     -- Submit prompt (normal mode)
-      submit_insert = '<cr>',              -- Submit prompt
+      submit_insert = '<cr>',              -- Submit prompt (insert mode)
       close = '<esc>',                     -- Close UI windows
       stop = '<C-c>',                      -- Stop goose while it is running
       next_message = ']]',                 -- Navigate to next message in the conversation
