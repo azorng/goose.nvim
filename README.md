@@ -83,7 +83,7 @@ require('goose').setup({
       diff_revert_this = '<leader>grt',      -- Revert current file changes since the last goose prompt
     },
     window = {
-      submit = '<cr>',                     -- Submit prompt
+      submit = '<cr>',                     -- Submit prompt (normal mode)
       submit_insert = '<cr>',              -- Submit prompt
       close = '<esc>',                     -- Close UI windows
       stop = '<C-c>',                      -- Stop goose while it is running
