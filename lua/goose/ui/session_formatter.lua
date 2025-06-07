@@ -90,6 +90,10 @@ end
 
 function M._format_context(lines, type, value)
   if not type or not value then return end
+
+  -- escape new lines
+  value = value:gsub("\n", "\\n")
+
   local formatted_action = ' **' .. type .. '** ` ' .. value .. ' `'
   table.insert(lines, formatted_action)
 end
