@@ -23,10 +23,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Use the tag from the manual input if it exists, otherwise use the Git ref from the tag push
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           release_name: Release ${{ github.event.inputs.tag || github.ref_name }}
-          # Create a draft release if manually triggered, otherwise a full release
           draft: true
           prerelease: false
 
@@ -65,6 +63,11 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
+
+      - name: Set up cross-compilation toolchain
+        uses: taiki-e/setup-cross-toolchain@v1
+        with:
+          target: ${{ matrix.target }}
 
       - name: Build binary
         run: cargo build --package goose-server --bin goosed --release --target ${{ matrix.target }}
