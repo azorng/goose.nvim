@@ -1,0 +1,96 @@
+name: Build and Release Goose Server
+
+on:
+  # Trigger on version tags (e.g., v0.1.0) for official releases
+  push:
+    tags:
+      - 'v*.*.*'
+  # Allow manual triggering for testing
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The test tag to create (e.g., test-build-1)'
+        required: true
+        default: 'test-build'
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Use the tag from the manual input if it exists, otherwise use the Git ref from the tag push
+          tag_name: ${{ github.event.inputs.tag || github.ref }}
+          release_name: Release ${{ github.event.inputs.tag || github.ref }}
+          # Create a draft release if manually triggered, otherwise a full release
+          draft: ${{ github.event_name == 'workflow_dispatch' }}
+          prerelease: false
+
+  build-and-upload:
+    name: Build for ${{ matrix.os }} (${{ matrix.target }})
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: goose-server-linux-x86_64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            binary_name: goose-server-linux-aarch64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary_name: goose-server-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary_name: goose-server-macos-aarch64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary_name: goose-server-windows-x86_64.exe
+    steps:
+      - name: Checkout goose server source code
+        uses: actions/checkout@v4
+        with:
+          repository: block/goose
+          path: goose-source
+          ref: 'v1.0.27'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+
+      - name: Build binary
+        run: cargo build --package goose-server --bin goosed --release --target ${{ matrix.target }}
+        working-directory: ./goose-source
+        env:
+          CARGO_TERM_COLOR: always
+
+      - name: Rename binary
+        run: |
+          cd goose-source
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            mv "target/${{ matrix.target }}/release/goosed.exe" "../${{ matrix.binary_name }}"
+          else
+            mv "target/${{ matrix.target }}/release/goosed" "../${{ matrix.binary_name }}"
+          fi
+        shell: bash
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.binary_name }}
+          asset_name: ${{ matrix.binary_name }}
+          asset_content_type: application/octet-stream
