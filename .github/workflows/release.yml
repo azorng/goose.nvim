@@ -5,6 +5,9 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    # Add a branch trigger ONLY for testing this feature branch
+    branches:
+      - 'server-integration'
   # Allow manual triggering for testing
   workflow_dispatch:
     inputs:
