@@ -5,13 +5,8 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  # Allow manual triggering for testing
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'The test tag to create (e.g., test-build-1)'
-        required: true
-        default: 'test-build'
+    branches:
+      - 'server-integration'
 
 jobs:
   create-release:
