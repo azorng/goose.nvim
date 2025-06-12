@@ -58,4 +58,34 @@ function M.get_by_name(name)
   return nil
 end
 
+function M.update_session_workspace(session_name, workspace_path)
+  local session = M.get_by_name(session_name)
+  if not session then return false end
+
+  local file = io.open(session.path, "r")
+  if not file then return false end
+
+  local first_line = file:read("*line")
+  local rest = file:read("*all")
+  file:close()
+
+  -- Parse and update metadata
+  local success, metadata = pcall(vim.fn.json_decode, first_line)
+  if not success then return false end
+
+  metadata.working_dir = workspace_path
+
+  -- Write back: metadata line + rest of the file
+  file = io.open(session.path, "w")
+  if not file then return false end
+
+  file:write(vim.fn.json_encode(metadata) .. "\n")
+  if rest and rest ~= "" then
+    file:write(rest)
+  end
+  file:close()
+
+  return true
+end
+
 return M

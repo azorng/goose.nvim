@@ -57,22 +57,15 @@ function M.open(opts)
 end
 
 function M.run(prompt, opts)
-  if not M.goose_ok() then return end
-
-  M.stop()
-
-  opts = opts or {}
-
-  M.open({
-    new_session = opts.new_session or not state.active_session,
-  })
+  if not M.goose_ok() then return false end
+  M.before_run(opts)
 
   -- Add small delay to ensure stop is complete
   vim.defer_fn(function()
     job.execute(prompt,
       {
         on_start = function()
-          M.after_send(prompt)
+          M.after_run(prompt)
         end,
         on_output = function(output)
           -- Reload all modified file buffers
@@ -100,7 +93,7 @@ function M.run(prompt, opts)
   end, 10)
 end
 
-function M.after_send(prompt)
+function M.after_run(prompt)
   require('goose.review').set_breakpoint()
   context.unload_attachments()
   state.last_sent_context = vim.deepcopy(context.context)
@@ -108,6 +101,27 @@ function M.after_send(prompt)
 
   if state.windows then
     ui.render_output()
+  end
+end
+
+function M.before_run(opts)
+  M.stop()
+
+  opts = opts or {}
+
+  M.open({
+    new_session = opts.new_session or not state.active_session,
+  })
+
+  -- sync session workspace to current workspace if there is missmatch
+  if state.active_session then
+    local session_workspace = state.active_session.workspace
+    local current_workspace = vim.fn.getcwd()
+
+    if session_workspace ~= current_workspace then
+      session.update_session_workspace(state.active_session.name, current_workspace)
+      state.active_session.workspace = current_workspace
+    end
   end
 end
 
