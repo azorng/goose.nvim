@@ -2,6 +2,7 @@
 
 local template = require("goose.template")
 local util = require("goose.util")
+local config = require("goose.config");
 
 local M = {}
 
@@ -117,6 +118,10 @@ function M.get_current_file()
 end
 
 function M.get_current_cursor_data()
+  if not (config.get("context") and config.get("context").cursor_data) then
+    return nil
+  end
+
   local cursor_pos = vim.fn.getcurpos()
   local cursor_content = vim.trim(vim.api.nvim_get_current_line())
   return { line = cursor_pos[2], col = cursor_pos[3], line_content = cursor_content }

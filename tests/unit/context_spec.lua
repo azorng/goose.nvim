@@ -5,14 +5,17 @@ local context = require("goose.context")
 local helpers = require("tests.helpers")
 local state = require("goose.state")
 local template = require("goose.template")
+local config = require("goose.config")
 
 describe("goose.context", function()
   local test_file, buf_id
   local original_state
+  local original_config
 
   -- Create a temporary file and open it in a buffer before each test
   before_each(function()
     original_state = vim.deepcopy(state)
+    original_config = vim.deepcopy(config.values)
     test_file = helpers.create_temp_file("Line 1\nLine 2\nLine 3\nLine 4\nLine 5")
     buf_id = helpers.open_buffer(test_file)
   end)
@@ -22,6 +25,11 @@ describe("goose.context", function()
     -- Restore state
     for k, v in pairs(original_state) do
       state[k] = v
+    end
+
+    -- Restore config
+    for k, v in pairs(original_config) do
+      config[k] = v
     end
 
     pcall(function()
@@ -39,6 +47,22 @@ describe("goose.context", function()
     it("returns the correct file path", function()
       local file_path = context.get_current_file()
       assert.equal(test_file, file_path.path)
+    end)
+  end)
+
+  describe("get_current_cursor_data", function()
+    it("returns nil if cursor data is disabled in config (default)", function()
+      local cursor_data = context.get_current_cursor_data()
+      assert.equal(nil, cursor_data)
+    end)
+
+    it("returns cursor data is enabled in config", function()
+      config.values.context.cursor_data = true
+
+      local cursor_data = context.get_current_cursor_data()
+      assert.equal(1, cursor_data.col)
+      assert.equal(1, cursor_data.line)
+      assert.equal("Line 1", cursor_data.line_content)
     end)
   end)
 
