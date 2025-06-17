@@ -6,6 +6,15 @@
         Path: <%= current_file.path %>
       </current-file>
     <? end ?>
+    <? if cursor_data then ?>
+      <cursor-data>
+        Line: <%= cursor_data.line %>
+        Column: <%= cursor_data.col %>
+      </cursor-data>
+      <line-content>
+        <%= cursor_data.line_content %>
+      </line-content>
+    <? end ?>
     <? if selections or mentioned_files or linter_errors then ?>
       <attached-files>
         <? if selections then ?>

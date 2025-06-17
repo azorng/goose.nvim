@@ -61,7 +61,10 @@ M.defaults = {
       "cogito:14b"
     }
     --]]
-  }
+  },
+  context = {
+    cursor_data = false, -- Send cursor position and current line content as context data
+  },
 }
 
 -- Active configuration
