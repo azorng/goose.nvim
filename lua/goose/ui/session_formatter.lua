@@ -101,20 +101,21 @@ end
 function M._format_tool(lines, part)
   local tool = part.toolCall.value
   if not tool then return end
-
+  local command = tool.arguments.command
 
   if tool.name == 'developer__shell' then
-    M._format_context(lines, '🚀 run', tool.arguments.command)
+    M._format_context(lines, '🚀 run', command)
   elseif tool.name == 'developer__text_editor' then
     local path = tool.arguments.path
     local file_name = vim.fn.fnamemodify(path, ":t")
 
-    if tool.arguments.command == 'str_replace' or tool.arguments.command == 'write' then
-      M._format_context(lines, '✏️ write to', file_name)
+    local write_commands = { 'str_replace', 'write', 'edit_file' }
+    if vim.tbl_contains(write_commands, command) then
+      M._format_context(lines, '✏️ edit', file_name)
     elseif tool.arguments.command == 'view' then
       M._format_context(lines, '👀 view', file_name)
     else
-      M._format_context(lines, '✨ command', tool.arguments.command)
+      M._format_context(lines, '✨ command', command)
     end
   else
     M._format_context(lines, '🔧 tool', tool.name)
