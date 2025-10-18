@@ -26,7 +26,7 @@ describe("goose.core", function()
     ui.focus_output = function() end
     ui.scroll_to_bottom = function() end
     ui.is_output_empty = function() return true end
-    session.get_last_workspace_session = function() return { id = "test-session" } end
+    session.get_last_session = function() return { id = "test-session" } end
     job.execute = function() end
   end)
 
@@ -99,8 +99,8 @@ describe("goose.core", function()
         { name = "session3", description = "Third session", modified = "2025-04-03" }
       }
 
-      -- Mock get_all_workspace_sessions to return our mock data
-      session.get_all_workspace_sessions = function() return mock_sessions end
+      -- Mock get_sessions to return our mock data
+      session.get_sessions = function() return mock_sessions end
 
       -- Mock ui.select_session to simulate user selection
       local filtered_sessions_passed
@@ -153,8 +153,8 @@ describe("goose.core", function()
         { name = "session1", description = "First session", modified = "2025-04-01" }
       }
 
-      -- Mock get_all_workspace_sessions to return our mock data
-      session.get_all_workspace_sessions = function() return mock_sessions end
+      -- Mock get_sessions to return our mock data
+      session.get_sessions = function() return mock_sessions end
 
       -- Mock ui.select_session to simulate user selection
       ui.select_session = function(sessions, callback)

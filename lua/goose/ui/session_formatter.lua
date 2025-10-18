@@ -7,20 +7,25 @@ M.separator = {
   ""
 }
 
-function M.format_session(session_path)
-  if vim.fn.filereadable(session_path) == 0 then return nil end
+function M.format_session(session_name)
+  local handle = io.popen("goose session export --format json --name " .. session_name)
+  if not handle then
+    return
+  end
+  local output = handle:read("*a")
+  handle:close()
 
-  local session_lines = vim.fn.readfile(session_path)
-  if #session_lines == 0 then return nil end
+  local success, session = pcall(vim.fn.json_decode, output)
+
+  if not success or not session or not session.conversation then
+    return
+  end
 
   local output_lines = { "" }
 
   local need_separator = false
 
-  for i = 2, #session_lines do
-    local success, message = pcall(vim.fn.json_decode, session_lines[i])
-    if not success then goto continue end
-
+  for i, message in ipairs(session.conversation) do
     local message_lines = M._format_message(message)
     if message_lines then
       if need_separator then
@@ -36,6 +41,7 @@ function M.format_session(session_path)
 
     ::continue::
   end
+
 
   return output_lines
 end

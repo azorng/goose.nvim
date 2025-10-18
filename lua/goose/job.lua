@@ -4,7 +4,6 @@
 local context = require("goose.context")
 local state = require("goose.state")
 local Job = require('plenary.job')
-local util = require("goose.util")
 
 local M = {}
 
@@ -17,11 +16,6 @@ function M.build_args(prompt)
     table.insert(args, "--name")
     table.insert(args, state.active_session.name)
     table.insert(args, "--resume")
-  else
-    local session_name = util.uid()
-    state.new_session_name = session_name
-    table.insert(args, "--name")
-    table.insert(args, session_name)
   end
 
   return args

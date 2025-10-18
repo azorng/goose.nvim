@@ -20,10 +20,37 @@ describe("goose.session", function()
     -- Mock the io.popen function
     io.popen = function(cmd)
       if cmd:match("goose session list") then
-        -- Return a file handle-like table that can be read from
+        -- Extract the workspace from the command
+        local workspace_in_cmd = cmd:match("%-%-working_dir%s+([^%s]+)")
+        if not workspace_in_cmd then
+          return original_io_popen(cmd)
+        end
+        
+        -- Get the session list to return
+        local session_data = mock_data.session_list or session_list_mock
+        
+        -- Parse the session data to check if any sessions match the workspace
+        local success, sessions = pcall(vim.fn.json_decode, session_data)
+        if not success or not sessions then
+          return {
+            read = function() return session_data end,
+            close = function() return true end
+          }
+        end
+        
+        -- Filter sessions by workspace
+        local filtered = {}
+        for _, s in ipairs(sessions) do
+          local metadata = s.metadata or s
+          if metadata.working_dir == workspace_in_cmd then
+            table.insert(filtered, s)
+          end
+        end
+        
+        -- Return the filtered list
         return {
           read = function()
-            return mock_data.session_list or session_list_mock
+            return vim.fn.json_encode(filtered)
           end,
           close = function() return true end
         }
@@ -48,12 +75,12 @@ describe("goose.session", function()
     mock_data = {}
   end)
 
-  describe("get_last_workspace_session", function()
+  describe("get_last_session", function()
     it("returns the most recent session for current workspace", function()
       -- Using the default mock session list and workspace
 
       -- Call the function
-      local result = session.get_last_workspace_session()
+      local result = session.get_last_session()
 
       -- Verify the result - should return "new-8" as it's the most recent
       assert.is_not_nil(result)
@@ -65,7 +92,7 @@ describe("goose.session", function()
       mock_data.workspace = "/non/existent/path"
 
       -- Call the function
-      local result = session.get_last_workspace_session()
+      local result = session.get_last_session()
 
       -- Should be nil since no sessions match
       assert.is_nil(result)
@@ -76,7 +103,7 @@ describe("goose.session", function()
       io.popen = function() return nil end
 
       -- Call the function
-      local result = session.get_last_workspace_session()
+      local result = session.get_last_session()
 
       -- Should be nil due to command failure
       assert.is_nil(result)
@@ -97,7 +124,7 @@ describe("goose.session", function()
 
       -- Call the function inside pcall to catch the error
       local success, result = pcall(function()
-        return session.get_last_workspace_session()
+        return session.get_last_session()
       end)
 
       -- Restore original function
@@ -113,32 +140,36 @@ describe("goose.session", function()
     end)
 
     it("handles custom session data", function()
-      -- Mock sessions with custom data
+      -- Mock sessions with custom data (most recent first)
       mock_data.session_list = [[
         [
-          {
-            "id": "custom1",
-            "modified": "2025-03-03 12:00:00 UTC",
-            "metadata": {
-              "working_dir": "/Users/jimmy/myproject1",
-              "description": "Custom Session 1"
-            }
-          },
           {
             "id": "custom2",
             "modified": "2025-03-03 13:00:00 UTC",
             "metadata": {
+              "id": "custom2",
               "working_dir": "/Users/jimmy/myproject1",
-              "description": "Custom Session 2"
+              "description": "Custom Session 2",
+              "updated_at": "2025-03-03 13:00:00 UTC"
+            }
+          },
+          {
+            "id": "custom1",
+            "modified": "2025-03-03 12:00:00 UTC",
+            "metadata": {
+              "id": "custom1",
+              "working_dir": "/Users/jimmy/myproject1",
+              "description": "Custom Session 1",
+              "updated_at": "2025-03-03 12:00:00 UTC"
             }
           }
         ]
       ]]
 
       -- Call the function
-      local result = session.get_last_workspace_session()
+      local result = session.get_last_session()
 
-      -- Should return the most recent
+      -- Should return the most recent (custom2, which is first in the list)
       assert.is_not_nil(result)
       assert.equal("custom2", result.name)
     end)
@@ -148,7 +179,7 @@ describe("goose.session", function()
       mock_data.session_list = "[]"
 
       -- Call the function
-      local result = session.get_last_workspace_session()
+      local result = session.get_last_session()
 
       -- Should be nil with empty list
       assert.is_nil(result)

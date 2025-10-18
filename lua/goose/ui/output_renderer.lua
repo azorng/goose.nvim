@@ -8,9 +8,8 @@ local LABELS = {
 }
 
 M._cache = {
-  last_modified = 0,
   output_lines = nil,
-  session_path = nil,
+  session_name = nil,
   check_counter = 0
 }
 
@@ -31,46 +30,31 @@ end
 function M._should_refresh_content()
   if not state.active_session then return true end
 
-  local session_path = state.active_session.path
+  local session_name = state.active_session.name
 
-  if session_path ~= M._cache.session_path then
-    M._cache.session_path = session_path
+  if session_name ~= M._cache.session_name then
+    M._cache.session_name = session_name
     return true
   end
-
-  if vim.fn.filereadable(session_path) == 0 then return false end
-
-  local stat = vim.loop.fs_stat(session_path)
-  if not stat then return false end
 
   if state.goose_run_job then
     M._cache.check_counter = (M._cache.check_counter + 1) % 3
-    if M._cache.check_counter == 0 then
-      local has_file_changed = stat.mtime.sec > M._cache.last_modified
-      if has_file_changed then
-        M._cache.last_modified = stat.mtime.sec
-        return true
-      end
-    end
-  end
-
-  if stat.mtime.sec > M._cache.last_modified then
-    M._cache.last_modified = stat.mtime.sec
-    return true
+    return M._cache.check_counter == 0
   end
 
   return false
 end
 
 function M._read_session(force_refresh)
-  if not state.active_session then return nil end
+  if not state.active_session then 
+    return state.goose_run_job and { "" } or nil
+  end
 
   if not force_refresh and not M._should_refresh_content() and M._cache.output_lines then
     return M._cache.output_lines
   end
 
-  local session_path = state.active_session.path
-  local output_lines = formatter.format_session(session_path)
+  local output_lines = formatter.format_session(state.active_session.name)
   M._cache.output_lines = output_lines
   return output_lines
 end
@@ -159,7 +143,7 @@ end
 
 function M.render(windows, force_refresh)
   local function render()
-    if not state.active_session and not state.new_session_name then
+    if not state.active_session and not state.goose_run_job then
       return
     end
 
@@ -168,16 +152,9 @@ function M.render(windows, force_refresh)
     end
 
     local output_lines = M._read_session(force_refresh)
-    local is_new_session = state.new_session_name ~= nil
 
     if not output_lines then
-      if is_new_session then
-        output_lines = { "" }
-      else
-        return
-      end
-    else
-      state.new_session_name = nil
+      return
     end
 
     M.handle_loading(windows, output_lines)
@@ -205,9 +182,8 @@ function M.stop()
 
   M._animation.loading_line = nil
   M._cache = {
-    last_modified = 0,
     output_lines = nil,
-    session_path = nil,
+    session_name = nil,
     check_counter = 0
   }
 end
