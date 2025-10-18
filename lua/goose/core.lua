@@ -73,7 +73,12 @@ function M.run(prompt, opts)
 
           -- for new sessions, set session data after running the command
           if not state.active_session then
-            state.active_session = session.get_last_session()
+            local session_id = output:match("session id:%s*([%w_]+)")
+            if session_id then
+              vim.defer_fn(function()
+                state.active_session = session.get_by_name(session_id)
+              end, 100)
+            end
           end
         end,
         on_error = function(err)
