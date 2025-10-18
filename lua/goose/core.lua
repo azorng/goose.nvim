@@ -6,7 +6,7 @@ local ui = require("goose.ui.ui")
 local job = require('goose.job')
 
 function M.select_session()
-  local all_sessions = session.get_all_workspace_sessions()
+  local all_sessions = session.get_sessions()
   local filtered_sessions = vim.tbl_filter(function(s)
     return s.description ~= '' and s ~= nil
   end, all_sessions)
@@ -40,7 +40,7 @@ function M.open(opts)
     ui.clear_output()
   else
     if not state.active_session then
-      state.active_session = session.get_last_workspace_session()
+      state.active_session = session.get_last_session()
     end
 
     if are_windows_closed or ui.is_output_empty() then
@@ -73,7 +73,7 @@ function M.run(prompt, opts)
 
           -- for new sessions, set session data after running the command
           if not state.active_session then
-            state.active_session = session.get_last_workspace_session()
+            state.active_session = session.get_last_session()
           end
         end,
         on_error = function(err)
@@ -112,17 +112,6 @@ function M.before_run(opts)
   M.open({
     new_session = opts.new_session or not state.active_session,
   })
-
-  -- sync session workspace to current workspace if there is missmatch
-  if state.active_session then
-    local session_workspace = state.active_session.workspace
-    local current_workspace = vim.fn.getcwd()
-
-    if session_workspace ~= current_workspace then
-      session.update_session_workspace(state.active_session.name, current_workspace)
-      state.active_session.workspace = current_workspace
-    end
-  end
 end
 
 function M.add_file_to_context()

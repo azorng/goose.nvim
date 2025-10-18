@@ -1,7 +1,8 @@
 local M = {}
 
-function M.get_all_sessions()
-  local handle = io.popen('goose session list --format json')
+function M.get_sessions()
+  local workspace = vim.fn.getcwd()
+  local handle = io.popen('goose session list --format json --limit 50 --working_dir ' .. workspace)
   if not handle then return nil end
 
   local result = handle:read("*a")
@@ -17,37 +18,21 @@ function M.get_all_sessions()
       description = metadata.description,
       message_count = metadata.message_count,
       tokens = metadata.total_tokens,
-      modified = metadata.updated_at,
-      name = metadata.id,
-      path = metadata.path
+      modified = metadata.updated_at or session.modified,
+      name = metadata.id or session.id,
+      path = metadata.path or session.path
     }
   end, sessions)
 end
 
-function M.get_all_workspace_sessions()
-  local sessions = M.get_all_sessions()
-  if not sessions then return nil end
-
-  local workspace = vim.fn.getcwd()
-  sessions = vim.tbl_filter(function(session)
-    return session.workspace == workspace
-  end, sessions)
-
-  table.sort(sessions, function(a, b)
-    return a.modified > b.modified
-  end)
-
-  return sessions
-end
-
-function M.get_last_workspace_session()
-  local sessions = M.get_all_workspace_sessions()
+function M.get_last_session()
+  local sessions = M.get_sessions()
   if not sessions then return nil end
   return sessions[1]
 end
 
 function M.get_by_name(name)
-  local sessions = M.get_all_sessions()
+  local sessions = M.get_sessions()
   if not sessions then return nil end
 
   for _, session in ipairs(sessions) do

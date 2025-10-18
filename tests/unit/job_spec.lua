@@ -54,15 +54,19 @@ describe("goose.job", function()
     assert.equal("run", args[1])
     assert.equal("--text", args[2])
 
-    -- Verify a session name is generated
+    -- When there's no active session, there should NOT be --name or --resume
     local session_name_found = false
+    local resume_found = false
     for i, arg in ipairs(args) do
-      if arg == "--name" and args[i + 1] then
+      if arg == "--name" then
         session_name_found = true
-        break
+      end
+      if arg == "--resume" then
+        resume_found = true
       end
     end
-    assert.truthy(session_name_found, "Should include --name argument")
+    assert.falsy(session_name_found, "Should NOT include --name argument when no active session")
+    assert.falsy(resume_found, "Should NOT include --resume argument when no active session")
   end)
 
   it("builds a command with the provided resume opt", function()
@@ -97,27 +101,24 @@ describe("goose.job", function()
   it("handles new session creation correctly", function()
     -- Ensure no active session
     state.active_session = nil
-    state.new_session_name = nil
 
     local prompt = "Help me understand this code"
     local args = job.build_args(prompt)
 
-    -- Should not have "--resume" flag
+    -- Should not have "--resume" or "--name" flags when no active session
     local resume_found = false
-    local name_index = nil
+    local name_found = false
 
     for i, arg in ipairs(args) do
       if arg == "--resume" then
         resume_found = true
       elseif arg == "--name" then
-        name_index = i
+        name_found = true
       end
     end
 
     assert.falsy(resume_found, "Should not include --resume argument for new session")
-    assert.truthy(name_index, "Should include --name argument")
-    assert.truthy(state.new_session_name, "Should generate new session name")
-    assert.equal(state.new_session_name, args[name_index + 1], "Generated session name should match arg")
+    assert.falsy(name_found, "Should not include --name argument for new session")
   end)
 
   it("properly stops a running job", function()
