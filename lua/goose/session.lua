@@ -11,14 +11,15 @@ function M.get_all_sessions()
   if not success or not sessions or next(sessions) == nil then return nil end
 
   return vim.tbl_map(function(session)
+    local metadata = session.metadata or session
     return {
-      workspace = session.metadata.working_dir,
-      description = session.metadata.description,
-      message_count = session.metadata.message_count,
-      tokens = session.metadata.total_tokens,
-      modified = session.modified,
-      name = session.id,
-      path = session.path
+      workspace = metadata.working_dir,
+      description = metadata.description,
+      message_count = metadata.message_count,
+      tokens = metadata.total_tokens,
+      modified = metadata.updated_at,
+      name = metadata.id,
+      path = metadata.path
     }
   end, sessions)
 end

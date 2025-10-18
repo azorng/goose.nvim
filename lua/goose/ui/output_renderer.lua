@@ -2,6 +2,7 @@ local M = {}
 
 local state = require("goose.state")
 local formatter = require("goose.ui.session_formatter")
+local info = require("goose.info")
 
 local LABELS = {
   GENERATING_RESPONSE = "Thinking..."
@@ -69,8 +70,7 @@ function M._read_session(force_refresh)
     return M._cache.output_lines
   end
 
-  local session_path = state.active_session.path
-  local output_lines = formatter.format_session(session_path)
+  local output_lines = formatter.format_session(state.active_session.name)
   M._cache.output_lines = output_lines
   return output_lines
 end
