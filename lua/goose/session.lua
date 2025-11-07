@@ -15,7 +15,7 @@ function M.get_sessions()
     local metadata = session.metadata or session
     return {
       workspace = metadata.working_dir,
-      description = metadata.description,
+      description = metadata.description or metadata.name,
       message_count = metadata.message_count,
       tokens = metadata.total_tokens,
       modified = metadata.updated_at or session.modified,
