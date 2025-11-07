@@ -66,7 +66,7 @@ local function get_session_desc()
 
   if state.active_session then
     local session = require('goose.session').get_by_name(state.active_session.name)
-    if session and session.description ~= "" then
+    if session and session.description ~= "" and session.description ~= nil then
       session_desc = session.description
     end
   end
