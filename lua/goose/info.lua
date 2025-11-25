@@ -5,8 +5,7 @@ M.GOOSE_INFO = {
   MODEL = "GOOSE_MODEL",
   PROVIDER = "GOOSE_PROVIDER",
   MODE = "GOOSE_MODE",
-  CONFIG = "Config file",
-  SESSION_DIR = "Sessions dir"
+  CONFIG = "Config yaml",
 }
 
 M.GOOSE_MODE = {
@@ -46,12 +45,6 @@ function M.parse_goose_info()
       output:match(M.GOOSE_INFO.CONFIG .. ":%s*(.-)$")
   if config_file then
     result.config_file = vim.trim(config_file)
-  end
-
-  local session_dir = output:match(M.GOOSE_INFO.SESSION_DIR .. ":%s*(.-)\n") or
-      output:match(M.GOOSE_INFO.SESSION_DIR .. ":%s*(.-)$")
-  if session_dir then
-    result.session_dir = vim.trim(session_dir)
   end
 
   return result
