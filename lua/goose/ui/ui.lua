@@ -39,6 +39,20 @@ function M.return_to_last_code_win()
   end
 end
 
+function M.open_in_code_window(content, filetype)
+  M.return_to_last_code_win()
+  vim.cmd("enew")
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(content, "\n"))
+  vim.bo.filetype = filetype or "text"
+  vim.bo.buftype = "nofile"
+  vim.bo.bufhidden = "wipe"
+end
+
+function M.open_file_in_code_window(filepath)
+  M.return_to_last_code_win()
+  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+end
+
 function M.create_windows()
   local configurator = require("goose.ui.window_config")
   local input_buf = vim.api.nvim_create_buf(false, true)
