@@ -50,6 +50,16 @@ function M.parse_goose_info()
   return result
 end
 
+function M.open_config()
+  local info = M.parse_goose_info()
+  if not info.config_file then
+    vim.notify("Could not find config file path", vim.log.levels.ERROR)
+    return
+  end
+
+  vim.cmd("edit " .. vim.fn.fnameescape(info.config_file))
+end
+
 -- Set a value in the goose config file
 function M.set_config_value(key, value)
   local info = M.parse_goose_info()
