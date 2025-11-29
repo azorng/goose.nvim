@@ -67,6 +67,7 @@ M.defaults = {
   context = {
     cursor_data = false, -- Send cursor position and current line content as context data
   },
+  system_instructions = "", -- Provide additional system instructions to customize the agent's behavior
 }
 
 -- Active configuration

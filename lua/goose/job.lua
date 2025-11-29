@@ -3,6 +3,7 @@
 
 local context = require("goose.context")
 local state = require("goose.state")
+local config = require("goose.config")
 local Job = require('plenary.job')
 
 local M = {}
@@ -11,6 +12,12 @@ function M.build_args(prompt)
   if not prompt then return nil end
   local message = context.format_message(prompt)
   local args = { "run", "--text", message }
+
+  local system_instructions = config.get("system_instructions")
+  if system_instructions and system_instructions ~= "" then
+    table.insert(args, "--system")
+    table.insert(args, system_instructions)
+  end
 
   if state.active_session then
     table.insert(args, "--name")
