@@ -15,7 +15,7 @@
 This plugin provides a bridge between neovim and the [goose](https://github.com/block/goose) AI agent, creating a chat interface while capturing editor context (current file, selections) to enhance your prompts. It maintains persistent sessions tied to your workspace, allowing for continuous conversations with the AI assistant similar to what tools like Cursor AI offer.
 
 <div align="center">
-  <img src="https://i.imgur.com/W8oUlsf.jpeg" alt="Goose.nvim interface"  />
+  <img width="90%"  alt="Goose.nvim interface" src="https://github.com/user-attachments/assets/2890b064-b259-4211-9bed-2b99207cfb4e" />
 </div>
 
 ## 📑 Table of Contents
