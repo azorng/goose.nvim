@@ -119,7 +119,8 @@ require('goose').setup({
       "cogito:14b"
     }
     --]]
-  }
+  },
+  system_instructions = ""    -- Provide additional system instructions to customize the agent's behavior
 })
 ```
 
