@@ -8,12 +8,7 @@ M.separator = {
 }
 
 function M.format_session(session_name)
-  local handle = io.popen("goose session export --format json --name " .. session_name)
-  if not handle then
-    return
-  end
-  local output = handle:read("*a")
-  handle:close()
+  local output = require("goose.session").export(session_name)
 
   local success, session = pcall(vim.fn.json_decode, output)
 

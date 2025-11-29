@@ -69,7 +69,28 @@ function M.configure_provider()
 end
 
 function M.open_config()
-  require('goose.info').open_config()
+  local info = require('goose.info').parse_goose_info()
+
+  if not info.config_file then
+    vim.notify("Could not find config file path", vim.log.levels.ERROR)
+    return nil
+  end
+
+  require('goose.ui.ui').open_file_in_code_window(info.config_file)
+end
+
+function M.inspect_session()
+  local active_session = state.active_session
+
+  if not active_session or not active_session.name then
+    vim.notify("No active session to inspect", vim.log.levels.WARN)
+    return nil
+  end
+
+  local json_content = require('goose.session').export(active_session.name)
+  if json_content then
+    require('goose.ui.ui').open_in_code_window(json_content, "json")
+  end
 end
 
 function M.stop()
@@ -266,6 +287,14 @@ M.commands = {
     desc = "Open goose config file",
     fn = function()
       M.open_config()
+    end
+  },
+
+  inspect_session = {
+    name = "GooseInspectSession",
+    desc = "Inspect current session as JSON",
+    fn = function()
+      M.inspect_session()
     end
   },
 

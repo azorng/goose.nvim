@@ -39,10 +39,6 @@ function M.open(opts)
     state.last_sent_context = nil
     ui.clear_output()
   else
-    if not state.active_session then
-      state.active_session = session.get_last_session()
-    end
-
     if are_windows_closed or ui.is_output_empty() then
       ui.render_output()
       ui.scroll_to_bottom()

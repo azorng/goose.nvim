@@ -31,6 +31,24 @@ function M.get_last_session()
   return sessions[1]
 end
 
+function M.export(session_name)
+  local handle = io.popen('goose session export --format json --name "' .. session_name .. '"')
+  if not handle then
+    vim.notify("Failed to export session", vim.log.levels.ERROR)
+    return nil
+  end
+
+  local json_content = handle:read("*a")
+  handle:close()
+
+  if not json_content or json_content == "" then
+    vim.notify("No content exported", vim.log.levels.WARN)
+    return nil
+  end
+
+  return json_content
+end
+
 function M.get_by_name(name)
   local sessions = M.get_sessions()
   if not sessions then return nil end

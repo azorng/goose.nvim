@@ -20,6 +20,7 @@ M.defaults = {
       goose_mode_auto = '<leader>gma',
       configure_provider = '<leader>gp',
       open_config = '<leader>g.',
+      inspect_session = '<leader>g?',
       diff_open = '<leader>gd',
       diff_next = '<leader>g]',
       diff_prev = '<leader>g[',
