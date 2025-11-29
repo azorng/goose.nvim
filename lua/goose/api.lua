@@ -68,6 +68,10 @@ function M.configure_provider()
   core.configure_provider()
 end
 
+function M.open_config()
+  require('goose.info').open_config()
+end
+
 function M.stop()
   core.stop()
 end
@@ -254,6 +258,14 @@ M.commands = {
     desc = "Quick provider and model switch from predefined list",
     fn = function()
       M.configure_provider()
+    end
+  },
+
+  open_config = {
+    name = "GooseOpenConfig",
+    desc = "Open goose config file",
+    fn = function()
+      M.open_config()
     end
   },
 

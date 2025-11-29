@@ -75,6 +75,7 @@ require('goose').setup({
       goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)
       goose_mode_auto = '<leader>gma',       -- Set goose mode to `auto`. (Default mode with full agent capabilities)
       configure_provider = '<leader>gp',     -- Quick provider and model switch from predefined list
+      open_config = '<leader>g.',            -- Open goose config file
       diff_open = '<leader>gd',              -- Opens a diff tab of a modified file since the last goose prompt
       diff_next = '<leader>g]',              -- Navigate to next file diff
       diff_prev = '<leader>g[',              -- Navigate to previous file diff
@@ -138,6 +139,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Toggle fullscreen mode      | `<leader>gf`        | `:GooseToggleFullscreen`| `require('goose.api').toggle_fullscreen()`    |
 | Select and load session     | `<leader>gs`        | `:GooseSelectSession`  | `require('goose.api').select_session()`      |
 | Configure provider and model| `<leader>gp`        | `:GooseConfigureProvider` | `require('goose.api').configure_provider()`  |
+| Open goose config file      | `<leader>g.`        | `:GooseOpenConfig`     | `require('goose.api').open_config()`         |
 | Open diff view of changes   | `<leader>gd`       | `:GooseDiff`           | `require('goose.api').diff_open()`           |
 | Navigate to next file diff  | `<leader>g]`       | `:GooseDiffNext`       | `require('goose.api').diff_next()`           |
 | Navigate to previous file diff | `<leader>g[`    | `:GooseDiffPrev`       | `require('goose.api').diff_prev()`           |
