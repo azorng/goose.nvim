@@ -166,14 +166,16 @@ function M.configure_window_dimensions(windows)
   local row, col
 
   if layout == "center" then
-    -- Use a smaller height for floating; allow an optional `floating_height` factor (e.g. 0.8).
     local fh = config.ui.floating_height
     total_usable_height = math.floor(total_height * fh)
-    -- Center the floating window vertically and horizontally.
     row = math.floor((total_height - total_usable_height) / 2)
     col = is_fullscreen and 0 or math.floor((total_width - width) / 2)
+  elseif layout == "left" then
+    total_usable_height = total_height - 3
+    row = 0
+    col = 0
   else
-    -- "right" layout uses the original full usable height.
+    -- "right" layout (default)
     total_usable_height = total_height - 3
     row = 0
     col = is_fullscreen and 0 or (total_width - width)

@@ -64,7 +64,7 @@ function M.create_windows()
   local input_win, output_win
 
   if config.ui.window_type == "split" then
-    local split_cmd = config.ui.layout == "right" and "botright vsplit" or "topleft vsplit"
+    local split_cmd = config.ui.layout == "left" and "topleft vsplit" or "botright vsplit"
 
     vim.cmd(split_cmd)
     output_win = vim.api.nvim_get_current_win()
