@@ -42,11 +42,11 @@ M.defaults = {
     }
   },
   ui = {
-    window_type = "split", -- float|split
+    window_type = "float", -- float|split
     window_width = 0.35,
     input_height = 0.15,
     fullscreen = false,
-    layout = "left", -- float: center|left|right, split: left|right
+    layout = "right", -- float: center|left|right, split: left|right
     floating_height = 0.8,
     display_model = true,
     display_goose_mode = false
