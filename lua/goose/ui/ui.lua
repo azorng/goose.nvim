@@ -55,13 +55,29 @@ end
 
 function M.create_windows()
   local configurator = require("goose.ui.window_config")
+  local config = require("goose.config").get()
   local input_buf = vim.api.nvim_create_buf(false, true)
   local output_buf = vim.api.nvim_create_buf(false, true)
 
   require('goose.ui.highlight').setup()
 
-  local input_win = vim.api.nvim_open_win(input_buf, false, configurator.base_window_opts)
-  local output_win = vim.api.nvim_open_win(output_buf, false, configurator.base_window_opts)
+  local input_win, output_win
+
+  if config.ui.window_type == "split" then
+    local split_cmd = config.ui.layout == "right" and "botright vsplit" or "topleft vsplit"
+
+    vim.cmd(split_cmd)
+    output_win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(output_win, output_buf)
+
+    vim.cmd("belowright split")
+    input_win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(input_win, input_buf)
+  else
+    input_win = vim.api.nvim_open_win(input_buf, false, configurator.base_window_opts)
+    output_win = vim.api.nvim_open_win(output_buf, false, configurator.base_window_opts)
+  end
+
   local windows = {
     input_buf = input_buf,
     output_buf = output_buf,

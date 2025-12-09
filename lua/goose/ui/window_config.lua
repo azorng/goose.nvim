@@ -17,8 +17,11 @@ M.base_window_opts = {
 }
 
 function M.setup_options(windows)
+  local is_split = config.ui.window_type == "split"
+  local highlight = is_split and 'Normal:Normal' or 'Normal:GooseBackground,FloatBorder:GooseBorder'
+
   -- Input window/buffer options
-  vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
+  vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', highlight)
   vim.api.nvim_win_set_option(windows.input_win, 'signcolumn', 'yes')
   vim.api.nvim_win_set_option(windows.input_win, 'cursorline', false)
   vim.api.nvim_buf_set_option(windows.input_buf, 'buftype', 'nofile')
@@ -26,7 +29,9 @@ function M.setup_options(windows)
   vim.b[windows.input_buf].completion = false
 
   -- Output window/buffer options
-  vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', 'Normal:GooseBackground,FloatBorder:GooseBorder')
+  vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', highlight)
+  vim.api.nvim_win_set_option(windows.output_win, 'number', false)
+  vim.api.nvim_win_set_option(windows.output_win, 'relativenumber', false)
   vim.api.nvim_buf_set_option(windows.output_buf, 'filetype', 'markdown')
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
   vim.api.nvim_buf_set_option(windows.output_buf, 'buftype', 'nofile')
@@ -127,6 +132,24 @@ function M.setup_autocmds(windows)
 end
 
 function M.configure_window_dimensions(windows)
+  local is_split = config.ui.window_type == "split"
+
+  if is_split then
+    local total_width = vim.api.nvim_get_option('columns')
+    local width = config.ui.fullscreen and total_width or math.floor(total_width * config.ui.window_width)
+
+    vim.api.nvim_win_set_width(windows.output_win, width)
+    vim.api.nvim_win_set_width(windows.input_win, width)
+
+    local output_height = vim.api.nvim_win_get_height(windows.output_win)
+    local input_height = math.floor(output_height * config.ui.input_height)
+    output_height = output_height - input_height
+
+    vim.api.nvim_win_set_height(windows.output_win, output_height)
+    vim.api.nvim_win_set_height(windows.input_win, input_height)
+    return
+  end
+
   local total_width = vim.api.nvim_get_option('columns')
   local total_height = vim.api.nvim_get_option('lines')
   local is_fullscreen = config.ui.fullscreen
@@ -221,11 +244,11 @@ function M.setup_keymaps(windows)
   local window_keymap = config.keymap.window
   local api = require('goose.api')
 
-  vim.keymap.set({  'n' }, window_keymap.submit, function()
+  vim.keymap.set({ 'n' }, window_keymap.submit, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 
-  vim.keymap.set({  'i' }, window_keymap.submit_insert, function()
+  vim.keymap.set({ 'i' }, window_keymap.submit_insert, function()
     handle_submit(windows)
   end, { buffer = windows.input_buf, silent = false })
 

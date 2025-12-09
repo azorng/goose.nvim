@@ -31,6 +31,8 @@ function M.open(opts)
   local are_windows_closed = state.windows == nil
 
   if are_windows_closed then
+    require('goose.context').load()
+    state.last_code_win_before_goose = vim.api.nvim_get_current_win()
     state.windows = ui.create_windows()
   end
 
