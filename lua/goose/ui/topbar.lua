@@ -42,25 +42,6 @@ local function create_winbar_text(description, model_info, win_width)
   return string.format(" %s%s%s ", description, padding, model_info)
 end
 
-local function update_winbar_highlights(win_id)
-  local current = vim.api.nvim_win_get_option(win_id, 'winhighlight')
-  local parts = vim.split(current, ",")
-
-  -- Remove any existing winbar highlights
-  parts = vim.tbl_filter(function(part)
-    return not part:match("^WinBar:") and not part:match("^WinBarNC:")
-  end, parts)
-
-  if not vim.tbl_contains(parts, "Normal:GooseNormal") then
-    table.insert(parts, "Normal:GooseNormal")
-  end
-
-  table.insert(parts, "WinBar:GooseSessionDescription")
-  table.insert(parts, "WinBarNC:GooseSessionDescription")
-
-  vim.api.nvim_win_set_option(win_id, 'winhighlight', table.concat(parts, ","))
-end
-
 local function get_session_desc()
   local session_desc = LABELS.NEW_SESSION_TITLE
 
@@ -78,13 +59,12 @@ function M.render()
   local win = state.windows.output_win
 
   vim.schedule(function()
+    vim.wo[win].winhighlight = 'WinBar:Comment,WinBarNC:Comment'
     vim.wo[win].winbar = create_winbar_text(
       get_session_desc(),
       format_model_info(),
       vim.api.nvim_win_get_width(win)
     )
-
-    update_winbar_highlights(win)
   end)
 end
 
