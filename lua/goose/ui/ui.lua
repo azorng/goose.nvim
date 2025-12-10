@@ -59,8 +59,6 @@ function M.create_windows()
   local input_buf = vim.api.nvim_create_buf(false, true)
   local output_buf = vim.api.nvim_create_buf(false, true)
 
-  require('goose.ui.highlight').setup()
-
   local input_win, output_win
 
   if config.ui.window_type == "split" then

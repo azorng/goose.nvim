@@ -17,13 +17,14 @@ M.base_window_opts = {
 }
 
 function M.setup_options(windows)
-  local is_split = config.ui.window_type == "split"
-  local highlight = is_split and 'Normal:Normal' or 'Normal:GooseBackground,FloatBorder:GooseBorder'
+  local highlight = 'Normal:GooseBackground,FloatBorder:GooseBorder,WinBar:GooseBorder,WinBarNC:GooseBorder'
 
   -- Input window/buffer options
   vim.api.nvim_win_set_option(windows.input_win, 'winhighlight', highlight)
   vim.api.nvim_win_set_option(windows.input_win, 'signcolumn', 'yes')
   vim.api.nvim_win_set_option(windows.input_win, 'cursorline', false)
+  vim.api.nvim_win_set_option(windows.input_win, 'number', false)
+  vim.api.nvim_buf_set_option(windows.input_buf, 'filetype', 'GooseInput')
   vim.api.nvim_buf_set_option(windows.input_buf, 'buftype', 'nofile')
   vim.api.nvim_buf_set_option(windows.input_buf, 'swapfile', false)
   vim.b[windows.input_buf].completion = false
@@ -136,17 +137,22 @@ function M.configure_window_dimensions(windows)
 
   if is_split then
     local total_width = vim.api.nvim_get_option('columns')
+    local total_height = vim.api.nvim_get_option('lines')
     local width = config.ui.fullscreen and total_width or math.floor(total_width * config.ui.window_width)
 
     vim.api.nvim_win_set_width(windows.output_win, width)
     vim.api.nvim_win_set_width(windows.input_win, width)
 
-    local output_height = vim.api.nvim_win_get_height(windows.output_win)
-    local input_height = math.floor(output_height * config.ui.input_height)
-    output_height = output_height - input_height
+    local input_height = math.floor(total_height * config.ui.input_height)
+    local output_height = total_height - input_height
 
     vim.api.nvim_win_set_height(windows.output_win, output_height)
     vim.api.nvim_win_set_height(windows.input_win, input_height)
+
+    if config.ui.window_type == "split" then
+      -- input/output separator
+      vim.wo[windows.input_win].winbar = "%#GooseBorder#" .. string.rep("─", vim.fn.winwidth(windows.input_win))
+    end
     return
   end
 
