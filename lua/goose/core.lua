@@ -4,6 +4,7 @@ local context = require("goose.context")
 local session = require("goose.session")
 local ui = require("goose.ui.ui")
 local job = require('goose.job')
+local keymap = require('goose.config').get('keymap')
 
 function M.select_session()
   local all_sessions = session.get_sessions()
@@ -124,16 +125,16 @@ function M.add_file_to_context()
       mention_cb(file.name)
       context.add_file(file.path)
     end)
-  end)
+  end, keymap.window.mention_file)
 end
 
 function M.configure_provider()
-  local info_mod = require("goose.info")
+  local info = require("goose.info")
   require("goose.provider").select(function(selection)
     if not selection then return end
 
-    info_mod.set_config_value(info_mod.GOOSE_INFO.PROVIDER, selection.provider)
-    info_mod.set_config_value(info_mod.GOOSE_INFO.MODEL, selection.model)
+    info.set(info.KEY.PROVIDER, selection.provider)
+    info.set(info.KEY.MODEL, selection.model)
 
     if state.windows then
       require('goose.ui.topbar').render()
@@ -141,6 +142,21 @@ function M.configure_provider()
       vim.notify("Changed provider to " .. selection.display, vim.log.levels.INFO)
     end
   end)
+end
+
+function M.mention_skill()
+  if not require('goose.info').is_extension_enabled('skills') then
+    vim.notify("Skills extension is not enabled", vim.log.levels.WARN)
+    return
+  end
+
+  require('goose.ui.mention').mention(function(mention_cb)
+    require("goose.skills").select(function(skill)
+      if not skill then return end
+      mention_cb(skill.name)
+      context.add_skill(skill.name)
+    end)
+  end, keymap.window.mention_skill)
 end
 
 function M.stop()

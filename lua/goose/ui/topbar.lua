@@ -7,19 +7,20 @@ local LABELS = {
 }
 
 local function format_model_info()
-  local info = require("goose.info").parse_goose_info()
+  local info = require("goose.info")
   local config = require("goose.config").get()
   local parts = {}
 
   if config.ui.display_model then
-    local model = info.goose_model and (info.goose_model:match("[^/]+$") or info.goose_model) or ""
-    if model ~= "" then
+    local model = info.model()
+    if model then
+      model = model:match("[^/]+$") or model
       table.insert(parts, model)
     end
   end
 
   if config.ui.display_goose_mode then
-    local mode = info.goose_mode
+    local mode = info.mode()
     if mode then
       table.insert(parts, "[" .. mode .. "]")
     end

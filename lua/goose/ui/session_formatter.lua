@@ -104,8 +104,14 @@ function M._format_tool(lines, part)
   if not tool then return end
   local command = tool.arguments.command
 
-  if tool.name == 'developer__shell' then
+  if tool.name == 'skills__loadSkill' then
+    M._format_context(lines, '💎 skill', tool.arguments.name)
+  elseif tool.name == 'developer__shell' then
     M._format_context(lines, '🚀 run', command)
+  elseif tool.name == 'developer__image_processor' then
+    local image_path = tool.arguments.path
+    local image_name = vim.fn.fnamemodify(image_path, ":t")
+    M._format_context(lines, '🎇 process image', image_name)
   elseif tool.name == 'developer__text_editor' then
     local path = tool.arguments.path
     local file_name = vim.fn.fnamemodify(path, ":t")

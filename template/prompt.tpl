@@ -1,4 +1,4 @@
-<? if current_file or mentioned_files or selections or linter_errors then ?>
+<? if current_file or mentioned_files or mentioned_skills or selections or linter_errors then ?>
   <additional-data>
     Below is context that may help answer the user query. Ignore if not relevant
     <? if current_file then ?>
@@ -14,6 +14,13 @@
       <line-content>
         <%= cursor_data.line_content %>
       </line-content>
+    <? end ?>
+    <? if mentioned_skills then ?>
+      <? for x, name in ipairs(mentioned_skills) do ?>
+        <mentioned-skill>
+          <%= name %>
+        </mentioned-skill>
+      <? end ?>
     <? end ?>
     <? if selections or mentioned_files or linter_errors then ?>
       <attached-files>
