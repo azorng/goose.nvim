@@ -42,7 +42,7 @@ M.defaults = {
     }
   },
   ui = {
-    window_type = "split", -- float|split
+    window_type = "float", -- float|split
     window_width = 0.35,
     input_height = 0.15,
     fullscreen = false,
