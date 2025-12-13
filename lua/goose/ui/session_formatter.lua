@@ -9,9 +9,9 @@ M.separator = {
 
 function M.format_session(session_name)
   local output = require("goose.session").export(session_name)
+  if not output then return end
 
   local success, session = pcall(vim.fn.json_decode, output)
-
   if not success or not session or not session.conversation then
     return
   end
@@ -90,13 +90,36 @@ function M._format_message(message)
 end
 
 function M._format_context(lines, type, value)
-  if not type or not value then return end
+  if not type then return end
 
-  -- escape new lines
-  value = value:gsub("\n", "\\n")
+  local formatted_action = ' **' .. type .. '**'
 
-  local formatted_action = ' **' .. type .. '** ` ' .. value .. ' `'
+  if value and value ~= '' then
+    -- escape new lines
+    value = value:gsub("\n", "\\n")
+    formatted_action = formatted_action .. ' ` ' .. value .. ' `'
+  end
+
   table.insert(lines, formatted_action)
+end
+
+local function extract_task_titles(task_parameters)
+  if type(task_parameters) == 'table' then
+    local titles = {}
+    for _, param in ipairs(task_parameters) do
+      if param.title then
+        table.insert(titles, param.title)
+      end
+    end
+    return #titles > 0 and table.concat(titles, ", ") or ""
+  elseif type(task_parameters) == 'string' then
+    local titles = {}
+    for title in task_parameters:gmatch('"title"%s*:%s*"([^"]+)"') do
+      table.insert(titles, title)
+    end
+    return #titles > 0 and table.concat(titles, ", ") or ""
+  end
+  return ""
 end
 
 function M._format_tool(lines, part)
@@ -104,8 +127,23 @@ function M._format_tool(lines, part)
   if not tool then return end
   local command = tool.arguments.command
 
-  if tool.name == 'developer__shell' then
+  if tool.name == 'skills__loadSkill' then
+    M._format_context(lines, '💎 skill', tool.arguments.name)
+  elseif tool.name == 'subagent__execute_task' then
+    M._format_context(lines, '⚡️ execute task')
+  elseif tool.name == 'developer__analyze' then
+    local full_path = tool.arguments.path
+    local dir = vim.fn.fnamemodify(full_path, ":t")
+    M._format_context(lines, '👀 analyze', dir)
+  elseif tool.name == 'dynamic_task__create_task' then
+    local titles = extract_task_titles(tool.arguments.task_parameters)
+    M._format_context(lines, '📋 create task', titles)
+  elseif tool.name == 'developer__shell' then
     M._format_context(lines, '🚀 run', command)
+  elseif tool.name == 'developer__image_processor' then
+    local image_path = tool.arguments.path
+    local image_name = vim.fn.fnamemodify(image_path, ":t")
+    M._format_context(lines, '🎇 process image', image_name)
   elseif tool.name == 'developer__text_editor' then
     local path = tool.arguments.path
     local file_name = vim.fn.fnamemodify(path, ":t")

@@ -1,63 +1,84 @@
 local M = {}
-local util = require('goose.util')
 
-M.GOOSE_INFO = {
-  MODEL = "GOOSE_MODEL",
-  PROVIDER = "GOOSE_PROVIDER",
-  MODE = "GOOSE_MODE",
-  CONFIG = "Config yaml",
-}
-
-M.GOOSE_MODE = {
+M.MODE = {
   CHAT = "chat",
   AUTO = "auto"
 }
 
--- Parse the output of `goose info -v` command
-function M.parse_goose_info()
-  local result = {}
+M.KEY = {
+  MODE = "GOOSE_MODE",
+  MODEL = "GOOSE_MODEL",
+  PROVIDER = "GOOSE_PROVIDER"
+}
 
-  local handle = io.popen("goose info -v")
-  if not handle then
-    return result
+local cache = nil
+
+local function load_config()
+  if cache then return cache end
+
+  local result = vim.system({ 'goose', 'info', '-v' }):wait()
+  if result.code ~= 0 then return nil end
+
+  local config_path = result.stdout:match("Config yaml:%s*(.-)[\n$]")
+  if not config_path then return nil end
+
+  config_path = vim.trim(config_path)
+
+  local file = io.open(config_path, "r")
+  if not file then return nil end
+
+  local content = file:read("*a")
+  file:close()
+
+  local data = require('goose.util').parse_yaml(content)
+  if data then
+    cache = {
+      path = config_path,
+      data = data
+    }
   end
 
-  local output = handle:read("*a")
-  handle:close()
-
-  local model = output:match(M.GOOSE_INFO.MODEL .. ":%s*(.-)\n") or output:match(M.GOOSE_INFO.MODEL .. ":%s*(.-)$")
-  if model then
-    result.goose_model = vim.trim(model)
-  end
-
-  local provider = output:match(M.GOOSE_INFO.PROVIDER .. ":%s*(.-)\n") or
-  output:match(M.GOOSE_INFO.PROVIDER .. ":%s*(.-)$")
-  if provider then
-    result.goose_provider = vim.trim(provider)
-  end
-
-  local mode = output:match(M.GOOSE_INFO.MODE .. ":%s*(.-)\n") or output:match(M.GOOSE_INFO.MODE .. ":%s*(.-)$")
-  if mode then
-    result.goose_mode = vim.trim(mode)
-  end
-
-  local config_file = output:match(M.GOOSE_INFO.CONFIG .. ":%s*(.-)\n") or
-      output:match(M.GOOSE_INFO.CONFIG .. ":%s*(.-)$")
-  if config_file then
-    result.config_file = vim.trim(config_file)
-  end
-
-  return result
+  return cache
 end
 
--- Set a value in the goose config file
-function M.set_config_value(key, value)
-  local info = M.parse_goose_info()
-  if not info.config_file then
-    return false, "Could not find config file path"
-  end
+function M.model()
+  local cfg = load_config()
+  return cfg and cfg.data[M.KEY.MODEL]
+end
 
-  return util.set_yaml_value(info.config_file, key, value)
+function M.provider()
+  local cfg = load_config()
+  return cfg and cfg.data[M.KEY.PROVIDER]
+end
+
+function M.mode()
+  local cfg = load_config()
+  return cfg and cfg.data[M.KEY.MODE]
+end
+
+function M.extensions()
+  local cfg = load_config()
+  return cfg and cfg.data.extensions or {}
+end
+
+function M.is_extension_enabled(name)
+  local exts = M.extensions()
+  return exts[name] and exts[name].enabled == true
+end
+
+function M.set(key, value)
+  local cfg = load_config()
+  if not cfg then return false, "Could not load config" end
+
+  local util = require('goose.util')
+  local ok, err = util.set_yaml_value(cfg.path, key, value)
+  if ok then cache = nil end
+
+  return ok, err
+end
+
+function M.invalidate()
+  cache = nil
 end
 
 return M

@@ -36,6 +36,7 @@ M.defaults = {
       next_message = ']]',
       prev_message = '[[',
       mention_file = '@',
+      mention_skill = '#',
       toggle_pane = '<tab>',
       prev_prompt_history = '<up>',
       next_prompt_history = '<down>'

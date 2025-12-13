@@ -7,18 +7,18 @@ local config = require("goose.config");
 local M = {}
 
 M.context = {
-  -- current file
   current_file = nil,
   cursor_data = nil,
 
-  -- attachments
   mentioned_files = nil,
+  mentioned_skills = nil,
   selections = nil,
   linter_errors = nil
 }
 
 function M.unload_attachments()
   M.context.mentioned_files = nil
+  M.context.mentioned_skills = nil
   M.context.selections = nil
   M.context.linter_errors = nil
 end
@@ -83,12 +83,22 @@ function M.add_file(file)
   end
 
   if vim.fn.filereadable(file) ~= 1 then
-    vim.notify("File not added to context. Could not read.")
+    vim.notify("File not added to context. Could not read.", vim.log.levels.WARN)
     return
   end
 
   if not vim.tbl_contains(M.context.mentioned_files, file) then
     table.insert(M.context.mentioned_files, file)
+  end
+end
+
+function M.add_skill(skill_name)
+  if not M.context.mentioned_skills then
+    M.context.mentioned_skills = {}
+  end
+
+  if not vim.tbl_contains(M.context.mentioned_skills, skill_name) then
+    table.insert(M.context.mentioned_skills, skill_name)
   end
 end
 
@@ -164,11 +174,8 @@ function M.format_message(prompt)
   local info = require('goose.info')
   local context = nil
 
-  if info.parse_goose_info().goose_mode == info.GOOSE_MODE.CHAT then
-    -- For chat mode only send selection context
-    context = {
-      selections = M.context.selections
-    }
+  if info.mode() == info.MODE.CHAT then
+    context = { selections = M.context.selections }
   else
     context = M.delta_context()
   end

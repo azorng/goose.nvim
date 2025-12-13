@@ -191,27 +191,67 @@ function M.time_ago(dateTime)
   end
 end
 
--- Simple YAML key/value setter
--- Note: This is a basic implementation that assumes simple YAML structure
--- It will either update an existing key or append a new key at the end
-function M.set_yaml_value(path, key, value)
-  if not path then
-    return false, "No file path provided"
+local function parse_yaml_value(value)
+  if value == "true" then
+    return true
+  elseif value == "false" then
+    return false
+  elseif value == "null" or value == "~" then
+    return nil
+  elseif tonumber(value) then
+    return tonumber(value)
+  else
+    return value
+  end
+end
+
+local function get_indent(line)
+  return #line:match("^%s*")
+end
+
+function M.parse_yaml(content)
+  local result = {}
+  local stack = { { data = result, indent = -1 } }
+
+  for line in content:gmatch("[^\r\n]+") do
+    if not line:match("^%s*#") and not line:match("^%s*$") then
+      local indent = get_indent(line)
+      local key, value = line:match("^%s*([^:]+):%s*(.*)$")
+
+      if key then
+        while #stack > 1 and stack[#stack].indent >= indent do
+          table.remove(stack)
+        end
+
+        local parent = stack[#stack].data
+        key = vim.trim(key)
+        value = vim.trim(value)
+
+        if value == "" then
+          parent[key] = {}
+          table.insert(stack, { data = parent[key], indent = indent })
+        else
+          parent[key] = parse_yaml_value(value)
+        end
+      end
+    end
   end
 
-  -- Read the current content
+  return result
+end
+
+function M.set_yaml_value(path, key, value)
+  if not path then return false, "No file path provided" end
+
+  local file = io.open(path, "r")
+  if not file then return false, "Could not open file" end
+
   local lines = {}
   local key_pattern = "^%s*" .. vim.pesc(key) .. ":%s*"
   local found = false
 
-  local file = io.open(path, "r")
-  if not file then
-    return false, "Could not open file"
-  end
-
   for line in file:lines() do
     if line:match(key_pattern) then
-      -- Update existing key
       lines[#lines + 1] = string.format("%s: %s", key, value)
       found = true
     else
@@ -220,16 +260,12 @@ function M.set_yaml_value(path, key, value)
   end
   file:close()
 
-  -- If key wasn't found, append it
   if not found then
     lines[#lines + 1] = string.format("%s: %s", key, value)
   end
 
-  -- Write back to file
   file = io.open(path, "w")
-  if not file then
-    return false, "Could not open file for writing"
-  end
+  if not file then return false, "Could not open file for writing" end
   file:write(table.concat(lines, "\n"))
   file:close()
 

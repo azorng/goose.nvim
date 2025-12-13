@@ -46,8 +46,8 @@ function M.toggle_focus()
 end
 
 function M.change_mode(mode)
-  local info_mod = require("goose.info")
-  info_mod.set_config_value(info_mod.GOOSE_INFO.MODE, mode)
+  local info = require("goose.info")
+  info.set(info.KEY.MODE, mode)
 
   if state.windows then
     require('goose.ui.topbar').render()
@@ -57,26 +57,38 @@ function M.change_mode(mode)
 end
 
 function M.goose_mode_chat()
-  M.change_mode(require('goose.info').GOOSE_MODE.CHAT)
+  M.change_mode(require('goose.info').MODE.CHAT)
 end
 
 function M.goose_mode_auto()
-  M.change_mode(require('goose.info').GOOSE_MODE.AUTO)
+  M.change_mode(require('goose.info').MODE.AUTO)
 end
 
 function M.configure_provider()
   core.configure_provider()
 end
 
-function M.open_config()
-  local info = require('goose.info').parse_goose_info()
+function M.mention_skill()
+  core.mention_skill()
+end
 
-  if not info.config_file then
-    vim.notify("Could not find config file path", vim.log.levels.ERROR)
-    return nil
+function M.open_config()
+  local info = require('goose.info')
+  
+  local result = vim.system({ 'goose', 'info', '-v' }):wait()
+  if result.code ~= 0 then
+    vim.notify("Could not get config path", vim.log.levels.ERROR)
+    return
   end
 
-  require('goose.ui.ui').open_file_in_code_window(info.config_file)
+  local config_path = result.stdout:match("Config yaml:%s*(.-)[\n$]")
+  if not config_path then
+    vim.notify("Could not find config file path", vim.log.levels.ERROR)
+    return
+  end
+
+  require('goose.ui.ui').open_file_in_code_window(vim.trim(config_path))
+  info.invalidate()
 end
 
 function M.inspect_session()
@@ -279,6 +291,14 @@ M.commands = {
     desc = "Quick provider and model switch from predefined list",
     fn = function()
       M.configure_provider()
+    end
+  },
+
+  mention_skill = {
+    name = "GooseMentionSkill",
+    desc = "Mention a skill from ~/.claude/skills",
+    fn = function()
+      M.mention_skill()
     end
   },
 

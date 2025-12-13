@@ -296,6 +296,10 @@ function M.setup_keymaps(windows)
     require('goose.core').add_file_to_context()
   end, { buffer = windows.input_buf, silent = true })
 
+  vim.keymap.set('i', window_keymap.mention_skill, function()
+    require('goose.core').mention_skill()
+  end, { buffer = windows.input_buf, silent = true })
+
   vim.keymap.set({ 'n', 'i' }, window_keymap.toggle_pane, function()
     api.toggle_pane()
   end, { buffer = windows.input_buf, silent = true })
