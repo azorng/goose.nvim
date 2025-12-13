@@ -1,6 +1,6 @@
 <? if current_file or mentioned_files or mentioned_skills or selections or linter_errors then ?>
   <additional-data>
-    Below is context that may help answer the user query. Ignore if not relevant
+    Below is context that may help with the user query. Ignore if not relevant
     <? if current_file then ?>
       <current-file>
         Path: <%= current_file.path %>
@@ -14,13 +14,6 @@
       <line-content>
         <%= cursor_data.line_content %>
       </line-content>
-    <? end ?>
-    <? if mentioned_skills then ?>
-      <? for x, name in ipairs(mentioned_skills) do ?>
-        <mentioned-skill>
-          <%= name %>
-        </mentioned-skill>
-      <? end ?>
     <? end ?>
     <? if selections or mentioned_files or linter_errors then ?>
       <attached-files>
@@ -57,6 +50,14 @@
   <user-query>
     <%= prompt %>
   </user-query>
+  <? if mentioned_skills then ?>
+  <skills>
+    Load these skills and follow them exactly as written
+    <? for x, name in ipairs(mentioned_skills) do ?>
+      Skill name: <%= name %>
+    <? end ?>
+  </skills>
+  <? end ?>
 <? else ?>
   <%= prompt %>
 <? end ?>

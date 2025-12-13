@@ -1,6 +1,6 @@
 local M = {}
 
-local SKILLS_DIR = vim.fn.expand("~/.claude/skills")
+local SKILLS_DIR = vim.fn.expand("~/.config/goose/skills")
 
 local function parse_frontmatter(content)
   local lines = vim.split(content, "\n")
