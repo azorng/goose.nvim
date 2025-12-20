@@ -25,6 +25,7 @@ This plugin provides a bridge between neovim and the [goose](https://github.com/
 - [Configuration](#️-configuration)
 - [Usage](#-usage)
 - [Context](#-context)
+- [Completions](#-completions)
 - [Setting up goose](#-setting-up-goose)
 
 ## 📋 Requirements
@@ -177,6 +178,32 @@ The following editor context is automatically captured and included in your conv
 
 You can reference files in your project directly in your conversations with Goose. This is useful when you want to ask about or provide context about specific files. Type `@` in the input window to trigger the file picker. 
 Supported pickers include [`fzf-lua`](https://github.com/ibhagwan/fzf-lua), [`telescope`](https://github.com/nvim-telescope/telescope.nvim), [`mini.pick`](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-pick.md), [`snacks`](https://github.com/folke/snacks.nvim/blob/main/docs/picker.md)
+
+## ⚡ Completions
+
+Completions allow you to reference different resource types quickly by auto completing their names. Currently supported completion types are:
+- [Slash Commands](#slash-commands)
+
+Completions are implemented as neovim native [`omnifunc`](https://neovim.io/doc/user/options.html#'omnifunc').
+goose.nvim automatically configures the following plugins to support these omnifunc completions:
+- **[blink.cmp](https://github.com/Saghen/blink.cmp)**
+
+<a id="slash-commands"></a>
+### Slash Commands
+
+Type `/` at the start to complete slash commands:
+
+- **Base commands:** `/compact`, `/clear`, `/prompts`, `/prompt`
+- **Custom commands:** Defined in `~/.config/goose/config.yaml` under `slash_commands`, each linked to a recipe
+
+Example configuration:
+```yaml
+slash_commands:
+  - command: design
+    recipe_path: /path/to/recipes/design.yaml
+  - command: review
+    recipe_path: /path/to/recipes/code-review.yaml
+``` 
 
 ## 🔧 Setting up goose 
 

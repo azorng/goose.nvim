@@ -12,6 +12,11 @@ function M.select_session()
     return s.description ~= '' and s ~= nil
   end, all_sessions)
 
+  if vim.tbl_isempty(filtered_sessions) then
+    vim.notify("No sessions available.", vim.log.levels.WARN)
+    return
+  end
+
   ui.select_session(filtered_sessions, function(selected_session)
     if not selected_session then return end
     state.active_session = selected_session

@@ -212,29 +212,104 @@ end
 function M.parse_yaml(content)
   local result = {}
   local stack = { { data = result, indent = -1 } }
+  local lines = {}
 
   for line in content:gmatch("[^\r\n]+") do
+    table.insert(lines, line)
+  end
+
+  local i = 1
+  while i <= #lines do
+    local line = lines[i]
+
     if not line:match("^%s*#") and not line:match("^%s*$") then
       local indent = get_indent(line)
-      local key, value = line:match("^%s*([^:]+):%s*(.*)$")
 
-      if key then
-        while #stack > 1 and stack[#stack].indent >= indent do
-          table.remove(stack)
+      -- Check for array item (line starting with -)
+      local array_item_content = line:match("^%s*-%s+(.*)$")
+      if array_item_content then
+        -- For array items, we need to find the array context to add to
+        -- Pop back until we find an array or reach the appropriate indent level
+        while #stack > 1 do
+          local top = stack[#stack]
+          local top_data = top.data
+
+          -- If current stack top is an array (empty or has numeric keys), use it
+          if type(top_data) == "table" then
+            local first_key = next(top_data)
+            if first_key == nil or type(first_key) == "number" then
+              -- This is our array context, stop popping
+              break
+            end
+          end
+
+          -- If the stack top has greater indent than current line, pop it
+          if top.indent >= indent then
+            table.remove(stack)
+          else
+            -- We've gone too far back
+            break
+          end
         end
 
         local parent = stack[#stack].data
-        key = vim.trim(key)
-        value = vim.trim(value)
+        local array_item = {}
+        table.insert(parent, array_item)
 
-        if value == "" then
-          parent[key] = {}
-          table.insert(stack, { data = parent[key], indent = indent })
-        else
-          parent[key] = parse_yaml_value(value)
+        -- Parse the content after the dash
+        local item_key, item_value = array_item_content:match("^([^:]+):%s*(.*)$")
+        if item_key then
+          item_key = vim.trim(item_key)
+          item_value = vim.trim(item_value)
+
+          if item_value == "" then
+            array_item[item_key] = {}
+            table.insert(stack, { data = array_item[item_key], indent = indent + 2 })
+          else
+            array_item[item_key] = parse_yaml_value(item_value)
+          end
+        end
+
+        -- Push array item to stack for nested properties
+        table.insert(stack, { data = array_item, indent = indent })
+      else
+        -- Regular key:value pair
+        local key, value = line:match("^%s*([^:]+):%s*(.*)$")
+        if key then
+          -- Pop stack to appropriate level
+          while #stack > 1 and stack[#stack].indent >= indent do
+            table.remove(stack)
+          end
+
+          local parent = stack[#stack].data
+          key = vim.trim(key)
+          value = vim.trim(value)
+
+          if value == "" then
+            -- Check if next line is an array item
+            local is_array = false
+            if i + 1 <= #lines then
+              local next_line = lines[i + 1]
+              if next_line:match("^%s*-%s+") then
+                is_array = true
+              end
+            end
+
+            if is_array then
+              parent[key] = {}
+              table.insert(stack, { data = parent[key], indent = indent })
+            else
+              parent[key] = {}
+              table.insert(stack, { data = parent[key], indent = indent })
+            end
+          else
+            parent[key] = parse_yaml_value(value)
+          end
         end
       end
     end
+
+    i = i + 1
   end
 
   return result

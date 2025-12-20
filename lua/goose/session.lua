@@ -9,7 +9,7 @@ function M.get_sessions()
   handle:close()
 
   local success, sessions = pcall(vim.fn.json_decode, result)
-  if not success or not sessions or next(sessions) == nil then return nil end
+  if not success or not sessions or next(sessions) == nil then return {} end
 
   return vim.tbl_map(function(session)
     local metadata = session.metadata or session

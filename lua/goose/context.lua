@@ -108,7 +108,7 @@ function M.delta_context()
   if not last_context then return context end
 
   -- no need to send file context again
-  if context.current_file and context.current_file.name == last_context and last_context.current_file.name then
+  if context.current_file and last_context.current_file and context.current_file.name == last_context.current_file.name then
     context.current_file = nil
   end
 
@@ -173,9 +173,12 @@ end
 function M.format_message(prompt)
   local info = require('goose.info')
   local context = nil
+  local is_slash_cmd = prompt:sub(1, 1) == '/'
 
   if info.mode() == info.MODE.CHAT then
     context = { selections = M.context.selections }
+  elseif is_slash_cmd then
+    context = {}
   else
     context = M.delta_context()
   end

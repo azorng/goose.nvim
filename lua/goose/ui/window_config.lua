@@ -27,7 +27,9 @@ function M.setup_options(windows)
   vim.api.nvim_buf_set_option(windows.input_buf, 'filetype', 'GooseInput')
   vim.api.nvim_buf_set_option(windows.input_buf, 'buftype', 'nofile')
   vim.api.nvim_buf_set_option(windows.input_buf, 'swapfile', false)
-  vim.b[windows.input_buf].completion = false
+
+  -- Setup completion
+  require('goose.completion').setup(windows.input_buf)
 
   -- Output window/buffer options
   vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', highlight)
@@ -226,6 +228,7 @@ local function recover_input(windows)
 end
 
 function M.setup_after_actions(windows)
+  -- require('goose.completion').setup(windows.input_buf)
   recover_input(windows)
 end
 
