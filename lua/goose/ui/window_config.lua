@@ -17,6 +17,9 @@ M.base_window_opts = {
 }
 
 function M.setup_options(windows)
+  -- Attach markdown treesitter parser for GooseOutput buffers
+  vim.treesitter.language.register('markdown', 'GooseOutput')
+
   local highlight = 'Normal:GooseBackground,FloatBorder:GooseBorder,WinBar:GooseBorder,WinBarNC:GooseBorder'
 
   -- Input window/buffer options
@@ -32,7 +35,7 @@ function M.setup_options(windows)
   vim.api.nvim_win_set_option(windows.output_win, 'winhighlight', highlight)
   vim.api.nvim_win_set_option(windows.output_win, 'number', false)
   vim.api.nvim_win_set_option(windows.output_win, 'relativenumber', false)
-  vim.api.nvim_buf_set_option(windows.output_buf, 'filetype', 'markdown')
+  vim.api.nvim_buf_set_option(windows.output_buf, 'filetype', 'GooseOutput')
   vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
   vim.api.nvim_buf_set_option(windows.output_buf, 'buftype', 'nofile')
   vim.api.nvim_buf_set_option(windows.output_buf, 'swapfile', false)
