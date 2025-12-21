@@ -218,5 +218,5 @@ If you're new to goose:
    - Ensure the `goose` command is available after installation
 
 3. **Configuration:**
-   - Run `goose configure` to set up your LLM provider (**Claude 3.7 Sonnet is recommended**)
+   - Run `goose configure` to set up your LLM provider
 

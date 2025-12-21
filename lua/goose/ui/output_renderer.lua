@@ -22,8 +22,9 @@ M._animation = {
 }
 
 function M.render_markdown()
-  if vim.fn.exists(":RenderMarkdown") > 0 then
-    vim.cmd(':RenderMarkdown')
+  local ok, render_markdown = pcall(require, 'render-markdown')
+  if ok and render_markdown.render then
+    render_markdown.render({ buf = state.windows.output_buf })
   end
 end
 
@@ -46,7 +47,7 @@ function M._should_refresh_content()
 end
 
 function M._read_session(force_refresh)
-  if not state.active_session then 
+  if not state.active_session then
     return state.goose_run_job and { "" } or nil
   end
 
