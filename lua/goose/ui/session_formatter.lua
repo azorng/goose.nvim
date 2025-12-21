@@ -21,6 +21,10 @@ function M.format_session(session_name)
   local need_separator = false
 
   for i, message in ipairs(session.conversation) do
+    if message.metadata and message.metadata.userVisible == false then
+      goto continue
+    end
+
     local message_lines = M._format_message(message)
     if message_lines then
       if need_separator then

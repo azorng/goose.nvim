@@ -66,6 +66,11 @@ function M.is_extension_enabled(name)
   return exts[name] and exts[name].enabled == true
 end
 
+function M.slash_commands()
+  local cfg = load_config()
+  return cfg and cfg.data.slash_commands or {}
+end
+
 function M.set(key, value)
   local cfg = load_config()
   if not cfg then return false, "Could not load config" end
