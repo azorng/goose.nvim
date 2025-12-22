@@ -1,10 +1,14 @@
 local M = {}
 
----@type table<string, fun(trigger: string): OmniFnCompleteItem[]>
-M.omni_sources = {
-  ['/'] = require('goose.slash_commands').get_completable,
-  -- ['#'] = function() return {} end, -- Future: skills
-  -- ['@'] = function() return {} end, -- Future: file mentions
+---@class CompletionSource
+---@field get_completable fun(trigger: string): OmniFnCompleteItem[]
+---@field on_complete_done? fun(trigger: string, item: table): nil
+
+---@type table<string, CompletionSource>
+M.sources = {
+  ['/'] = require('goose.slash_commands'),
+  ['#'] = require('goose.skills'),
+  -- ['@'] = require('goose.file_mentions'), -- Future: file mentions
 }
 
 _G.goose_omnifunc = function(findstart, base)
@@ -25,8 +29,17 @@ function M.setup(bufnr)
 end
 
 function M.on_complete_done(item)
-  -- complete done trigger handler
-  return
+  if not item or not item.word or item.word == '' then
+    return
+  end
+
+  -- Find which source this completion belongs to by checking for trigger character
+  for trigger, source in pairs(M.sources) do
+    if item.word:match(vim.pesc(trigger)) and source.on_complete_done then
+      source.on_complete_done(trigger, item)
+      break
+    end
+  end
 end
 
 function M.complete(findstart, base)
@@ -50,7 +63,7 @@ function M.find_completion_start()
   local start_col = col
   while start_col > 0 do
     local char = line:sub(start_col, start_col)
-    if M.omni_sources[char] then
+    if M.sources[char] then
       -- Special handling for '/' - only at buffer start
       if char == '/' then
         local line_num = vim.fn.line('.')
@@ -79,9 +92,9 @@ end
 ---@return OmniFnCompleteItem[]
 function M.get_completions(base)
   local trigger = base:sub(1, 1)
-  local source_fn = M.omni_sources[trigger]
-  if not source_fn then return {} end
-  return source_fn(trigger)
+  local source = M.sources[trigger]
+  if not source then return {} end
+  return source.get_completable(trigger)
 end
 
 ---In case other completion plugins are used, setup any necessary integration here.
@@ -93,7 +106,7 @@ function M.setup_cmp_plugins()
     blink_config.sources.providers.omni.override = {
       get_trigger_characters = function()
         if vim.bo.filetype == 'GooseInput' then
-          return vim.tbl_keys(M.omni_sources)
+          return vim.tbl_keys(M.sources)
         end
         return {}
       end
