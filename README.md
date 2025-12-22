@@ -183,6 +183,7 @@ Supported pickers include [`fzf-lua`](https://github.com/ibhagwan/fzf-lua), [`te
 
 Completions allow you to reference different resource types quickly by auto completing their names. Currently supported completion types are:
 - [Slash Commands](#slash-commands)
+- [Skills](#skills)
 
 Completions are implemented as neovim native [`omnifunc`](https://neovim.io/doc/user/options.html#'omnifunc').
 goose.nvim automatically configures the following plugins to support these omnifunc completions:
@@ -194,7 +195,7 @@ goose.nvim automatically configures the following plugins to support these omnif
 Type `/` at the start to complete slash commands:
 
 - **Base commands:** `/compact`, `/clear`, `/prompts`, `/prompt`
-- **Custom commands:** Defined in `~/.config/goose/config.yaml` under `slash_commands`, each linked to a recipe
+- **[Custom commands](https://block.github.io/goose/docs/guides/recipes/session-recipes/#custom-recipe-commands):** Defined in `~/.config/goose/config.yaml` under `slash_commands`, each linked to a recipe.
 
 Example configuration:
 ```yaml
@@ -203,7 +204,16 @@ slash_commands:
     recipe_path: /path/to/recipes/design.yaml
   - command: review
     recipe_path: /path/to/recipes/code-review.yaml
-``` 
+```
+
+<a id="skills"></a>
+### Skills
+
+Type `#` to complete and mention skills in your conversations:
+
+Skills are reusable sets of instructions and resources that teach goose how to perform specific tasks. When you mention a skill using `#skill-name`, it gets added to the conversation context and Goose can utilize that skill.
+
+For more information about creating and using skills, see the [Goose Skills Documentation](https://block.github.io/goose/docs/guides/context-engineering/using-skills). 
 
 ## 🔧 Setting up goose 
 

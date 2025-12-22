@@ -68,13 +68,9 @@ function M.configure_provider()
   core.configure_provider()
 end
 
-function M.mention_skill()
-  core.mention_skill()
-end
-
 function M.open_config()
   local info = require('goose.info')
-  
+
   local result = vim.system({ 'goose', 'info', '-v' }):wait()
   if result.code ~= 0 then
     vim.notify("Could not get config path", vim.log.levels.ERROR)
@@ -291,14 +287,6 @@ M.commands = {
     desc = "Quick provider and model switch from predefined list",
     fn = function()
       M.configure_provider()
-    end
-  },
-
-  mention_skill = {
-    name = "GooseMentionSkill",
-    desc = "Mention a skill from ~/.claude/skills",
-    fn = function()
-      M.mention_skill()
     end
   },
 

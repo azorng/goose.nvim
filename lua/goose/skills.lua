@@ -85,20 +85,28 @@ local function scan_skills()
   return all_skills
 end
 
-function M.select(cb)
+---@return OmniFnCompleteItem[]
+function M.get_completable()
   local skills = scan_skills()
+  return vim.tbl_map(function(skill)
+    return {
+      word = '#' .. skill.name,
+      menu = skill.description,
+      info = skill.description
+    }
+  end, skills)
+end
 
-  if #skills == 0 then
-    vim.notify("No skills found", vim.log.levels.WARN)
-    return
+---@param trigger string
+---@param item table
+function M.on_complete_done(trigger, item)
+  -- Extract skill name from word - handle cases like '_#skill-name' or '#skill-name'
+  local skill_name = item.word:match('#([%w_%-%.]+)')
+
+  if skill_name then
+    local context = require('goose.context')
+    context.add_skill(skill_name)
   end
-
-  vim.ui.select(skills, {
-    prompt = "Select skill:",
-    format_item = function(skill)
-      return skill.name
-    end
-  }, cb)
 end
 
 return M

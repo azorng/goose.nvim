@@ -149,21 +149,6 @@ function M.configure_provider()
   end)
 end
 
-function M.mention_skill()
-  if not require('goose.info').is_extension_enabled('skills') then
-    vim.notify("Skills extension is not enabled", vim.log.levels.WARN)
-    return
-  end
-
-  require('goose.ui.mention').mention(function(mention_cb)
-    require("goose.skills").select(function(skill)
-      if not skill then return end
-      mention_cb(skill.name)
-      context.add_skill(skill.name)
-    end)
-  end, keymap.window.mention_skill)
-end
-
 function M.stop()
   if (state.goose_run_job) then job.stop(state.goose_run_job) end
   state.goose_run_job = nil
