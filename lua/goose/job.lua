@@ -39,7 +39,6 @@ function M.execute(prompt, handlers)
   state.goose_run_job = Job:new({
     command = 'goose',
     args = args,
-    env = { PATH = "/Users/azor/projects/goose/target/release:" .. vim.env.PATH },
     on_start = function()
       vim.schedule(function()
         handlers.on_start(message)

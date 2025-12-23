@@ -1,9 +1,11 @@
 local core = require("goose.core")
-
 local ui = require("goose.ui.ui")
 local state = require("goose.state")
 local review = require("goose.review")
 local history = require("goose.history")
+local info = require("goose.info")
+local topbar = require("goose.ui.topbar")
+local session = require("goose.session")
 
 local M = {}
 
@@ -46,22 +48,21 @@ function M.toggle_focus()
 end
 
 function M.change_mode(mode)
-  local info = require("goose.info")
   info.set(info.KEY.MODE, mode)
 
   if state.windows then
-    require('goose.ui.topbar').render()
+    topbar.render()
   else
     vim.notify('Goose mode changed to ' .. mode)
   end
 end
 
 function M.goose_mode_chat()
-  M.change_mode(require('goose.info').MODE.CHAT)
+  M.change_mode(info.MODE.CHAT)
 end
 
 function M.goose_mode_auto()
-  M.change_mode(require('goose.info').MODE.AUTO)
+  M.change_mode(info.MODE.AUTO)
 end
 
 function M.configure_provider()
@@ -69,8 +70,6 @@ function M.configure_provider()
 end
 
 function M.open_config()
-  local info = require('goose.info')
-
   local result = vim.system({ 'goose', 'info', '-v' }):wait()
   if result.code ~= 0 then
     vim.notify("Could not get config path", vim.log.levels.ERROR)
@@ -83,7 +82,7 @@ function M.open_config()
     return
   end
 
-  require('goose.ui.ui').open_file_in_code_window(vim.trim(config_path))
+  ui.open_file_in_code_window(vim.trim(config_path))
   info.invalidate()
 end
 
@@ -95,9 +94,9 @@ function M.inspect_session()
     return nil
   end
 
-  local json_content = require('goose.session').export(active_session.name)
+  local json_content = session.export(active_session.name)
   if json_content then
-    require('goose.ui.ui').open_in_code_window(json_content, "json")
+    ui.open_in_code_window(json_content, "json")
   end
 end
 

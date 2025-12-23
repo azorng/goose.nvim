@@ -2,7 +2,9 @@
 
 local template = require("goose.template")
 local util = require("goose.util")
-local config = require("goose.config");
+local config = require("goose.config")
+local state = require("goose.state")
+local info = require("goose.info")
 
 local M = {}
 
@@ -104,7 +106,7 @@ end
 
 function M.delta_context()
   local context = vim.deepcopy(M.context)
-  local last_context = require('goose.state').last_sent_context
+  local last_context = state.last_sent_context
   if not last_context then return context end
 
   -- no need to send file context again
@@ -171,20 +173,19 @@ function M.get_current_selection()
 end
 
 function M.format_message(prompt)
-  local info = require('goose.info')
-  local context = nil
+  local ctx = nil
   local is_slash_cmd = prompt:sub(1, 1) == '/'
 
   if info.mode() == info.MODE.CHAT then
-    context = { selections = M.context.selections }
+    ctx = { selections = M.context.selections }
   elseif is_slash_cmd then
-    context = {}
+    ctx = {}
   else
-    context = M.delta_context()
+    ctx = M.delta_context()
   end
 
-  context.prompt = prompt
-  return template.render_template(context)
+  ctx.prompt = prompt
+  return template.render_template(ctx)
 end
 
 function M.extract_from_message(text)

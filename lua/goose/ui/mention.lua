@@ -1,5 +1,6 @@
 local M = {}
 
+local state = require('goose.state')
 local mentions_namespace = vim.api.nvim_create_namespace("GooseMentions")
 
 function M.highlight_all_mentions(buf)
@@ -54,7 +55,7 @@ local function insert_mention(windows, row, col, name, mention_key)
 end
 
 function M.mention(get_name, mention_key)
-  local windows = require('goose.state').windows
+  local windows = state.windows
 
   local cursor_pos = vim.api.nvim_win_get_cursor(windows.input_win)
   local row, col = cursor_pos[1], cursor_pos[2]

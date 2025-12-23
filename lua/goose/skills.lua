@@ -1,3 +1,5 @@
+local context = require('goose.context')
+
 local M = {}
 
 local SKILLS_DIRS = {
@@ -104,7 +106,6 @@ function M.on_complete_done(trigger, item)
   local skill_name = item.word:match('#([%w_%-%.]+)')
 
   if skill_name then
-    local context = require('goose.context')
     context.add_skill(skill_name)
   end
 end

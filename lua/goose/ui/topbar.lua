@@ -1,17 +1,19 @@
 local M = {}
 
 local state = require("goose.state")
+local info = require("goose.info")
+local config = require("goose.config")
+local session = require("goose.session")
 
 local LABELS = {
   NEW_SESSION_TITLE = "New session",
 }
 
 local function format_model_info()
-  local info = require("goose.info")
-  local config = require("goose.config").get()
+  local cfg = config.get()
   local parts = {}
 
-  if config.ui.display_model then
+  if cfg.ui.display_model then
     local model = info.model()
     if model then
       model = model:match("[^/]+$") or model
@@ -19,7 +21,7 @@ local function format_model_info()
     end
   end
 
-  if config.ui.display_goose_mode then
+  if cfg.ui.display_goose_mode then
     local mode = info.mode()
     if mode then
       table.insert(parts, "[" .. mode .. "]")
@@ -47,9 +49,9 @@ local function get_session_desc()
   local session_desc = LABELS.NEW_SESSION_TITLE
 
   if state.active_session then
-    local session = require('goose.session').get_by_name(state.active_session.name)
-    if session and session.description ~= "" and session.description ~= nil then
-      session_desc = session.description
+    local s = session.get_by_name(state.active_session.name)
+    if s and s.description ~= "" and s.description ~= nil then
+      session_desc = s.description
     end
   end
 
@@ -57,14 +59,17 @@ local function get_session_desc()
 end
 
 function M.render()
-  local win = state.windows.output_win
+  local windows = state.windows
+  if not windows then return end
+
+  local output_win = windows.output_win
 
   vim.schedule(function()
-    vim.wo[win].winhighlight = 'WinBar:Comment,WinBarNC:Comment'
-    vim.wo[win].winbar = create_winbar_text(
+    if not vim.api.nvim_win_is_valid(output_win) then return end
+    vim.wo[output_win].winbar = create_winbar_text(
       get_session_desc(),
       format_model_info(),
-      vim.api.nvim_win_get_width(win)
+      vim.api.nvim_win_get_width(output_win)
     )
   end)
 end

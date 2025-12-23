@@ -4,7 +4,16 @@ local context = require("goose.context")
 local session = require("goose.session")
 local ui = require("goose.ui.ui")
 local job = require('goose.job')
+local loading = require('goose.ui.loading')
 local keymap = require('goose.config').get('keymap')
+local topbar = require('goose.ui.topbar')
+local review = require('goose.review')
+local history = require('goose.history')
+local file_picker = require('goose.ui.file_picker')
+local mention = require('goose.ui.mention')
+local info = require('goose.info')
+local provider = require('goose.provider')
+local version = require('goose.version')
 
 function M.select_session()
   local all_sessions = session.get_sessions()
@@ -37,7 +46,7 @@ function M.open(opts)
   local are_windows_closed = state.windows == nil
 
   if are_windows_closed then
-    require('goose.context').load()
+    context.load()
     state.last_code_win_before_goose = vim.api.nvim_get_current_win()
     state.windows = ui.create_windows()
   end
@@ -46,6 +55,7 @@ function M.open(opts)
     state.active_session = nil
     state.last_sent_context = nil
     ui.clear_output()
+    topbar.render()
   else
     if are_windows_closed or ui.is_output_empty() then
       ui.render_output()
@@ -69,16 +79,17 @@ function M.run(prompt, opts)
     job.execute(prompt,
       {
         on_start = function(message)
-          require("goose.ui.output_renderer").render_streamable(message)
+          require("goose.ui.output_renderer").render_stream(message)
+          loading.start()
           M.after_run(prompt)
         end,
-        on_output = function(output)
+        on_output = function(output_stream)
           -- Reload all modified file buffers
           vim.cmd('checktime')
 
           -- for new sessions, set session data after running the command
           if not state.active_session then
-            local session_id = output:match("session id:%s*([%w_]+)")
+            local session_id = output_stream:match("session id:%s*([%w_]+)")
             if session_id then
               vim.defer_fn(function()
                 state.active_session = session.get_by_name(session_id)
@@ -86,10 +97,10 @@ function M.run(prompt, opts)
             end
           end
 
-          local is_json = output:match('^{.*}$')
+          -- process stream chunk
+          local is_json = output_stream:match('^{.*}$')
           if is_json then
-            local stream_output = vim.fn.json_decode(output)
-            require("goose.ui.output_renderer").render_streamable(stream_output)
+            require("goose.ui.output_renderer").render_stream(vim.fn.json_decode(output_stream))
           end
         end,
         on_error = function(err)
@@ -102,7 +113,9 @@ function M.run(prompt, opts)
         end,
         on_exit = function()
           state.goose_run_job = nil
-          require('goose.review').check_cleanup_breakpoint()
+          loading.stop()
+          review.check_cleanup_breakpoint()
+          ui.render_output()
         end
       }
     )
@@ -110,14 +123,10 @@ function M.run(prompt, opts)
 end
 
 function M.after_run(prompt)
-  require('goose.review').set_breakpoint()
+  review.set_breakpoint()
   context.unload_attachments()
   state.last_sent_context = vim.deepcopy(context.context)
-  require('goose.history').write(prompt)
-
-  -- if state.windows then
-  --   ui.render_output()
-  -- end
+  history.write(prompt)
 end
 
 function M.before_run(opts)
@@ -131,9 +140,8 @@ function M.before_run(opts)
 end
 
 function M.add_file_to_context()
-  local picker = require('goose.ui.file_picker')
-  require('goose.ui.mention').mention(function(mention_cb)
-    picker.pick(function(file)
+  mention.mention(function(mention_cb)
+    file_picker.pick(function(file)
       mention_cb(file.name)
       context.add_file(file.path)
     end)
@@ -141,15 +149,14 @@ function M.add_file_to_context()
 end
 
 function M.configure_provider()
-  local info = require("goose.info")
-  require("goose.provider").select(function(selection)
+  provider.select(function(selection)
     if not selection then return end
 
     info.set(info.KEY.PROVIDER, selection.provider)
     info.set(info.KEY.MODEL, selection.model)
 
     if state.windows then
-      require('goose.ui.topbar').render()
+      topbar.render()
     else
       vim.notify("Changed provider to " .. selection.display, vim.log.levels.INFO)
     end
@@ -159,11 +166,11 @@ end
 function M.stop()
   if (state.goose_run_job) then job.stop(state.goose_run_job) end
   state.goose_run_job = nil
+  loading.stop()
   if state.windows then
-    ui.stop_render_output()
     ui.render_output()
     ui.write_to_input({})
-    require('goose.history').index = nil
+    history.index = nil
   end
 end
 
@@ -175,6 +182,18 @@ function M.goose_ok()
     )
     return false
   end
+
+  local supported, current = version.is_supported()
+
+  if not supported then
+    vim.notify(
+      string.format("goose version %s is below minimum required %s - please update goose", current,
+        version.MIN_GOOSE_VERSION),
+      vim.log.levels.ERROR
+    )
+    return false
+  end
+
   return true
 end
 

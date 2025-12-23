@@ -14,6 +14,8 @@
 ---@class GooseToolCallArguments
 ---@field command string|nil
 ---@field path string|nil
+---@field content string|nil
+---@field instructions string|nil
 ---@field name string|nil
 ---@field task_parameters table|string|nil
 

@@ -1,17 +1,15 @@
 local M = {}
 
 local context_module = require('goose.context')
+local session = require('goose.session')
 
-M.separator = {
-  "",
-  "---",
-  ""
-}
+---Separator between messages: empty line, ---, empty line
+M.SEPARATOR = { "", "---", "" }
 
 ---@param session_name string
 ---@return string[]|nil
 function M.format_session(session_name)
-  local output = require("goose.session").export(session_name)
+  local output = session.export(session_name)
   if not output then return end
 
   local success, session = pcall(vim.fn.json_decode, output)
@@ -23,50 +21,55 @@ function M.format_session(session_name)
   return M.format_messages(session.conversation)
 end
 
-function M.messages_to_str_output(messages)
-  local message_lines = M.format_messages(messages)
-  return table.concat(message_lines, "\n") or ""
-end
-
----@return string[]
+---Format multiple messages for full session render
+---Output: newline, msg1, separator, msg2, separator, msg3, newline
 ---@param messages GooseMessage[]
+---@return string[]
 function M.format_messages(messages)
   local output_lines = { "" }
+  local is_first = true
 
-  for i, message in ipairs(messages) do
-    local message_lines
-
-    message_lines = M._format_message(message)
+  for _, message in ipairs(messages) do
+    local message_lines = M._format_message(message)
     if message_lines then
-      for _, line in ipairs(M.separator) do
-        table.insert(output_lines, line)
+      if not is_first then
+        vim.list_extend(output_lines, M.SEPARATOR)
       end
       vim.list_extend(output_lines, message_lines)
+      is_first = false
     end
   end
 
-  if require('goose.ui.ui').is_output_empty() then
-    --- first separator is not needed for the first message
-    output_lines = vim.list_slice(output_lines, #M.separator + 1, #output_lines)
-  end
-
+  table.insert(output_lines, "")
   return output_lines
 end
 
----@param lines string[]
----@param text string
-function M._format_user_message(lines, text)
-  local context = context_module.extract_from_message(text)
-  for _, line in ipairs(vim.split(context.prompt, "\n")) do
-    table.insert(lines, "> " .. line)
-  end
+---Format a single message (just the content, no separators)
+---@param message GooseMessage
+---@return string[]|nil
+function M.format_message(message)
+  return M._format_message(message)
+end
 
-  if context.selected_text then
-    table.insert(lines, "")
-    for _, line in ipairs(vim.split(context.selected_text, "\n")) do
-      table.insert(lines, line)
-    end
-  end
+---Check if message is from user (complete) vs assistant (may be streaming)
+---@param message GooseMessage
+---@return boolean
+function M.is_complete_message(message)
+  return message.role == "user"
+end
+
+---@param message GooseMessage
+function M.has_message_contents(message)
+  return (not message.metadata or (message.metadata and message.metadata.userVisible == true))
+      and message.content
+      and #message.content > 0
+      and #vim.tbl_filter(function(part)
+        if part.type == 'text' then
+          return part.text and part.text ~= ""
+        end
+        if part.type == 'toolRequest' then return true end
+        return false
+      end, message.content) > 0
 end
 
 ---@param message GooseMessage
@@ -95,18 +98,20 @@ function M._format_message(message)
   return lines
 end
 
----@param message GooseMessage
-function M.has_message_contents(message)
-  return (not message.metadata or (message.metadata and message.metadata.userVisible == true))
-      and message.content
-      and #message.content > 0
-      and #vim.tbl_filter(function(part)
-        if part.type == 'text' then
-          return part.text and part.text ~= ""
-        end
-        if part.type == 'toolRequest' then return true end
-        return false
-      end, message.content) > 0
+---@param lines string[]
+---@param text string
+function M._format_user_message(lines, text)
+  local context = context_module.extract_from_message(text)
+  for _, line in ipairs(vim.split(context.prompt, "\n")) do
+    table.insert(lines, "> " .. line)
+  end
+
+  if context.selected_text then
+    table.insert(lines, "")
+    for _, line in ipairs(vim.split(context.selected_text, "\n")) do
+      table.insert(lines, line)
+    end
+  end
 end
 
 ---@param lines string[]
@@ -118,7 +123,6 @@ function M._format_context(lines, type, value)
   local formatted_action = ' **' .. type .. '**'
 
   if value and value ~= '' then
-    -- escape new lines
     value = value:gsub("\n", "\\n")
     formatted_action = formatted_action .. ' ` ' .. value .. ' `'
   end
@@ -182,6 +186,16 @@ function M._format_tool(lines, tool_request)
       M._format_context(lines, '👀 view', file_name)
     else
       M._format_context(lines, '✨ command', command)
+    end
+  elseif tool.name == 'todo__todo_write' then
+    M._format_context(lines, '📋 TODOs')
+    for _, line in ipairs(vim.split("\n" .. tool.arguments.content, "\n")) do
+      table.insert(lines, line)
+    end
+  elseif tool.name == 'subagent' then
+    M._format_context(lines, '🗿 subagent')
+    for _, line in ipairs(vim.split("\n" .. (tool.arguments.instructions or ""), "\n")) do
+      table.insert(lines, line)
     end
   else
     M._format_context(lines, '🔧 tool', tool.name)

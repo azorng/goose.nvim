@@ -2,7 +2,7 @@ local M = {}
 
 local state = require('goose.state')
 local session_formatter = require('goose.ui.session_formatter')
-local SEPARATOR_TEXT = session_formatter.separator[1]
+local SEPARATOR_TEXT = session_formatter.SEPARATOR[2]
 
 local function re_focus()
   vim.cmd("normal! zt")

@@ -2,289 +2,237 @@ local M = {}
 
 local state = require("goose.state")
 local formatter = require("goose.ui.session_formatter")
-
-local LABELS = {
-  GENERATING_RESPONSE = "Thinking..."
-}
-
-M._cache = {
-  output_lines = nil,
-  session_name = nil,
-  check_counter = 0
-}
-
-M._animation = {
-  frames = { "·", "․", "•", "∙", "●", "⬤", "●", "∙", "•", "․" },
-  current_frame = 1,
-  timer = nil,
-  loading_line = nil,
-  fps = 10,
-}
+local loading = require("goose.ui.loading")
+local mention = require("goose.ui.mention")
+local topbar = require("goose.ui.topbar")
 
 function M.render_markdown()
   local ok, render_markdown = pcall(require, 'render-markdown')
   if ok and render_markdown.render then
-    render_markdown.render({ buf = state.windows.output_buf })
+    if not state.windows or not state.windows.output_buf then return end
+    render_markdown.render({
+      buf = state.windows.output_buf,
+      config = {
+        debounce = 10,
+        anti_conceal = { enabled = false },
+        win_options = { concealcursor = { rendered = 'nvic' } }
+      }
+    })
   end
 end
 
-function M._should_refresh_content()
-  if not state.active_session then return true end
+--------------------------------------------------------------------------------
+-- Buffer state helpers
+--------------------------------------------------------------------------------
 
-  local session_name = state.active_session.name
-
-  if session_name ~= M._cache.session_name then
-    M._cache.session_name = session_name
-    return true
+---@return boolean
+local function is_buffer_empty()
+  if not state.windows or not state.windows.output_buf then return true end
+  local lines = vim.api.nvim_buf_get_lines(state.windows.output_buf, 0, -1, false)
+  for _, line in ipairs(lines) do
+    if line:match("%S") then return false end
   end
-
-  if state.goose_run_job then
-    M._cache.check_counter = (M._cache.check_counter + 1) % 3
-    return M._cache.check_counter == 0
-  end
-
-  return false
-end
-
-function M._read_session(force_refresh)
-  if not state.active_session then
-    return state.goose_run_job and { "" } or nil
-  end
-
-  if not force_refresh and not M._should_refresh_content() and M._cache.output_lines then
-    return M._cache.output_lines
-  end
-
-  local output_lines = formatter.format_session(state.active_session.name)
-  M._cache.output_lines = output_lines
-  return output_lines
-end
-
-function M._update_loading_animation(windows)
-  if not M._animation.loading_line then return false end
-
-  local buffer_line_count = vim.api.nvim_buf_line_count(windows.output_buf)
-  if M._animation.loading_line <= 0 or M._animation.loading_line >= buffer_line_count then
-    return false
-  end
-
-  local zero_index = M._animation.loading_line - 1
-  local loading_text = LABELS.GENERATING_RESPONSE .. " " ..
-      M._animation.frames[M._animation.current_frame]
-
-  local ns_id = vim.api.nvim_create_namespace('loading_animation')
-  vim.api.nvim_buf_clear_namespace(windows.output_buf, ns_id, zero_index, zero_index + 1)
-
-  vim.api.nvim_buf_set_extmark(windows.output_buf, ns_id, zero_index, 0, {
-    virt_text = { { loading_text, "Comment" } },
-    virt_text_pos = "overlay",
-    hl_mode = "replace"
-  })
-
   return true
 end
 
-M._refresh_timer = nil
-
-function M._start_content_refresh_timer(windows)
-  if M._refresh_timer then
-    pcall(vim.fn.timer_stop, M._refresh_timer)
-    M._refresh_timer = nil
-  end
-
-  M._refresh_timer = vim.fn.timer_start(300, function()
-    if state.goose_run_job then
-      if M._should_refresh_content() then
-        vim.schedule(function()
-          local current_frame = M._animation.current_frame
-          M.render(windows, true)
-          M._animation.current_frame = current_frame
-        end)
-      end
-
-      if state.goose_run_job then
-        M._start_content_refresh_timer(windows)
-      end
-    else
-      if M._refresh_timer then
-        pcall(vim.fn.timer_stop, M._refresh_timer)
-        M._refresh_timer = nil
-      end
-      vim.schedule(function() M.render(windows, true) end)
-    end
-  end)
+---@return boolean
+local function buffer_has_trailing_newline()
+  if not state.windows or not state.windows.output_buf then return false end
+  local buf = state.windows.output_buf
+  local line_count = vim.api.nvim_buf_line_count(buf)
+  if line_count == 0 then return false end
+  local last_line = vim.api.nvim_buf_get_lines(buf, line_count - 1, line_count, false)[1] or ""
+  return last_line == ""
 end
 
-function M._animate_loading(windows)
-  local function start_animation_timer()
-    if M._animation.timer then
-      pcall(vim.fn.timer_stop, M._animation.timer)
-      M._animation.timer = nil
-    end
+-- Track the last cursor position we set via auto-scroll
+M._last_auto_scroll_line = nil
 
-    M._animation.timer = vim.fn.timer_start(math.floor(1000 / M._animation.fps), function()
-      M._animation.current_frame = (M._animation.current_frame % #M._animation.frames) + 1
-
-      vim.schedule(function()
-        M._update_loading_animation(windows)
-      end)
-
-      if state.goose_run_job then
-        start_animation_timer()
-      else
-        M._animation.timer = nil
-      end
-    end)
+---@return boolean
+function M.is_at_bottom()
+  if not state.windows or not state.windows.output_buf or not state.windows.output_win then
+    return true
+  end
+  if not vim.api.nvim_win_is_valid(state.windows.output_win) then
+    return true
   end
 
-  M._start_content_refresh_timer(windows)
+  local win = state.windows.output_win
+  local buf = state.windows.output_buf
 
-  start_animation_timer()
+  local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
+  local line_count = vim.api.nvim_buf_line_count(buf)
+
+  -- Subtract loading lines if visible
+  if loading.is_loading() and loading._animation.visible then
+    line_count = line_count - (loading._animation.line_count or 0)
+  end
+
+  -- First time (new session) - default to scrolling
+  if not M._last_auto_scroll_line then
+    return true
+  end
+
+  -- If we previously auto-scrolled and cursor hasn't moved from where we put it,
+  -- user is still "at bottom"
+  if cursor_line == M._last_auto_scroll_line then
+    return true
+  end
+
+  -- If cursor moved from where we last put it, user has scrolled away
+  if cursor_line < M._last_auto_scroll_line then
+    return false
+  end
+
+  -- Cursor is at/near bottom
+  return cursor_line >= line_count - 1
 end
+
+function M.scroll_to_bottom_and_track()
+  if not state.windows or not state.windows.output_win then return end
+  local line_count = vim.api.nvim_buf_line_count(state.windows.output_buf)
+  vim.api.nvim_win_set_cursor(state.windows.output_win, { line_count, 0 })
+  M._last_auto_scroll_line = line_count
+end
+
+--------------------------------------------------------------------------------
+-- Stream rendering
+--
+-- Output format: newline, msg, newline, ---, newline, msg, newline
+-- - Empty buffer: add leading newline, then message
+-- - Non-empty buffer: add separator, then message
+-- - Complete messages (user): add trailing newline
+-- - Streaming messages (assistant): no trailing newline until complete
+--------------------------------------------------------------------------------
 
 M.stream_id = ""
 
----@param stream_output GooseStreamOutput|string
-function M.render_streamable(stream_output)
-  if type(stream_output) == "string" then
-    -- user prompt
-    ---@type GooseTextContent
-    local content = { type = "text", text = stream_output }
-    ---@type GooseMessage
-    local message = { role = "user", content = { content } }
-    require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ message }))
+---Build the prefix lines for a new message based on buffer state
+---@param is_empty boolean
+---@param has_trailing boolean
+---@return string[]
+local function get_message_prefix(is_empty, has_trailing)
+  if is_empty then
+    return { "" } -- Leading newline for first message
+  end
 
-    M.handle_loading(state.windows, require('goose.ui.ui').output)
+  local prefix = {}
+  -- Close previous message if it doesn't have trailing newline
+  if not has_trailing then
+    table.insert(prefix, "")
+  end
+  -- Add separator
+  for _, line in ipairs(formatter.SEPARATOR) do
+    table.insert(prefix, line)
+  end
+  return prefix
+end
+
+---Append a new message to the stream
+---@param message GooseMessage
+---@param is_empty boolean
+---@param has_trailing boolean
+local function append_message(message, is_empty, has_trailing)
+  local lines = {}
+
+  -- Add prefix (leading newline or separator)
+  vim.list_extend(lines, get_message_prefix(is_empty, has_trailing))
+
+  -- Add message content
+  local content = formatter.format_message(message)
+  if content then
+    vim.list_extend(lines, content)
+  end
+
+  -- Add trailing newline for complete messages (user messages) only when not loading
+  if formatter.is_complete_message(message) and not loading.is_loading() then
+    table.insert(lines, "")
+  end
+
+  require('goose.ui.ui').write_to_output(table.concat(lines, "\n"))
+end
+
+---@param stream_output GooseStreamOutput|string|nil
+function M.render_stream(stream_output)
+  if not stream_output then return end
+
+  -- Check if at bottom BEFORE any buffer changes
+  local should_scroll = M.is_at_bottom()
+
+  -- Only notify loading for assistant messages (not user input)
+  if type(stream_output) ~= "string" then
+    loading.on_stream()
+  end
+
+  local is_empty = is_buffer_empty()
+  local has_trailing = buffer_has_trailing_newline()
+
+  -- User message (string input)
+  if type(stream_output) == "string" then
+    local message = {
+      role = "user",
+      content = { { type = "text", text = stream_output } }
+    }
+    append_message(message, is_empty, has_trailing)
+
+    -- Assistant message (streaming)
   elseif stream_output.type == 'message' and formatter.has_message_contents(stream_output.message) then
-    if stream_output.message.id == M.stream_id then
-      -- continuation of a message stream
-      for _, part in ipairs(stream_output.message.content) do
+    local message = stream_output.message
+    local is_continuation = message.id == M.stream_id
+
+    if is_continuation then
+      -- Continue existing message - just append text
+      for _, part in ipairs(message.content) do
         if part.type == 'text' and part.text and part.text ~= "" then
           require('goose.ui.ui').write_to_output(part.text)
-        end
-        if part.type ~= 'text' then
-          require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ stream_output.message }))
-        end
-      end
-    elseif M.stream_id and M.stream_id ~= stream_output.message.id then
-      -- begin new message
-      for _, part in ipairs(stream_output.message.content) do
-        if part.type == 'text' and part.text and part.text ~= "" then
-          require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ stream_output.message }))
-        end
-        if part.type ~= 'text' then
-          require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ stream_output.message }))
+        elseif part.type ~= 'text' then
+          -- Tool request in continuation - needs full formatting
+          append_message(message, is_empty, has_trailing)
         end
       end
-      M.stream_id = stream_output.message.id
+    else
+      -- New message
+      append_message(message, is_empty, has_trailing)
+      M.stream_id = message.id
     end
   end
 
+  if should_scroll then
+    M.scroll_to_bottom_and_track()
+  end
+end
+
+--------------------------------------------------------------------------------
+-- Full session rendering
+--------------------------------------------------------------------------------
+
+function M.render(windows)
+  if not state.active_session then return end
+
+  local output_lines = formatter.format_session(state.active_session.name)
+  if not output_lines then return end
+  M.write_output(windows, output_lines)
+
+  if not state.windows then return end
+  M.render_markdown()
+  mention.highlight_all_mentions(windows.output_buf)
+  topbar.render()
   M.handle_auto_scroll(state.windows)
 end
 
-function M.render(windows, force_refresh)
-  local function render()
-    if not state.active_session and not state.goose_run_job then
-      return
-    end
-
-    if not force_refresh and state.goose_run_job and M._animation.loading_line then
-      return
-    end
-
-    local output_lines = M._read_session(force_refresh)
-
-    if not output_lines then
-      return
-    end
-
-    M.write_output(windows, output_lines)
-
-    M.handle_auto_scroll(windows)
-  end
-  render()
-  require('goose.ui.mention').highlight_all_mentions(windows.output_buf)
-  require('goose.ui.topbar').render()
-  M.render_markdown()
-end
-
-function M.stop()
-  if M._animation and M._animation.timer then
-    pcall(vim.fn.timer_stop, M._animation.timer)
-    M._animation.timer = nil
-  end
-
-  if M._refresh_timer then
-    pcall(vim.fn.timer_stop, M._refresh_timer)
-    M._refresh_timer = nil
-  end
-
-  M._animation.loading_line = nil
-  M._cache = {
-    output_lines = nil,
-    session_name = nil,
-    check_counter = 0
-  }
-end
-
-function M.handle_loading(windows, output_lines)
-  if state.goose_run_job then
-    if #output_lines > 2 then
-      for _, line in ipairs(formatter.separator) do
-        table.insert(output_lines, line)
-      end
-    end
-
-    -- Replace this line with our extmark animation
-    local empty_loading_line = " " -- Just needs to be a non-empty string for the extmark to attach to
-    table.insert(output_lines, empty_loading_line)
-    table.insert(output_lines, "")
-
-    M._animation.loading_line = #output_lines - 1
-
-    -- Always ensure animation is running when there's an active job
-    -- This is the key fix - we always start animation for an active job
-    M._animate_loading(windows)
-
-    vim.schedule(function()
-      M._update_loading_animation(windows)
-    end)
-  else
-    M._animation.loading_line = nil
-
-    local ns_id = vim.api.nvim_create_namespace('loading_animation')
-    vim.api.nvim_buf_clear_namespace(windows.output_buf, ns_id, 0, -1)
-
-    if M._animation.timer then
-      pcall(vim.fn.timer_stop, M._animation.timer)
-      M._animation.timer = nil
-    end
-
-    if M._refresh_timer then
-      pcall(vim.fn.timer_stop, M._refresh_timer)
-      M._refresh_timer = nil
-    end
-  end
-end
-
 function M.write_output(windows, output_lines)
-  vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', true)
+  if not windows or not windows.output_buf then return end
+
+  vim.bo[windows.output_buf].modifiable = true
   vim.api.nvim_buf_set_lines(windows.output_buf, 0, -1, false, output_lines)
-  vim.api.nvim_buf_set_option(windows.output_buf, 'modifiable', false)
+  vim.bo[windows.output_buf].modifiable = false
 end
 
 function M.handle_auto_scroll(windows)
-  local line_count = vim.api.nvim_buf_line_count(windows.output_buf)
-  local botline = vim.fn.line('w$', windows.output_win)
+  if not state.windows then return end
 
-  local prev_line_count = vim.b[windows.output_buf].prev_line_count or 0
-  vim.b[windows.output_buf].prev_line_count = line_count
-
-  local was_at_bottom = (botline >= prev_line_count) or prev_line_count == 0
-
-  if was_at_bottom then
-    require("goose.ui.ui").scroll_to_bottom()
+  if M.is_at_bottom() then
+    M.scroll_to_bottom_and_track()
   end
 end
 
