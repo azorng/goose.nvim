@@ -142,6 +142,47 @@ function M._animate_loading(windows)
   start_animation_timer()
 end
 
+M.stream_id = ""
+
+---@param stream_output GooseStreamOutput|string
+function M.render_streamable(stream_output)
+  if type(stream_output) == "string" then
+    -- user prompt
+    ---@type GooseTextContent
+    local content = { type = "text", text = stream_output }
+    ---@type GooseMessage
+    local message = { role = "user", content = { content } }
+    require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ message }))
+
+    M.handle_loading(state.windows, require('goose.ui.ui').output)
+  elseif stream_output.type == 'message' and formatter.has_message_contents(stream_output.message) then
+    if stream_output.message.id == M.stream_id then
+      -- continuation of a message stream
+      for _, part in ipairs(stream_output.message.content) do
+        if part.type == 'text' and part.text and part.text ~= "" then
+          require('goose.ui.ui').write_to_output(part.text)
+        end
+        if part.type ~= 'text' then
+          require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ stream_output.message }))
+        end
+      end
+    elseif M.stream_id and M.stream_id ~= stream_output.message.id then
+      -- begin new message
+      for _, part in ipairs(stream_output.message.content) do
+        if part.type == 'text' and part.text and part.text ~= "" then
+          require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ stream_output.message }))
+        end
+        if part.type ~= 'text' then
+          require('goose.ui.ui').write_to_output(formatter.messages_to_str_output({ stream_output.message }))
+        end
+      end
+      M.stream_id = stream_output.message.id
+    end
+  end
+
+  M.handle_auto_scroll(state.windows)
+end
+
 function M.render(windows, force_refresh)
   local function render()
     if not state.active_session and not state.goose_run_job then
@@ -157,8 +198,6 @@ function M.render(windows, force_refresh)
     if not output_lines then
       return
     end
-
-    M.handle_loading(windows, output_lines)
 
     M.write_output(windows, output_lines)
 

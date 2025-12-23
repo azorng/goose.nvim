@@ -244,6 +244,27 @@ function M.toggle_pane()
   end
 end
 
+function M.write_to_output(str)
+  if not state.windows or not state.windows.output_buf then return end
+
+  local buf = state.windows.output_buf
+  local last_line_idx = vim.api.nvim_buf_line_count(buf) - 1
+
+  vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+
+  -- Get the current content of the last line
+  local current_line = vim.api.nvim_buf_get_lines(buf, last_line_idx, last_line_idx + 1, false)[1] or ""
+
+  -- Split the incoming string by newlines
+  local lines = vim.split(str, "\n", { plain = true })
+
+  -- Append the first part to the existing last line
+  lines[1] = current_line .. lines[1]
+
+  vim.api.nvim_buf_set_lines(buf, last_line_idx, last_line_idx + 1, false, lines)
+  vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+end
+
 function M.write_to_input(text, windows)
   if not windows then windows = state.windows end
   if not windows then return end

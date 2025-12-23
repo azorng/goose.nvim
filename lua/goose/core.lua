@@ -68,7 +68,8 @@ function M.run(prompt, opts)
   vim.defer_fn(function()
     job.execute(prompt,
       {
-        on_start = function()
+        on_start = function(message)
+          require("goose.ui.output_renderer").render_streamable(message)
           M.after_run(prompt)
         end,
         on_output = function(output)
@@ -83,6 +84,12 @@ function M.run(prompt, opts)
                 state.active_session = session.get_by_name(session_id)
               end, 100)
             end
+          end
+
+          local is_json = output:match('^{.*}$')
+          if is_json then
+            local stream_output = vim.fn.json_decode(output)
+            require("goose.ui.output_renderer").render_streamable(stream_output)
           end
         end,
         on_error = function(err)
@@ -108,9 +115,9 @@ function M.after_run(prompt)
   state.last_sent_context = vim.deepcopy(context.context)
   require('goose.history').write(prompt)
 
-  if state.windows then
-    ui.render_output()
-  end
+  -- if state.windows then
+  --   ui.render_output()
+  -- end
 end
 
 function M.before_run(opts)

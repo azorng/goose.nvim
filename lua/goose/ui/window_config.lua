@@ -4,6 +4,7 @@ local INPUT_PLACEHOLDER = 'Plan, search, build anything'
 local config = require("goose.config").get()
 local state = require("goose.state")
 local ui_util = require('goose.ui.util')
+local renderer = require('goose.ui.output_renderer')
 
 M.base_window_opts = {
   relative = 'editor',
@@ -71,6 +72,16 @@ function M.setup_autocmds(windows)
       M.refresh_placeholder(windows)
     end
   })
+
+  -- Auto render markdown
+  vim.api.nvim_create_autocmd({ 'WinScrolled', 'TextChanged' }, {
+    group = group,
+    buffer = windows.output_buf,
+    callback = function()
+      renderer.render_markdown()
+    end
+  })
+
 
   -- Input window autocmds
   vim.api.nvim_create_autocmd('WinEnter', {

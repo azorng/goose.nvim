@@ -3,10 +3,13 @@ local M = {}
 local context_module = require('goose.context')
 
 M.separator = {
+  "",
   "---",
   ""
 }
 
+---@param session_name string
+---@return string[]|nil
 function M.format_session(session_name)
   local output = require("goose.session").export(session_name)
   if not output then return end
@@ -16,35 +19,42 @@ function M.format_session(session_name)
     return
   end
 
+  ---@cast session GooseSession
+  return M.format_messages(session.conversation)
+end
+
+function M.messages_to_str_output(messages)
+  local message_lines = M.format_messages(messages)
+  return table.concat(message_lines, "\n") or ""
+end
+
+---@return string[]
+---@param messages GooseMessage[]
+function M.format_messages(messages)
   local output_lines = { "" }
 
-  local need_separator = false
+  for i, message in ipairs(messages) do
+    local message_lines
 
-  for i, message in ipairs(session.conversation) do
-    if message.metadata and message.metadata.userVisible == false then
-      goto continue
-    end
-
-    local message_lines = M._format_message(message)
+    message_lines = M._format_message(message)
     if message_lines then
-      if need_separator then
-        for _, line in ipairs(M.separator) do
-          table.insert(output_lines, line)
-        end
-      else
-        need_separator = true
+      for _, line in ipairs(M.separator) do
+        table.insert(output_lines, line)
       end
-
       vim.list_extend(output_lines, message_lines)
     end
-
-    ::continue::
   end
 
+  if require('goose.ui.ui').is_output_empty() then
+    --- first separator is not needed for the first message
+    output_lines = vim.list_slice(output_lines, #M.separator + 1, #output_lines)
+  end
 
   return output_lines
 end
 
+---@param lines string[]
+---@param text string
 function M._format_user_message(lines, text)
   local context = context_module.extract_from_message(text)
   for _, line in ipairs(vim.split(context.prompt, "\n")) do
@@ -59,16 +69,16 @@ function M._format_user_message(lines, text)
   end
 end
 
+---@param message GooseMessage
+---@return string[]|nil
 function M._format_message(message)
-  if not message.content then return nil end
+  if not M.has_message_contents(message) then return nil end
 
   local lines = {}
-  local has_content = false
 
   for _, part in ipairs(message.content) do
     if part.type == 'text' and part.text and part.text ~= "" then
       local text = vim.trim(part.text)
-      has_content = true
 
       if message.role == 'user' then
         M._format_user_message(lines, text)
@@ -78,21 +88,30 @@ function M._format_message(message)
         end
       end
     elseif part.type == 'toolRequest' then
-      if has_content then
-        table.insert(lines, "")
-      end
       M._format_tool(lines, part)
-      has_content = true
     end
   end
 
-  if has_content then
-    table.insert(lines, "")
-  end
-
-  return has_content and lines or nil
+  return lines
 end
 
+---@param message GooseMessage
+function M.has_message_contents(message)
+  return (not message.metadata or (message.metadata and message.metadata.userVisible == true))
+      and message.content
+      and #message.content > 0
+      and #vim.tbl_filter(function(part)
+        if part.type == 'text' then
+          return part.text and part.text ~= ""
+        end
+        if part.type == 'toolRequest' then return true end
+        return false
+      end, message.content) > 0
+end
+
+---@param lines string[]
+---@param type string
+---@param value string|nil
 function M._format_context(lines, type, value)
   if not type then return end
 
@@ -107,6 +126,8 @@ function M._format_context(lines, type, value)
   table.insert(lines, formatted_action)
 end
 
+---@param task_parameters table|string
+---@return string
 local function extract_task_titles(task_parameters)
   if type(task_parameters) == 'table' then
     local titles = {}
@@ -126,8 +147,10 @@ local function extract_task_titles(task_parameters)
   return ""
 end
 
-function M._format_tool(lines, part)
-  local tool = part.toolCall.value
+---@param lines string[]
+---@param tool_request GooseToolRequest
+function M._format_tool(lines, tool_request)
+  local tool = tool_request.toolCall.value
   if not tool then return end
   local command = tool.arguments.command
 
