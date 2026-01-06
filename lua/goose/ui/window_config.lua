@@ -4,6 +4,12 @@ local INPUT_PLACEHOLDER = 'Plan, search, build anything'
 local config = require("goose.config").get()
 local state = require("goose.state")
 local ui_util = require('goose.ui.util')
+local renderer = require('goose.ui.output_renderer')
+local mention = require('goose.ui.mention')
+local context = require('goose.context')
+local topbar = require('goose.ui.topbar')
+local completion = require('goose.completion')
+local navigation = require('goose.ui.navigation')
 
 M.base_window_opts = {
   relative = 'editor',
@@ -72,6 +78,15 @@ function M.setup_autocmds(windows)
     end
   })
 
+  -- Auto render markdown
+  vim.api.nvim_create_autocmd({ 'WinScrolled', 'TextChanged' }, {
+    group = group,
+    buffer = windows.output_buf,
+    callback = function()
+      renderer.render_markdown()
+    end
+  })
+
   -- Input window autocmds
   vim.api.nvim_create_autocmd('WinEnter', {
     group = group,
@@ -88,7 +103,7 @@ function M.setup_autocmds(windows)
       local input_lines = vim.api.nvim_buf_get_lines(windows.input_buf, 0, -1, false)
       state.input_content = input_lines
       M.refresh_placeholder(windows, input_lines)
-      require('goose.ui.mention').highlight_all_mentions(windows.input_buf)
+      mention.highlight_all_mentions(windows.input_buf)
     end
   })
 
@@ -112,7 +127,7 @@ function M.setup_autocmds(windows)
     pattern = "*",
     callback = function()
       if not require('goose.ui.ui').is_goose_focused() then
-        require('goose.context').load()
+        context.load()
         state.last_code_win_before_goose = vim.api.nvim_get_current_win()
       end
     end
@@ -213,7 +228,7 @@ end
 function M.setup_resize_handler(windows)
   local function cb()
     M.configure_window_dimensions(windows)
-    require('goose.ui.topbar').render()
+    topbar.render()
   end
 
   vim.api.nvim_create_autocmd('VimResized', {
@@ -225,11 +240,11 @@ end
 local function recover_input(windows)
   local input_content = state.input_content
   require('goose.ui.ui').write_to_input(input_content, windows)
-  require('goose.ui.mention').highlight_all_mentions(windows.input_buf)
+  mention.highlight_all_mentions(windows.input_buf)
 end
 
 function M.setup_after_actions(windows)
-  require('goose.completion').setup(windows.input_buf)
+  completion.setup(windows.input_buf)
   recover_input(windows)
 end
 
@@ -273,19 +288,19 @@ function M.setup_keymaps(windows)
   end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.next_message, function()
-    require('goose.ui.navigation').goto_next_message()
+    navigation.goto_next_message()
   end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.prev_message, function()
-    require('goose.ui.navigation').goto_prev_message()
+    navigation.goto_prev_message()
   end, { buffer = windows.output_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.next_message, function()
-    require('goose.ui.navigation').goto_next_message()
+    navigation.goto_next_message()
   end, { buffer = windows.input_buf, silent = true })
 
   vim.keymap.set('n', window_keymap.prev_message, function()
-    require('goose.ui.navigation').goto_prev_message()
+    navigation.goto_prev_message()
   end, { buffer = windows.input_buf, silent = true })
 
   vim.keymap.set({ 'n', 'i' }, window_keymap.stop, function()

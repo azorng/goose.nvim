@@ -1,6 +1,7 @@
 local M = {}
 
 local Path = require('plenary.path')
+local state = require('goose.state')
 local cached_history = nil
 local prompt_before_history = nil
 
@@ -63,7 +64,7 @@ M.prev = function()
   local history = M.read()
 
   if not M.index or M.index == 0 then
-    prompt_before_history = require('goose.state').input_content
+    prompt_before_history = state.input_content
   end
 
   -- Initialize or increment index

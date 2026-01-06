@@ -8,10 +8,9 @@ local Job = require('plenary.job')
 
 local M = {}
 
-function M.build_args(prompt)
-  if not prompt then return nil end
-  local message = context.format_message(prompt)
-  local args = { "run", "--text", message }
+function M.build_args(message)
+  if not message then return nil end
+  local args = { "run", "--text", message, "--output-format", "stream-json" }
 
   local system_instructions = config.get("system_instructions")
   if system_instructions and system_instructions ~= "" then
@@ -33,14 +32,16 @@ function M.execute(prompt, handlers)
     return nil
   end
 
-  local args = M.build_args(prompt)
+  local message = context.format_message(prompt)
+
+  local args = M.build_args(message)
 
   state.goose_run_job = Job:new({
     command = 'goose',
     args = args,
     on_start = function()
       vim.schedule(function()
-        handlers.on_start()
+        handlers.on_start(message)
       end)
     end,
     on_stdout = function(_, out)

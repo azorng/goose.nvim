@@ -1,5 +1,7 @@
 local M = {}
 
+local util = require('goose.util')
+
 M.MODE = {
   CHAT = "chat",
   AUTO = "auto"
@@ -30,7 +32,7 @@ local function load_config()
   local content = file:read("*a")
   file:close()
 
-  local data = require('goose.util').parse_yaml(content)
+  local data = util.parse_yaml(content)
   if data then
     cache = {
       path = config_path,
@@ -75,7 +77,6 @@ function M.set(key, value)
   local cfg = load_config()
   if not cfg then return false, "Could not load config" end
 
-  local util = require('goose.util')
   local ok, err = util.set_yaml_value(cfg.path, key, value)
   if ok then cache = nil end
 
