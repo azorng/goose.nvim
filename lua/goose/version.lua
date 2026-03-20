@@ -1,6 +1,6 @@
 local M = {}
 
-M.MIN_GOOSE_VERSION = "1.25.0"
+M.MIN_GOOSE_VERSION = "1.28.0"
 
 local function parse(version_str)
   local major, minor, patch = version_str:match("^%s*(%d+)%.(%d+)%.(%d+)")

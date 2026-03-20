@@ -287,4 +287,59 @@ describe("goose.core", function()
       assert.is_true(open_new_session_param)
     end)
   end)
+
+  describe("session id extraction from banner", function()
+    it("extracts session id from goose CLI banner line", function()
+      local banner_line = "   \\____)    20260320_185 · /Users/azor/projects/goose.nvim"
+      local session_id = banner_line:match("(%w+_%w+)%s+·")
+      assert.equal("20260320_185", session_id)
+    end)
+
+    it("does not match non-banner lines", function()
+      local lines = {
+        '    __( O)>  ● new session · openrouter anthropic/claude-opus-4.6',
+        '     L L     goose is ready',
+        '{"type":"message","message":{"id":"gen-123"}}',
+        '{"type":"complete","total_tokens":5666}',
+      }
+      for _, line in ipairs(lines) do
+        local session_id = line:match("(%w+_%w+)%s+·")
+        assert.is_nil(session_id, "Should not match: " .. line)
+      end
+    end)
+
+    it("sets active_session when on_output receives banner with session id", function()
+      state.windows = { mock = "windows" }
+      state.active_session = nil
+
+      local captured_handlers = nil
+
+      local original_defer_fn = vim.defer_fn
+      vim.defer_fn = function(callback, _timeout)
+        callback()
+      end
+
+      job.execute = function(_prompt, handlers)
+        captured_handlers = handlers
+        if handlers and handlers.on_start then
+          handlers.on_start("test message")
+        end
+      end
+
+      local mock_session = { name = "20260320_185", description = "test" }
+      session.get_by_name = function(name)
+        if name == "20260320_185" then return mock_session end
+        return nil
+      end
+
+      core.run("test prompt")
+
+      assert.truthy(captured_handlers, "Handlers should be captured")
+      captured_handlers.on_output("   \\____)    20260320_185 · /Users/azor/projects/goose.nvim")
+
+      assert.same(mock_session, state.active_session, "Active session should be set from banner")
+
+      vim.defer_fn = original_defer_fn
+    end)
+  end)
 end)

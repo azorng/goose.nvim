@@ -156,49 +156,62 @@ end
 function M._format_tool(lines, tool_request)
   local tool = tool_request.toolCall.value
   if not tool then return end
-  local command = tool.arguments.command
+  local name = tool.name
+  local args = tool.arguments or {}
+  local command = args.command
 
-  if tool.name == 'skills__loadSkill' then
-    M._format_context(lines, '💎 skill', tool.arguments.name)
-  elseif tool.name == 'subagent__execute_task' then
+  if name == 'skills__loadSkill' then
+    M._format_context(lines, '💎 skill', args.name)
+  elseif name == 'subagent__execute_task' then
     M._format_context(lines, '⚡️ execute task')
-  elseif tool.name == 'developer__analyze' then
-    local full_path = tool.arguments.path
+  elseif name == 'developer__analyze' or name == 'analyze' then
+    local full_path = args.path
     local dir = vim.fn.fnamemodify(full_path, ":t")
     M._format_context(lines, '👀 analyze', dir)
-  elseif tool.name == 'dynamic_task__create_task' then
-    local titles = extract_task_titles(tool.arguments.task_parameters)
+  elseif name == 'dynamic_task__create_task' then
+    local titles = extract_task_titles(args.task_parameters)
     M._format_context(lines, '📋 create task', titles)
-  elseif tool.name == 'developer__shell' then
+  elseif name == 'developer__shell' or name == 'shell' then
     M._format_context(lines, '🚀 run', command)
-  elseif tool.name == 'developer__image_processor' then
-    local image_path = tool.arguments.path
+  elseif name == 'developer__image_processor' then
+    local image_path = args.path
     local image_name = vim.fn.fnamemodify(image_path, ":t")
     M._format_context(lines, '🎇 process image', image_name)
-  elseif tool.name == 'developer__text_editor' then
-    local path = tool.arguments.path
+  elseif name == 'developer__text_editor' then
+    local path = args.path
     local file_name = vim.fn.fnamemodify(path, ":t")
 
     local write_commands = { 'str_replace', 'write', 'edit_file' }
     if vim.tbl_contains(write_commands, command) then
       M._format_context(lines, '✏️ edit', file_name)
-    elseif tool.arguments.command == 'view' then
+    elseif command == 'view' then
       M._format_context(lines, '👀 view', file_name)
     else
       M._format_context(lines, '✨ command', command)
     end
-  elseif tool.name == 'todo__todo_write' then
+  elseif name == 'edit' then
+    local file_name = vim.fn.fnamemodify(args.path or "", ":t")
+    M._format_context(lines, '✏️ edit', file_name)
+  elseif name == 'write' then
+    local file_name = vim.fn.fnamemodify(args.path or "", ":t")
+    M._format_context(lines, '✏️ write', file_name)
+  elseif name == 'tree' then
+    local dir = vim.fn.fnamemodify(args.path or "", ":t")
+    M._format_context(lines, '👀 tree', dir)
+  elseif name == 'todo__todo_write' then
     M._format_context(lines, '📋 TODOs')
-    for _, line in ipairs(vim.split("\n" .. tool.arguments.content, "\n")) do
+    for _, line in ipairs(vim.split("\n" .. (args.content or ""), "\n")) do
       table.insert(lines, line)
     end
-  elseif tool.name == 'subagent' then
+  elseif name == 'subagent' or name == 'delegate' then
     M._format_context(lines, '🗿 subagent')
-    for _, line in ipairs(vim.split("\n" .. (tool.arguments.instructions or ""), "\n")) do
+    for _, line in ipairs(vim.split("\n" .. (args.instructions or ""), "\n")) do
       table.insert(lines, line)
     end
+  elseif name == 'load' then
+    M._format_context(lines, '📖 load', args.source or args.name)
   else
-    M._format_context(lines, '🔧 tool', tool.name)
+    M._format_context(lines, '🔧 tool', name)
   end
 end
 

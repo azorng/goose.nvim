@@ -89,7 +89,7 @@ function M.run(prompt, opts)
 
           -- for new sessions, set session data after running the command
           if not state.active_session then
-            local session_id = output_stream:match("^%s*([%w_]+)%s+·")
+            local session_id = output_stream:match("(%w+_%w+)%s+·")
             if session_id then
               vim.defer_fn(function()
                 state.active_session = session.get_by_name(session_id)
