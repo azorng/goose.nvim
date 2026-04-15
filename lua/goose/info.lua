@@ -4,7 +4,9 @@ local util = require('goose.util')
 
 M.MODE = {
   CHAT = "chat",
-  AUTO = "auto"
+  AUTO = "auto",
+  APPROVE = "approve",
+  SMART_APPROVE = "smart_approve"
 }
 
 M.KEY = {
