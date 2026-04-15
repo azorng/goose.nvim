@@ -39,7 +39,11 @@ describe("goose.api", function()
         "close",
         "stop",
         "run",
-        "run_new_session"
+        "run_new_session",
+        "goose_mode_chat",
+        "goose_mode_auto",
+        "goose_mode_approve",
+        "goose_mode_smart_approve"
       }
 
       for _, cmd_name in ipairs(expected_commands) do
@@ -159,6 +163,27 @@ describe("goose.api", function()
         new_session = true, 
         focus = "output" 
       }, core_run_opts)
+
+      -- Test mode commands
+      local info = require("goose.info")
+      local info_set_called = false
+      local info_set_mode = nil
+      info.set = function(key, value)
+        if key == info.KEY.MODE then
+          info_set_called = true
+          info_set_mode = value
+        end
+        return true
+      end
+
+      stored_fns["GooseModeApprove"]()
+      assert.truthy(info_set_called, "Should call info.set for mode")
+      assert.equal(info.MODE.APPROVE, info_set_mode)
+
+      info_set_called = false
+      stored_fns["GooseModeSmartApprove"]()
+      assert.truthy(info_set_called, "Should call info.set for mode")
+      assert.equal(info.MODE.SMART_APPROVE, info_set_mode)
     end)
   end)
 

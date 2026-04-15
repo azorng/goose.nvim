@@ -70,6 +70,8 @@ require('goose').setup({
       select_session = '<leader>gs',         -- Select and load a goose session
       goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)
       goose_mode_auto = '<leader>gma',       -- Set goose mode to `auto`. (Default mode with full agent capabilities)
+      goose_mode_approve = '<leader>gmp',    -- Set goose mode to `approve`. (Manual approval for all tool usage)
+      goose_mode_smart_approve = '<leader>gms', -- Set goose mode to `smart_approve`. (Risk-based tool usage approval)
       configure_provider = '<leader>gp',     -- Quick provider and model switch from predefined list
       open_config = '<leader>g.',            -- Open goose config file
       inspect_session = '<leader>g?',        -- Inspect current session as JSON
@@ -101,7 +103,7 @@ require('goose').setup({
     layout = "right",                      -- right|left|center (float window only)
     floating_height = 0.8,                 -- Height as percentage of editor height for "center" layout
     display_model = true,                  -- Display model name on top winbar
-    display_goose_mode = false             -- Display mode on top winbar: auto|chat
+    display_goose_mode = false             -- Display mode on top winbar: auto|chat|approve|smart_approve
   },
   providers = {
     --[[
@@ -137,6 +139,10 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Close UI windows            | `<leader>gq`        | `:GooseClose`          | `require('goose.api').close()`               |
 | Toggle fullscreen mode      | `<leader>gf`        | `:GooseToggleFullscreen`| `require('goose.api').toggle_fullscreen()`    |
 | Select and load session     | `<leader>gs`        | `:GooseSelectSession`  | `require('goose.api').select_session()`      |
+| Set goose mode to `chat`    | `<leader>gmc`       | `:GooseModeChat`       | `require('goose.api').goose_mode_chat()`     |
+| Set goose mode to `auto`    | `<leader>gma`       | `:GooseModeAuto`       | `require('goose.api').goose_mode_auto()`     |
+| Set goose mode to `approve` | `<leader>gmp`       | `:GooseModeApprove`    | `require('goose.api').goose_mode_approve()`  |
+| Set goose mode to `smart_approve` | `<leader>gms` | `:GooseModeSmartApprove` | `require('goose.api').goose_mode_smart_approve()` |
 | Configure provider and model| `<leader>gp`        | `:GooseConfigureProvider` | `require('goose.api').configure_provider()`  |
 | Open goose config file      | `<leader>g.`        | `:GooseOpenConfig`     | `require('goose.api').open_config()`         |
 | Inspect current session as JSON | `<leader>g?`    | `:GooseInspectSession` | `require('goose.api').inspect_session()`     |
