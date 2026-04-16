@@ -65,6 +65,14 @@ function M.goose_mode_auto()
   M.change_mode(info.MODE.AUTO)
 end
 
+function M.goose_mode_approve()
+  M.change_mode(info.MODE.APPROVE)
+end
+
+function M.goose_mode_smart_approve()
+  M.change_mode(info.MODE.SMART_APPROVE)
+end
+
 function M.configure_provider()
   core.configure_provider()
 end
@@ -278,6 +286,22 @@ M.commands = {
     desc = "Set goose mode to `auto`. (Default mode with full agent capabilities)",
     fn = function()
       M.goose_mode_auto()
+    end
+  },
+
+  goose_mode_approve = {
+    name = "GooseModeApprove",
+    desc = "Set goose mode to `approve`. (Manual approval for all tool usage)",
+    fn = function()
+      M.goose_mode_approve()
+    end
+  },
+
+  goose_mode_smart_approve = {
+    name = "GooseModeSmartApprove",
+    desc = "Set goose mode to `smart_approve`. (Risk-based tool usage approval)",
+    fn = function()
+      M.goose_mode_smart_approve()
     end
   },
 
