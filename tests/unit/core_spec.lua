@@ -26,7 +26,7 @@ describe("goose.core", function()
     ui.focus_output = function() end
     ui.scroll_to_bottom = function() end
     ui.is_output_empty = function() return true end
-    session.get_last_session = function() return { id = "test-session" } end
+    session.get_last_session = function() return nil end
     job.execute = function() end
   end)
 
@@ -38,6 +38,40 @@ describe("goose.core", function()
   end)
 
   describe("open", function()
+    it("loads the latest session on first use", function()
+      state.windows = nil
+      state.active_session = nil
+      state.session_initialized = false
+
+      local session_queries = 0
+      session.get_last_session = function()
+        session_queries = session_queries + 1
+        return { name = "test-session" }
+      end
+
+      core.open({ new_session = false, focus = "input" })
+      core.open({ new_session = false, focus = "input" })
+
+      assert.equal(1, session_queries)
+      assert.equal("test-session", state.active_session.name)
+    end)
+
+    it("does not query sessions when opening a new session", function()
+      state.windows = nil
+      state.active_session = nil
+      state.session_initialized = false
+
+      local queried_sessions = false
+      session.get_last_session = function()
+        queried_sessions = true
+      end
+
+      core.open({ new_session = true, focus = "input" })
+
+      assert.is_false(queried_sessions)
+      assert.is_true(state.session_initialized)
+    end)
+
     it("creates windows if they don't exist", function()
       state.windows = nil
 

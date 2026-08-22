@@ -95,6 +95,9 @@ function M.open_config()
 end
 
 function M.inspect_session()
+  if not core.goose_ok() then return nil end
+  core.initialize_session(false)
+
   local active_session = state.active_session
 
   if not active_session or not active_session.name then
