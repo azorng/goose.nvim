@@ -13,4 +13,19 @@ describe("goose", function()
   it("main module can be required without errors", function()
     assert.is_table(goose)
   end)
+
+  it("does not query goose sessions during setup", function()
+    local session = require("goose.session")
+    local original_get_last_session = session.get_last_session
+    local queried_sessions = false
+
+    session.get_last_session = function()
+      queried_sessions = true
+    end
+
+    goose.setup({})
+    session.get_last_session = original_get_last_session
+
+    assert.is_false(queried_sessions)
+  end)
 end)

@@ -15,6 +15,15 @@ local info = require('goose.info')
 local provider = require('goose.provider')
 local version = require('goose.version')
 
+function M.initialize_session(new_session)
+  if state.session_initialized then return end
+
+  state.session_initialized = true
+  if not new_session and not state.active_session then
+    state.active_session = session.get_last_session()
+  end
+end
+
 function M.select_session()
   local all_sessions = session.get_sessions()
   local filtered_sessions = vim.tbl_filter(function(s)
@@ -42,6 +51,7 @@ function M.open(opts)
   opts = opts or { focus = "input", new_session = false }
 
   if not M.goose_ok() then return end
+  M.initialize_session(opts.new_session)
 
   local are_windows_closed = state.windows == nil
 
@@ -133,6 +143,7 @@ function M.before_run(opts)
   M.stop()
 
   opts = opts or {}
+  M.initialize_session(opts.new_session)
 
   M.open({
     new_session = opts.new_session or not state.active_session,

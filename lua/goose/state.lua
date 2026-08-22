@@ -13,6 +13,7 @@ M.last_sent_context = nil
 
 -- session
 M.active_session = nil
+M.session_initialized = false
 M.new_session_name = nil
 
 -- job

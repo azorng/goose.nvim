@@ -2,8 +2,6 @@ local M = {}
 local config = require("goose.config")
 local keymap = require("goose.keymap")
 local api = require("goose.api")
-local state = require("goose.state")
-local session = require("goose.session")
 local highlight = require("goose.ui.highlight")
 
 function M.setup(opts)
@@ -11,7 +9,6 @@ function M.setup(opts)
   highlight.setup()
   api.setup()
   keymap.setup(config.get("keymap"))
-  state.active_session = session.get_last_session()
 end
 
 return M
