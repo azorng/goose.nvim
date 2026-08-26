@@ -9,6 +9,9 @@ local session_list_mock = require("tests.mocks.session_list")
 describe("goose.session", function()
   local original_io_popen
   local original_workspace
+  local original_jobstart
+  local original_chansend
+  local original_schedule
   local mock_data = {}
 
   -- Setup test environment before each test
@@ -16,6 +19,9 @@ describe("goose.session", function()
     -- Save the original functions
     original_io_popen = io.popen
     original_workspace = vim.fn.getcwd
+    original_jobstart = vim.fn.jobstart
+    original_chansend = vim.fn.chansend
+    original_schedule = vim.schedule
 
     -- Mock the io.popen function
     io.popen = function(cmd)
@@ -70,6 +76,9 @@ describe("goose.session", function()
     -- Restore original functions
     io.popen = original_io_popen
     vim.fn.getcwd = original_workspace
+    vim.fn.jobstart = original_jobstart
+    vim.fn.chansend = original_chansend
+    vim.schedule = original_schedule
 
     -- Reset mock data
     mock_data = {}
@@ -254,6 +263,79 @@ describe("goose.session", function()
 
       -- Should be nil with empty list
       assert.is_nil(result)
+    end)
+  end)
+
+  describe("remove", function()
+    it("removes a session by ID through a PTY", function()
+      local command
+      local job_opts
+      local sent_job_id
+      local sent_input
+      local callback_result
+
+      vim.fn.jobstart = function(cmd, opts)
+        command = cmd
+        job_opts = opts
+        return 42
+      end
+      vim.fn.chansend = function(job_id, input)
+        sent_job_id = job_id
+        sent_input = input
+      end
+      vim.schedule = function(cb) cb() end
+
+      session.remove("20260826_1", function(success)
+        callback_result = success
+      end)
+
+      assert.same({
+        "goose",
+        "session",
+        "remove",
+        "--session-id",
+        "20260826_1",
+      }, command)
+      assert.is_true(job_opts.pty)
+      assert.equal(42, sent_job_id)
+      assert.equal("y\r", sent_input)
+
+      job_opts.on_exit(42, 0)
+      assert.is_true(callback_result)
+    end)
+
+    it("reports a failed goose command", function()
+      local job_opts
+      local callback_result
+
+      vim.fn.jobstart = function(_, opts)
+        job_opts = opts
+        return 42
+      end
+      vim.fn.chansend = function() end
+      vim.schedule = function(cb) cb() end
+
+      session.remove("20260826_1", function(success)
+        callback_result = success
+      end)
+
+      job_opts.on_exit(42, 1)
+      assert.is_false(callback_result)
+    end)
+
+    it("reports when the goose command cannot be started", function()
+      local callback_result
+      local sent_input = false
+
+      vim.fn.jobstart = function() return -1 end
+      vim.fn.chansend = function() sent_input = true end
+
+      session.remove("20260826_1", function(success)
+        callback_result = success
+      end)
+
+      assert.is_false(callback_result)
+      assert.is_false(sent_input)
     end)
   end)
 end)

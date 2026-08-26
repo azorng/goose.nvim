@@ -262,7 +262,7 @@ M.commands = {
 
   select_session = {
     name = "GooseSelectSession",
-    desc = "Select and load a goose session",
+    desc = "Select, load, or delete a goose session",
     fn = function()
       M.select_session()
     end

@@ -67,7 +67,7 @@ require('goose').setup({
       toggle_focus = '<leader>gt',           -- Toggle focus between goose and last window
       close = '<leader>gq',                  -- Close UI windows
       toggle_fullscreen = '<leader>gf',      -- Toggle between normal and fullscreen mode
-      select_session = '<leader>gs',         -- Select and load a goose session
+      select_session = '<leader>gs',         -- Select a session; press <C-x> in the picker to delete it
       goose_mode_chat = '<leader>gmc',       -- Set goose mode to `chat`. (Tool calling disabled. No editor context besides selections)
       goose_mode_auto = '<leader>gma',       -- Set goose mode to `auto`. (Default mode with full agent capabilities)
       goose_mode_approve = '<leader>gmp',    -- Set goose mode to `approve`. (Manual approval for all tool usage)
@@ -138,7 +138,7 @@ The plugin provides the following actions that can be triggered via keymaps, com
 | Toggle focus goose / last window | `<leader>gt`   | `:GooseToggleFocus`    | `require('goose.api').toggle_focus()`        |
 | Close UI windows            | `<leader>gq`        | `:GooseClose`          | `require('goose.api').close()`               |
 | Toggle fullscreen mode      | `<leader>gf`        | `:GooseToggleFullscreen`| `require('goose.api').toggle_fullscreen()`    |
-| Select and load session     | `<leader>gs`        | `:GooseSelectSession`  | `require('goose.api').select_session()`      |
+| Select, load, or delete session (`<C-x>`) | `<leader>gs` | `:GooseSelectSession` | `require('goose.api').select_session()` |
 | Set goose mode to `chat`    | `<leader>gmc`       | `:GooseModeChat`       | `require('goose.api').goose_mode_chat()`     |
 | Set goose mode to `auto`    | `<leader>gma`       | `:GooseModeAuto`       | `require('goose.api').goose_mode_auto()`     |
 | Set goose mode to `approve` | `<leader>gmp`       | `:GooseModeApprove`    | `require('goose.api').goose_mode_approve()`  |
@@ -230,4 +230,3 @@ If you're new to goose:
 
 3. **Configuration:**
    - Run `goose configure` to set up your LLM provider
-

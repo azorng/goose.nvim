@@ -222,7 +222,7 @@ describe("goose.api", function()
       api.open_input()
       assert.truthy(core_open_called, "Should call core.open")
       assert.same({ new_session = false, focus = "input" }, core_open_args)
-      
+
       -- Reset
       core_open_called = false
       core_open_args = nil

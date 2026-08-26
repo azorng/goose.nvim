@@ -6,6 +6,7 @@ local window_config = require("goose.ui.window_config")
 local config = require("goose.config")
 local topbar = require("goose.ui.topbar")
 local util = require("goose.util")
+local session_picker = require("goose.ui.session_picker")
 
 function M.scroll_to_bottom()
   local line_count = vim.api.nvim_buf_line_count(state.windows.output_buf)
@@ -168,8 +169,8 @@ function M.toggle_fullscreen()
 end
 
 function M.select_session(sessions, cb)
-  vim.ui.select(sessions, {
-    prompt = "",
+  session_picker.select(sessions, {
+    prompt = "Sessions (<C-x> delete)",
     format_item = function(session)
       local parts = {}
 
@@ -188,8 +189,17 @@ function M.select_session(sessions, cb)
 
       return table.concat(parts, " ~ ")
     end
-  }, function(session_choice)
-    cb(session_choice)
+  }, cb)
+end
+
+function M.confirm_session_deletion(session, cb)
+  local label = session.description
+  if not label or label == "" then label = session.name end
+
+  vim.ui.select({ "Cancel", "Delete" }, {
+    prompt = string.format('Delete session "%s"? This cannot be undone.', label),
+  }, function(choice)
+    cb(choice == "Delete")
   end)
 end
 

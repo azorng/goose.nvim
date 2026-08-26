@@ -24,6 +24,34 @@ function M.initialize_session(new_session)
   end
 end
 
+local function delete_session(selected_session)
+  ui.confirm_session_deletion(selected_session, function(confirmed)
+    if not confirmed then return end
+
+    session.remove(selected_session.name, function(success)
+      local label = selected_session.description
+      if not label or label == "" then label = selected_session.name end
+
+      if not success then
+        vim.notify("Failed to delete session: " .. label, vim.log.levels.ERROR)
+        return
+      end
+
+      if state.active_session and state.active_session.name == selected_session.name then
+        state.active_session = nil
+        state.last_sent_context = nil
+
+        if state.windows then
+          ui.clear_output()
+          topbar.render()
+        end
+      end
+
+      vim.notify("Deleted session: " .. label, vim.log.levels.INFO)
+    end)
+  end)
+end
+
 function M.select_session()
   local all_sessions = session.get_sessions()
   local filtered_sessions = vim.tbl_filter(function(s)
@@ -35,8 +63,14 @@ function M.select_session()
     return
   end
 
-  ui.select_session(filtered_sessions, function(selected_session)
+  ui.select_session(filtered_sessions, function(selected_session, action)
     if not selected_session then return end
+
+    if action == "delete" then
+      delete_session(selected_session)
+      return
+    end
+
     state.active_session = selected_session
     if state.windows then
       ui.render_output()

@@ -3,6 +3,8 @@ local state = require("goose.state")
 local ui = require("goose.ui.ui")
 local session = require("goose.session")
 local job = require("goose.job")
+local topbar = require("goose.ui.topbar")
+local helpers = require("tests.helpers")
 
 describe("goose.core", function()
   local original_state
@@ -26,8 +28,12 @@ describe("goose.core", function()
     ui.focus_output = function() end
     ui.scroll_to_bottom = function() end
     ui.is_output_empty = function() return true end
+    ui.confirm_session_deletion = function(_, callback) callback(true) end
     session.get_last_session = function() return nil end
+    session.get_sessions = function() return {} end
+    session.remove = function(_, callback) callback(true) end
     job.execute = function() end
+    topbar.render = function() end
   end)
 
   after_each(function()
@@ -219,6 +225,74 @@ describe("goose.core", function()
 
       -- Verify open was called when windows don't exist
       assert.is_true(open_called, "core.open should be called when windows don't exist")
+    end)
+  end)
+
+  describe("select_session delete action", function()
+    it("deletes the highlighted session and clears it when active", function()
+      local selected_session = {
+        name = "session1",
+        description = "First session",
+        modified = "2025-04-01"
+      }
+      session.get_sessions = function() return { selected_session } end
+      ui.select_session = function(sessions, callback) callback(sessions[1], "delete") end
+
+      local removed_session_id
+      session.remove = function(session_id, callback)
+        removed_session_id = session_id
+        callback(true)
+      end
+
+      local output_cleared = false
+      local topbar_rendered = false
+      ui.clear_output = function() output_cleared = true end
+      topbar.render = function() topbar_rendered = true end
+
+      state.active_session = selected_session
+      state.last_sent_context = { "context" }
+      state.windows = { mock = "windows" }
+
+      local notifications = helpers.mock_notify()
+      core.select_session()
+
+      assert.equal("session1", removed_session_id)
+      assert.is_nil(state.active_session)
+      assert.is_nil(state.last_sent_context)
+      assert.is_true(output_cleared)
+      assert.is_true(topbar_rendered)
+      assert.equal("Deleted session: First session", notifications.get_notifications()[1].msg)
+      notifications.reset()
+    end)
+
+    it("does not delete a session when confirmation is cancelled", function()
+      session.get_sessions = function()
+        return { { name = "session1", description = "First session" } }
+      end
+      ui.select_session = function(sessions, callback) callback(sessions[1], "delete") end
+      ui.confirm_session_deletion = function(_, callback) callback(false) end
+
+      local remove_called = false
+      session.remove = function() remove_called = true end
+
+      core.select_session()
+
+      assert.is_false(remove_called)
+    end)
+
+    it("preserves the active session when deletion fails", function()
+      local selected_session = { name = "session1", description = "First session" }
+      session.get_sessions = function() return { selected_session } end
+      ui.select_session = function(sessions, callback) callback(sessions[1], "delete") end
+      session.remove = function(_, callback) callback(false) end
+      state.active_session = selected_session
+
+      local notifications = helpers.mock_notify()
+      core.select_session()
+
+      assert.same(selected_session, state.active_session)
+      assert.equal(vim.log.levels.ERROR, notifications.get_notifications()[1].level)
+      notifications.reset()
     end)
   end)
 

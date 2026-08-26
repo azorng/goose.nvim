@@ -62,6 +62,52 @@ function M.get_by_name(name)
   return nil
 end
 
+function M.remove(session_id, callback)
+  callback = callback or function() end
+  local finished = false
+
+  local function finish(success)
+    if finished then return end
+    finished = true
+    callback(success)
+  end
+
+  if not session_id or session_id == "" then
+    finish(false)
+    return
+  end
+
+  local job_id = vim.fn.jobstart({
+    "goose",
+    "session",
+    "remove",
+    "--session-id",
+    session_id,
+  }, {
+    pty = true,
+    on_exit = function(_, exit_code)
+      vim.schedule(function()
+        finish(exit_code == 0)
+      end)
+    end,
+  })
+
+  if job_id <= 0 then
+    finish(false)
+    return
+  end
+
+  -- goose asks for confirmation even when a session ID is provided. The UI
+  -- has already confirmed with the user, so accept the CLI prompt via its PTY.
+  vim.fn.chansend(job_id, "y\r")
+
+  vim.defer_fn(function()
+    if finished then return end
+    vim.fn.jobstop(job_id)
+    finish(false)
+  end, 10000)
+end
+
 function M.update_session_workspace(session_name, workspace_path)
   local session = M.get_by_name(session_name)
   if not session then return false end
